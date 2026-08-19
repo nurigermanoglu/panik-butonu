@@ -118,6 +118,10 @@
     return SLOT_COLORS[slot % SLOT_COLORS.length];
   }
 
+  // Ic cozunurluk carpani: tuval ekranda kac kat gorunuyorsa o kadar buyuk cizilir.
+  // Resim onbellekleri bu degeri kullanip o oranda detayli hazirlanir.
+  PP.res = { olcek: 1 };
+
   PP.gfx = {
     PAL: PAL,
     SLOT_COLORS: SLOT_COLORS,

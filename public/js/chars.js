@@ -134,7 +134,9 @@
     var w = Math.max(4, Math.round(k.w * olcek));
     var h = Math.max(4, Math.round(k.h * olcek));
     var x = Math.round(cx - w / 2), y = Math.round(cy - h / 2);
-    var res = hazir(idx, w, h);
+    // Ekranda kac kat gorunuyorsa o oranda detayli hazirla
+    var ic = (PP.res && PP.res.olcek) || 1;
+    var res = hazir(idx, w * ic, h * ic);
 
     if (!res) {
       var g = PP.gfx;
@@ -149,10 +151,10 @@
     if (opts && opts.dead) {
       ctx.save();
       ctx.globalAlpha = 0.3;
-      ctx.drawImage(res, x, y);
+      ctx.drawImage(res, x, y, w, h);
       ctx.restore();
     } else {
-      ctx.drawImage(res, x, y);
+      ctx.drawImage(res, x, y, w, h);
     }
     ctx.imageSmoothingEnabled = eskiSmooth;
     return { w: w, h: h };

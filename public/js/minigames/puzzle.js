@@ -52,14 +52,15 @@
       var zemin = ben && ben.fl === 1 ? '#233524' : ben && ben.fl === 2 ? '#3a2028' : P.bg;
       g.rect(ctx, 0, 0, v.W, v.H, zemin);
 
+      var ic = (PP.res && PP.res.olcek) || 1;   // ekranda kac kat gorunuyorsa o kadar detay
       var gw = st.cols * st.cw, gh = st.rows * st.ch;
       var idx = st.img | 0;
-      var kynk = kaynak(idx, gw, gh);
+      var kynk = kaynak(idx, gw * ic, gh * ic);
       // Istenen resim gelmediyse (indirilemedi) bos ekran gostermek yerine
       // yuklenmis baska bir resme dus - bulmaca yine kendi icinde tutarli kalir.
       if (!kynk && hatali[idx]) {
         for (var y = 0; y < KAYNAK.length; y++) {
-          kynk = kaynak(y, gw, gh);
+          kynk = kaynak(y, gw * ic, gh * ic);
           if (kynk) break;
         }
       }
@@ -76,27 +77,27 @@
 
       function hucreCiz(cellIdx, dx, dy) {
         var c = cellIdx % st.cols, r = Math.floor(cellIdx / st.cols);
-        ctx.drawImage(kynk, c * st.cw, r * st.ch, st.cw, st.ch,
+        ctx.drawImage(kynk, c * st.cw * ic, r * st.ch * ic, st.cw * ic, st.ch * ic,
           Math.round(dx), Math.round(dy), st.cw, st.ch);
       }
 
       // ---- izgara ----
-      for (var idx = 0; idx < st.cols * st.rows; idx++) {
-        var cx = st.gx + (idx % st.cols) * st.cw;
-        var cy = st.gy + Math.floor(idx / st.cols) * st.ch;
-        var eksikMi = st.miss.indexOf(idx) >= 0;
+      for (var hi = 0; hi < st.cols * st.rows; hi++) {
+        var cx = st.gx + (hi % st.cols) * st.cw;
+        var cy = st.gy + Math.floor(hi / st.cols) * st.ch;
+        var eksikMi = st.miss.indexOf(hi) >= 0;
 
-        if (!eksikMi) { hucreCiz(idx, cx, cy); continue; }
+        if (!eksikMi) { hucreCiz(hi, cx, cy); continue; }
 
         // eksik kare: bu oyuncu doldurmus mu?
         var takili = false;
         if (ben) {
           for (var q = 0; q < ben.p.length; q++) {
-            if (ben.p[q].st === 2 && ben.p[q].c === idx) { takili = true; break; }
+            if (ben.p[q].st === 2 && ben.p[q].c === hi) { takili = true; break; }
           }
         }
         if (takili) {
-          hucreCiz(idx, cx, cy);
+          hucreCiz(hi, cx, cy);
           g.rect(ctx, cx, cy, st.cw, 1, P.green);
           g.rect(ctx, cx, cy + st.ch - 1, st.cw, 1, P.green);
         } else {

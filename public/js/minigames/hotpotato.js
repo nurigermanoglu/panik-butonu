@@ -11,30 +11,20 @@
 
   function bombaHazir() {
     if (!bombaYuklendi) return null;
-    if (!bombaOnbellek) {
+    var ic = (PP.res && PP.res.olcek) || 1;
+    if (!bombaOnbellek || bombaOnbellek._ic !== ic) {
       var cv = document.createElement('canvas');
-      cv.width = BOMBA.w; cv.height = BOMBA.h;
+      cv.width = BOMBA.w * ic; cv.height = BOMBA.h * ic;
       var c2 = cv.getContext('2d');
       c2.imageSmoothingEnabled = true;
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
       c2.drawImage(bombaImg, BOMBA.kirp.x, BOMBA.kirp.y, BOMBA.kirp.w, BOMBA.kirp.h,
-        0, 0, BOMBA.w, BOMBA.h);
+        0, 0, BOMBA.w * ic, BOMBA.h * ic);
+      cv._ic = ic;
       bombaOnbellek = cv;
     }
     return bombaOnbellek;
   }
-
-  var PATLAMA = [
-    '..#...#...#..',
-    '.#.#.#.#.#.#.',
-    '..#######.#..',
-    '#.#######..#.',
-    '.#########.#.',
-    '#.#######..#.',
-    '..#######.#..',
-    '.#.#.#.#.#.#.',
-    '..#...#...#..'
-  ];
 
   PP.MG = PP.MG || {};
   PP.MG.hotpotato = {
@@ -101,7 +91,7 @@
         } else if (tutuyor && yasiyor) {
           var bres = bombaHazir();
           var by = v.H - 74 + Math.round(Math.sin(v.time * 12) * 2);
-          if (bres) ctx.drawImage(bres, Math.round(cx - BOMBA.w / 2), by);
+          if (bres) ctx.drawImage(bres, Math.round(cx - BOMBA.w / 2), by, BOMBA.w, BOMBA.h);
           else g.rect(ctx, cx - 8, by + 6, 16, 14, P.dark);
           // bombanin kimde oldugunu gosteren zipzip ok
           var zip = Math.round(Math.sin(v.time * 9) * 2);

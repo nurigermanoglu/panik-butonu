@@ -34,17 +34,19 @@
   // her karede yeniden olcekleme yapilmaz).
   function hazir(ad) {
     if (!yuklendi[ad]) return null;
-    if (!onbellek[ad]) {
+    var ic = (PP.res && PP.res.olcek) || 1;      // ekranda kac kat gorunuyorsa o kadar detay
+    var anahtar = ad + '@' + ic;
+    if (!onbellek[anahtar]) {
       var k = KAYNAK[ad];
       var cv = document.createElement('canvas');
-      cv.width = k.w; cv.height = k.h;
+      cv.width = k.w * ic; cv.height = k.h * ic;
       var c2 = cv.getContext('2d');
       c2.imageSmoothingEnabled = true;
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
-      c2.drawImage(img[ad], k.kirp.x, k.kirp.y, k.kirp.w, k.kirp.h, 0, 0, k.w, k.h);
-      onbellek[ad] = cv;
+      c2.drawImage(img[ad], k.kirp.x, k.kirp.y, k.kirp.w, k.kirp.h, 0, 0, k.w * ic, k.h * ic);
+      onbellek[anahtar] = cv;
     }
-    return onbellek[ad];
+    return onbellek[anahtar];
   }
 
   // Elips: y0..y1 verilirse sadece o dikey aralik cizilir (delik agzi/on dudak icin)
@@ -128,7 +130,7 @@
         ctx.rect(0, 0, v.W, hole.y + 6);
         ctx.clip();
         if (res) {
-          ctx.drawImage(res, dx, dy);
+          ctx.drawImage(res, dx, dy, kk.w, kk.h);
         } else {
           g.rect(ctx, dx + 6, dy, kk.w - 12, kk.h, a.bomb ? P.dark : '#8a5a3b');
         }
@@ -147,7 +149,7 @@
         var cres = hazir(ad2);
         var cx2 = Math.round(v.ptr.x - ck.w * ck.tut.x);
         var cy2 = Math.round(v.ptr.y - ck.h * ck.tut.y);
-        if (cres) ctx.drawImage(cres, cx2, cy2);
+        if (cres) ctx.drawImage(cres, cx2, cy2, ck.w, ck.h);
         else g.rect(ctx, v.ptr.x - 4, v.ptr.y - 4, 8, 8, P.yellow);
       }
 

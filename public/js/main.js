@@ -332,9 +332,22 @@
     var r = stage.getBoundingClientRect();
     if (r.width < 4 || r.height < 4) return;
     var scale = Math.min(r.width / W, r.height / H);
-    var s = scale >= 1 ? Math.floor(scale) : scale;   // tam sayi olcek = keskin pixel
-    cv.style.width = Math.floor(W * s) + 'px';
-    cv.style.height = Math.floor(H * s) + 'px';
+    var k = scale >= 1 ? Math.floor(scale) : scale;   // ekranda kac kat gorunecek
+    cv.style.width = Math.floor(W * k) + 'px';
+    cv.style.height = Math.floor(H * k) + 'px';
+
+    // Ic cozunurluk: ekrandaki kat sayisi kadar (en fazla 3x). Boylece bir oyun
+    // karesi tam olarak k ekran pikseline denk gelir -> bloklar keskin kalir,
+    // resimler ise o oranda daha detayli cizilir.
+    var ic = Math.max(1, Math.min(3, Math.round(k)));
+    if (cv.width !== W * ic) {
+      cv.width = W * ic;
+      cv.height = H * ic;
+    }
+    // canvas boyutu degisince baglam sifirlanir: ayarlari tekrar kur
+    ctx.imageSmoothingEnabled = false;
+    ctx.setTransform(ic, 0, 0, ic, 0, 0);   // tum oyun kodu yine 320x180 kullanir
+    PP.res.olcek = ic;
   }
 
   // ---------------------------------------------------------------- cizim

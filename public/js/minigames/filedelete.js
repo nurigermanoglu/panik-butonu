@@ -21,23 +21,25 @@
 
   function hazir(ad) {
     if (!yuklendi[ad]) return null;
-    if (!onbellek[ad]) {
+    var ic = (PP.res && PP.res.olcek) || 1;
+    var anahtar = ad + '@' + ic;
+    if (!onbellek[anahtar]) {
       var k = KAYNAK[ad];
       var cv = document.createElement('canvas');
-      cv.width = k.w; cv.height = k.h;
+      cv.width = k.w * ic; cv.height = k.h * ic;
       var c2 = cv.getContext('2d');
       c2.imageSmoothingEnabled = true;
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
-      c2.drawImage(img[ad], k.kirp.x, k.kirp.y, k.kirp.w, k.kirp.h, 0, 0, k.w, k.h);
-      onbellek[ad] = cv;
+      c2.drawImage(img[ad], k.kirp.x, k.kirp.y, k.kirp.w, k.kirp.h, 0, 0, k.w * ic, k.h * ic);
+      onbellek[anahtar] = cv;
     }
-    return onbellek[ad];
+    return onbellek[anahtar];
   }
 
   function klasorCiz(ctx, cx, cy) {
     var res = hazir('klasor'), k = KAYNAK.klasor;
     var x = Math.round(cx - k.w / 2), y = Math.round(cy - k.h / 2);
-    if (res) ctx.drawImage(res, x, y);
+    if (res) ctx.drawImage(res, x, y, k.w, k.h);
     else g.frame(ctx, x, y, k.w, k.h, P.orange, P.black);
   }
 
@@ -83,7 +85,7 @@
         g.rect(ctx, tr.x, tr.y + ke, 1, 2, '#8fb0e0');
         g.rect(ctx, tr.x + tr.w - 1, tr.y + ke, 1, 2, '#8fb0e0');
       }
-      if (kres) ctx.drawImage(kres, kx, ky);
+      if (kres) ctx.drawImage(kres, kx, ky, kk.w, kk.h);
       else g.frame(ctx, kx, ky, kk.w, kk.h, P.gray, P.black);
 
       f.text(ctx, 'COP', tr.x + tr.w / 2, tr.y - 10, {
