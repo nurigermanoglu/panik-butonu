@@ -1,168 +1,141 @@
 'use strict';
-// ENGELDEN KAC - herkes kendi sahasinda, ama tam olarak AYNI engeller ve yildizlar duser.
+// ENGELDEN KAC (Subway Surfers tarzi) - 3 seritli kosu.
 //
-// Kazanan nasil belirlenir (sirasiyla):
-//   1) Hayatta kalan, olene ustun gelir
-//   2) Esitse: daha cok yildiz toplayan kazanir
-//   3) O da esitse: daha uzun dayanan kazanir
-// Yildizlar sayesinde "ikisi de sag kaldi" turlari da bir kazanan uretir.
+//   sol / sag  -> serit degistir
+//   yukari     -> zipla (sadece ALCAK engeller ziplayarak gecilir)
+//
+// Desen bir kez uretilir ve HERKES ayni engelleri oynar. Her satirda en az bir
+// serit acik birakilir; satirlar arasi sure en genis serit gecisine (2 serit,
+// ~0.27 sn) her zaman yeter. Yani olum sansa degil reflekse baglidir.
+//
+// Kazanan: hayatta kalan; ikisi de olduyse daha uzun kosan.
 
-// Saha genisligi oyuncu sayisina gore: ekran bolundugu icin 3-4 kiside daha dar olmali.
-// (320 px ekran / 4 sutun = 80 px; saha 74 birim + kenar payi sigar)
+const LANES = 3;
+const ARENA_H = 140;
+const PLAYER_W = 14, PLAYER_H = 16;
+const PLAYER_Y = ARENA_H - 34;        // oyuncunun durdugu cizgi
+const SWITCH_SPEED = 7.5;             // serit/sn (bir serit ~0.13 sn)
+const JUMP_TIME = 0.5;                // ziplama toplam suresi
+const AIR_FROM = 0.08, AIR_TO = 0.42; // bu aralikta havada sayilir
+const ROW_H = 16;                     // engel satirinin kalinligi
+const DURATION = 14;
+
+// 2 kisi genis, 3-4 kisi dar saha (ekran bolununce)
 function arenaWidth(playerCount) {
-  return playerCount <= 2 ? 100 : 74;
+  return playerCount <= 2 ? 102 : 78;
 }
 
-const ARENA_H = 140;
-const PLAYER_W = 10;
-const PLAYER_H = 10;
-const PLAYER_Y = ARENA_H - PLAYER_H - 4;
-const SPEED = 72;
-const OBS_H = 8;
-const STAR = 6;
-const DURATION = 12;
+function laneX(i, W) {
+  return Math.round(W * (i + 0.5) / LANES);
+}
 
-function buildSchedule(ARENA_W) {
-  // Desen her zaman GECILEBILIR uretilir: bir "guvenli koridor" takip edilir ve her engel
-  // koridoru acikta birakacak sekilde yerlestirilir. Koridor, oyuncunun o surede
-  // kosabilecegi mesafe kadar kayar. Boylece olum sansa degil reflekse baglidir.
-  const obstacles = [];
-  const stars = [];
-  const HALF = PLAYER_W / 2 + 2;
+function buildSchedule() {
+  const rows = [];
+  let t = 0.9;
 
-  let st = 0.9;
-  let safe = ARENA_W / 2;
-  let prevArrival = 0;
+  while (t < DURATION) {
+    const v = 52 + t * 3.6;                       // yaklasma hizi (birim/sn)
+    const acik = Math.floor(Math.random() * LANES);
+    const digerleri = [0, 1, 2].filter((l) => l !== acik);
+    // %55 ihtimalle iki serit birden kapali (zor), yoksa tek serit
+    const kapali = Math.random() < 0.55
+      ? digerleri
+      : [digerleri[Math.floor(Math.random() * digerleri.length)]];
+    const alcak = Math.random() < 0.4;            // alcak engel: ziplayarak da gecilir
 
-  while (st < DURATION) {
-    const w = 10 + Math.random() * 14;
-    const v = 40 + Math.random() * 12 + st * 2.8;
-    const arrival = st + (PLAYER_Y + OBS_H) / v;
-    const gapT = arrival - prevArrival;
-
-    // Iki engel neredeyse ayni anda geliyorsa koridoru oynatma: ikisi de ayni bosluga izin versin.
-    let reach = 14;
-    let g = safe;
-    if (gapT >= 0.35) {
-      reach = Math.max(14, gapT * SPEED * 0.75);
-      const lo = Math.max(HALF, safe - reach);
-      const hi = Math.min(ARENA_W - HALF, safe + reach);
-      g = lo + Math.random() * (hi - lo);
-    }
-
-    // Engeli koridorun soluna ya da sagina koy
-    const leftRoom = g - HALF;
-    const rightRoom = ARENA_W - (g + HALF);
-    let x;
-    if (leftRoom >= w && rightRoom >= w) {
-      x = Math.random() < 0.5
-        ? Math.random() * (leftRoom - w)
-        : (g + HALF) + Math.random() * (rightRoom - w);
-    } else if (leftRoom >= w) {
-      x = Math.random() * (leftRoom - w);
-    } else {
-      x = Math.min(ARENA_W - w, g + HALF);
-    }
-    obstacles.push({ st, x, w, v });
-
-    // Yildiz: guvenli koridorun icinde ama tam merkezde degil. Hayatta kalmak icin
-    // bosluktan gecmek yeter; yildizi almak icin dogru NOKTAYA denk gelmek gerekir.
-    if (Math.random() < 0.85) {
-      let sx = g + (Math.random() * 2 - 1) * reach * 0.15;
-      sx = Math.max(HALF, Math.min(ARENA_W - HALF, sx)) - STAR / 2;
-      const clashesObstacle = sx < x + w && sx + STAR > x;
-      if (!clashesObstacle) stars.push({ st, x: sx, v });
-    }
-
-    safe = g;
-    prevArrival = arrival;
-    st += Math.max(0.36, 0.92 - st * 0.040);
+    rows.push({ t, v, kapali, alcak });
+    t += Math.max(0.58, 1.15 - t * 0.035);        // zamanla siklasir
   }
-
-  return { obstacles, stars };
+  return rows;
 }
 
 module.exports = {
   id: 'dodge',
   name: 'ENGELDEN KAC',
-  instruction: 'KAC VE YILDIZ TOPLA!',
-  controls: 'lr',
+  instruction: 'SERIT DEGISTIR, ZIPLA!',
+  controls: 'dpad',
   duration: DURATION,
 
   create(playerIds) {
-    const ARENA_W = arenaWidth(playerIds.length);
-    const plan = buildSchedule(ARENA_W);
+    const W = arenaWidth(playerIds.length);
+    const plan = buildSchedule();
+
     const pl = {};
     for (const id of playerIds) {
-      pl[id] = { x: ARENA_W / 2 - PLAYER_W / 2, dir: 0, alive: true, deadAt: DURATION, stars: 0 };
+      pl[id] = {
+        lane: 1, hedef: 1, kayma: 1,      // kayma = suzulen serit konumu
+        jump: -1,                          // ziplama baslangic ani (-1 = yerde)
+        alive: true, deadAt: DURATION,
+      };
     }
 
     return {
       ids: playerIds.slice(),
+      W,
       pl,
       plan,
-      nextObs: 0,
-      nextStar: 0,
-      obs: [],
-      stars: [],
+      nextRow: 0,
+      rows: [],
       t: 0,
 
+      havada(p) {
+        if (p.jump < 0) return false;
+        const d = this.t - p.jump;
+        return d >= AIR_FROM && d <= AIR_TO;
+      },
+
       input(pid, a, d) {
-        if (a !== 'move') return;
         const p = this.pl[pid];
-        if (!p) return;
-        p.dir = d < 0 ? -1 : d > 0 ? 1 : 0;
+        if (!p || !p.alive) return;
+        if (a !== 'dir') return;
+        if (d === 'left') p.hedef = Math.max(0, p.hedef - 1);
+        else if (d === 'right') p.hedef = Math.min(LANES - 1, p.hedef + 1);
+        else if (d === 'up') {
+          if (p.jump < 0 || this.t - p.jump > JUMP_TIME) p.jump = this.t;
+        }
       },
 
       update(dt) {
         this.t += dt;
 
-        while (this.nextObs < this.plan.obstacles.length && this.plan.obstacles[this.nextObs].st <= this.t) {
-          const s = this.plan.obstacles[this.nextObs++];
-          this.obs.push({ x: s.x, w: s.w, y: -OBS_H, v: s.v });
-        }
-        while (this.nextStar < this.plan.stars.length && this.plan.stars[this.nextStar].st <= this.t) {
-          const s = this.plan.stars[this.nextStar++];
-          this.stars.push({ x: s.x, y: -STAR, v: s.v, by: [] });
+        while (this.nextRow < this.plan.length && this.plan[this.nextRow].t <= this.t) {
+          const r = this.plan[this.nextRow++];
+          this.rows.push({ y: -ROW_H, v: r.v, kapali: r.kapali, alcak: r.alcak });
         }
 
-        for (let i = this.obs.length - 1; i >= 0; i--) {
-          this.obs[i].y += this.obs[i].v * dt;
-          if (this.obs[i].y > ARENA_H) this.obs.splice(i, 1);
+        for (let i = this.rows.length - 1; i >= 0; i--) {
+          this.rows[i].y += this.rows[i].v * dt;
+          if (this.rows[i].y > ARENA_H) this.rows.splice(i, 1);
         }
-        for (let i = this.stars.length - 1; i >= 0; i--) {
-          this.stars[i].y += this.stars[i].v * dt;
-          if (this.stars[i].y > ARENA_H) this.stars.splice(i, 1);
-        }
+
+        const yariSerit = this.W / (LANES * 2);
 
         for (const id of this.ids) {
           const p = this.pl[id];
           if (!p.alive) continue;
 
-          p.x += p.dir * SPEED * dt;
-          if (p.x < 0) p.x = 0;
-          if (p.x > ARENA_W - PLAYER_W) p.x = ARENA_W - PLAYER_W;
+          // serit gecisi (suzulerek)
+          const fark = p.hedef - p.kayma;
+          const adim = SWITCH_SPEED * dt;
+          if (Math.abs(fark) <= adim) p.kayma = p.hedef;
+          else p.kayma += Math.sign(fark) * adim;
+          p.lane = Math.round(p.kayma);
 
-          for (const s of this.stars) {
-            if (s.by.indexOf(id) >= 0) continue;
-            if (
-              p.x < s.x + STAR && p.x + PLAYER_W > s.x &&
-              PLAYER_Y < s.y + STAR && PLAYER_Y + PLAYER_H > s.y
-            ) {
-              s.by.push(id);
-              p.stars++;
-            }
-          }
+          if (p.jump >= 0 && this.t - p.jump > JUMP_TIME) p.jump = -1;
 
-          for (const o of this.obs) {
-            if (
-              p.x < o.x + o.w && p.x + PLAYER_W > o.x &&
-              PLAYER_Y < o.y + OBS_H && PLAYER_Y + PLAYER_H > o.y
-            ) {
-              p.alive = false;
-              p.deadAt = this.t;
-              break;
+          const px = laneX(0, this.W) + p.kayma * (laneX(1, this.W) - laneX(0, this.W));
+          const solum = px - PLAYER_W / 2, sagim = px + PLAYER_W / 2;
+          const ucuyor = this.havada(p);
+
+          for (const r of this.rows) {
+            if (PLAYER_Y >= r.y + ROW_H || PLAYER_Y + PLAYER_H <= r.y) continue;
+            if (r.alcak && ucuyor) continue;                  // ustunden atladi
+            let carpti = false;
+            for (const l of r.kapali) {
+              const lx = laneX(l, this.W);
+              if (solum < lx + yariSerit && sagim > lx - yariSerit) { carpti = true; break; }
             }
+            if (carpti) { p.alive = false; p.deadAt = this.t; break; }
           }
         }
       },
@@ -171,47 +144,38 @@ module.exports = {
         return this.ids.every((id) => !this.pl[id].alive);
       },
 
-      // Sirali karsilastirma: once hayatta kalma, sonra yildiz, sonra dayanma suresi
       winners() {
-        const score = (id) => {
-          const p = this.pl[id];
-          return [p.alive ? 1 : 0, p.stars, p.deadAt];
-        };
-        const better = (a, b) => {
-          for (let i = 0; i < a.length; i++) {
-            if (a[i] > b[i] + 1e-6) return 1;
-            if (a[i] < b[i] - 1e-6) return -1;
-          }
-          return 0;
-        };
-        let best = score(this.ids[0]);
-        for (const id of this.ids) {
-          if (better(score(id), best) > 0) best = score(id);
-        }
-        const top = this.ids.filter((id) => better(score(id), best) === 0);
+        const alive = this.ids.filter((id) => this.pl[id].alive);
+        if (alive.length === this.ids.length) return [];       // hepsi sag kaldi
+        if (alive.length > 0) return alive;
+        const best = Math.max(...this.ids.map((id) => this.pl[id].deadAt));
+        const top = this.ids.filter((id) => this.pl[id].deadAt >= best - 1e-6);
         return top.length === this.ids.length ? [] : top;
       },
 
       text() {
-        const w = this.winners();
-        if (!w.length) {
-          return this.ids.every((id) => this.pl[id].alive) ? 'TAM BERABERE!' : 'AYNI ANDA GITTILER!';
+        const alive = this.ids.filter((id) => this.pl[id].alive);
+        if (!this.winners().length) {
+          return alive.length ? 'HEPSI SAG KALDI!' : 'AYNI ANDA GITTILER!';
         }
-        const p = this.pl[w[0]];
-        if (p.alive && this.ids.some((id) => !this.pl[id].alive)) return 'TEK AYAKTA KALAN!';
-        if (p.alive) return p.stars + ' YILDIZ TOPLADI!';
-        return 'DAHA UZUN DAYANDI!';
+        if (alive.length > 0) return 'TEK AYAKTA KALAN!';
+        return 'DAHA UZUN KOSTU!';
       },
 
       snap() {
         const pl = {};
         for (const id of this.ids) {
-          pl[id] = { x: Math.round(this.pl[id].x), a: this.pl[id].alive, s: this.pl[id].stars };
+          const p = this.pl[id];
+          pl[id] = {
+            k: Math.round(p.kayma * 100) / 100,
+            a: p.alive,
+            z: p.jump >= 0 ? Math.round(Math.min(1, (this.t - p.jump) / JUMP_TIME) * 100) / 100 : -1,
+          };
         }
         return {
-          w: ARENA_W, h: ARENA_H, pw: PLAYER_W, ph: PLAYER_H, py: PLAYER_Y, oh: OBS_H, ss: STAR,
-          obs: this.obs.map((o) => ({ x: Math.round(o.x), y: Math.round(o.y), w: Math.round(o.w) })),
-          stars: this.stars.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), by: s.by })),
+          w: this.W, h: ARENA_H, lanes: LANES,
+          pw: PLAYER_W, ph: PLAYER_H, py: PLAYER_Y, rh: ROW_H,
+          rows: this.rows.map((r) => ({ y: Math.round(r.y), k: r.kapali, al: r.alcak })),
           pl,
         };
       },

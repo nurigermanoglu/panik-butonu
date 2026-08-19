@@ -39,7 +39,7 @@ Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 | Hedef tur sayısını değiştir (lobide, **sadece odayı kuran**) | `←` `→` | Yanlardaki ok butonları |
 | Karakter değiştir (lobide, herkes kendi karakterini) | Karakterinin yanındaki oklara **tıkla** | Oklara **dokun** |
 | At Yarışı, Refleks Düellosu, Sıcak Patates | `BOŞLUK` / `ENTER` ya da **ekrana sol tıkla** | Büyük **BAS** butonu ya da ekrana dokun |
-| Engelden Kaç | `←` `→` veya `A` `D` | Sol/sağ ok butonları |
+| Engelden Kaç | `←` `→` şerit, `↑` zıpla (veya `A` `D` `W`) | 4 yön butonu |
 | Hafıza Dizisi | Yön tuşları veya `W` `A` `S` `D` | 4 yön butonu |
 | Sıcak Patates | `BOŞLUK` | Büyük **BAS** butonu |
 | Köstebek Avı, Kablo Kesme | Fareyle **tıkla** | Ekrana **dokun** |
@@ -57,7 +57,7 @@ o da boşluk tuşu (veya ekrana dokunma) ile olur.
 |---|---|---|
 | **At Yarışı** | 8 sn | Tuşa bastıkça kulvarında koşarsın; bitiş çizgisine ilk varan kazanır |
 | **Refleks Düellosu** | ~10 sn | Ekran yeşile dönünce en hızlı tepki veren kazanır. İşaret gelmeden basarsan **o tur yanarsın** ve tuşun geri kalanında işlemez — ekranda "ERKEN BASTIN! / BU TUR YANDIN" yazar. Kazanan, tuşu sunucuya ilk ulaşan değil, gerçekten en hızlı tepki verendir (bkz. aşağıda "adalet") |
-| **Engelden Kaç** | 12 sn | Engellere çarpmadan hayatta kal ve yıldız topla (iki oyuncu birebir aynı deseni oynar). Desen her zaman geçilebilir üretilir — ölüm şansa değil reflekse bağlıdır. Kazanan sırasıyla: hayatta kalan → çok yıldız toplayan → uzun dayanan |
+| **Engelden Kaç** | 14 sn | Subway Surfers tarzı 3 şeritli koşu: **sol/sağ** ile şerit değiştir, **yukarı** ile zıpla (turuncu alçak engeller zıplanarak geçilir, kırmızı yüksek engeller geçilmez). Herkes birebir aynı deseni oynar ve desen her zaman geçilebilir üretilir. Kazanan: hayatta kalan → daha uzun koşan |
 | **Hafıza Dizisi** | 14 sn | Gösterilen ok dizisini ilk doğru tekrarlayan kazanır |
 | **Sıcak Patates** | ~30 sn | Bomba rastgele birinde başlar, tuşa basınca rastgele başkasına geçer. Fitil el değiştirse de yanmaya devam eder; patladığında elinde tutan elenir. Tek kişi kalana kadar sürer |
 | **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim. Köstebeğe vurunca kısa süre sersemlemiş hâli (`img/kostebek_vur.png`) görünüp kaybolur |
