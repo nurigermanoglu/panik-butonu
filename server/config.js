@@ -14,5 +14,11 @@ module.exports = {
   TICK_HZ: 30,        // sunucu simulasyon hizi
   INTRO_TIME: 3.0,    // "hazir ol" ekrani (saniye)
   RESULT_TIME: 3.0,   // tur sonucu ekrani (saniye)
+
+  // Baglanti kopunca oyuncunun yeri ne kadar tutulur (saniye).
+  // Mac ortasinda uzun tutulur - telefon kilitlenmesi/tunel/wifi takilmasi
+  // yuzunden mac bozulmasin. Lobide beklemenin anlami yok, kisa tutulur.
+  RECONNECT_GRACE: 45,
+  LOBBY_GRACE: 12,
   PORT: Number(process.env.PORT) || 3000,
 };

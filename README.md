@@ -86,6 +86,8 @@ MIN_PLAYERS: 2,     // oyunun başlayabilmesi için gereken en az kişi
 WINS_NEEDED: 5,     // başlangıç hedefi (odayı kuran lobide değiştirebilir)
 WINS_MIN: 1,        // hedefin inebileceği en düşük değer
 WINS_MAX: 9,        // hedefin çıkabileceği en yüksek değer
+RECONNECT_GRACE: 45, // maç ortasında kopan oyuncunun yeri kaç saniye tutulur
+LOBBY_GRACE: 12,     // lobide kopan için aynısı (beklemenin anlamı yok, kısa)
 PORT: 3000,
 ```
 
@@ -192,8 +194,8 @@ public/
   js/font.js      Elle çizilmiş 5x7 pixel font (Türkçe harfler dahil)
   js/gfx.js       Palet ve sprite çizimi
   js/chars.js     Oyuncu karakterleri (karakterler.png'den kırpılır, seçilebilir)
-  js/sound.js     Web Audio ile üretilen retro ses efektleri
-  js/net.js       Sunucu bağlantısı
+  js/sound.js     Web Audio ile üretilen ses efektleri + fon müziği
+  js/net.js       Sunucu bağlantısı (kopunca kendi kendine geri bağlanır)
   js/input.js     Klavye + dokunmatik
   js/main.js      Ekranlar ve çizim döngüsü
   js/minigames/   Her mini oyunun çizimi
@@ -221,6 +223,20 @@ Resim, ızgara boyutuna bir kez yumuşak küçültülüp saklanır; kareler sonr
 yani dither deseni bulanıklaşmaz.
 
 Harici kütüphane yok — `npm install` gerekmez.
+
+## Bağlantı koparsa ne olur
+
+Telefon kilitlenirse, Wi-Fi bir an takılırsa ya da sekme arka plana atılırsa
+oyuncu **odadan atılmaz**:
+
+- Kopan kişinin yeri, skoru ve karakteri tutulur.
+- **Maç durur.** Diğerlerinin ekranında `AYSE KOPTU - MAC DURDU` ve geri sayım çıkar.
+- Kopan kişi dönünce aynı turdan, aynı skorla devam edilir. Tarayıcı kendi kendine
+  bağlanmayı dener (önce yarım saniyede bir, sonra aralığı açarak, en fazla 6 sn).
+- Süre dolarsa (maçta 45 sn, lobide 12 sn) oyuncu gerçekten çıkarılır, oda lobiye döner.
+
+Yer tutma, sekmeye özel gizli bir anahtarla çalışır: oda kodunu bilen biri bile
+kopan oyuncunun yerine geçemez. Sekmeyi kapatırsan anahtar da silinir.
 
 ## Farklı şehirdeki arkadaşlarla oynamak
 

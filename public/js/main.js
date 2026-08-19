@@ -16,6 +16,8 @@
   var lastDragAt = 0;
   var sonSync = 0;          // son durum paketi ne zaman geldi (baglanti kontrolu)
   var cizimHatasi = false;  // ayni hatayi tekrar tekrar yazmamak icin
+  var kopuk = false;        // baglanti su an kopuk mu (ekranda perde gosterilir)
+  var geriDonuyor = false;  // eski yerimize oturmayi deniyoruz
 
   function $(id) { return document.getElementById(id); }
 
@@ -133,7 +135,11 @@
         ptr.down = true;
         lastDragAt = 0;
         try { cv.setPointerCapture(e.pointerId); } catch (err) { /* yoksay */ }
-        PP.sfx.press();
+        // Kostebekte bu bir cekic savurmasi, digerlerinde parca tutma
+        var oyunId = state && state.mg ? state.mg.id : '';
+        if (oyunId === 'mole') PP.sfx.cekic();
+        else if (oyunId === 'shapesort' || oyunId === 'puzzle') PP.sfx.kaldir();
+        else PP.sfx.press();
         PP.net.send({ t: 'in', a: 'grab', d: ptr });
         return;
       }
@@ -200,23 +206,69 @@
     setTimeout(function () { el.classList.remove('shake'); }, 400);
   }
 
+  // ---- oturum: hangi odada, hangi anahtarla oturuyorum ----
+  // Baglanti kopunca ayni sekmenin eski yerine oturabilmesi icin saklanir.
+  // sessionStorage: sekmeye ozel, sekme kapaninca silinir - baska sekme calamaz.
+
+  function oturumYaz(code, token) {
+    try { sessionStorage.setItem('pp_oturum', JSON.stringify({ code: code, token: token })); }
+    catch (e) { /* gizli mod: sakli tutamiyorsak yeniden baglanma calismaz, oyun yine calisir */ }
+  }
+  function oturumOku() {
+    try { return JSON.parse(sessionStorage.getItem('pp_oturum') || 'null'); }
+    catch (e) { return null; }
+  }
+  function oturumSil() {
+    try { sessionStorage.removeItem('pp_oturum'); } catch (e) { /* yoksay */ }
+  }
+
+  function menuyeDon(hata) {
+    state = null;
+    youId = null;
+    kopuk = false;
+    geriDonuyor = false;
+    oturumSil();
+    PP.muzik.sus();
+    $('game').classList.add('hidden');
+    $('menu').classList.remove('hidden');
+    if (hata) showErr(hata);
+  }
+
   function bindNet() {
     PP.net.on('joined', function (m) {
       youId = m.id;
       location.hash = m.code;
+      oturumYaz(m.code, m.token);
+      kopuk = false;
+      geriDonuyor = false;
       $('menu').classList.add('hidden');
       $('game').classList.remove('hidden');
       // Odaga yazi kutusu/buton kalmasin: yoksa tuslar oraya gider, bosluk butonu tekrar tetikler
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
       resize();
     });
-    PP.net.on('err', function (m) { showErr(m.m || 'HATA'); });
+
+    PP.net.on('err', function (m) {
+      // Geri oturma denemesi reddedildiyse (oda kapandi / sure doldu) menuye dus.
+      if (geriDonuyor) return menuyeDon(m.m || 'ODAYA DONULEMEDI');
+      showErr(m.m || 'HATA');
+    });
+
     PP.net.on('sync', function (m) { state = m; onSync(); });
+
+    // Baglanti kopunca ARTIK menuye atmiyoruz: perde gosterip geri baglanmayi bekliyoruz.
+    // net.js kendi kendine tekrar deniyor; basarinca asagidaki 'open' devreye girer.
     PP.net.on('close', function () {
-      state = null;
-      $('game').classList.add('hidden');
-      $('menu').classList.remove('hidden');
-      showErr('BAGLANTI KESILDI');
+      PP.muzik.sus();                        // sunucu yokken muzik calmaya devam etmesin
+      if (!oturumOku()) return;              // zaten odada degildik
+      kopuk = true;
+    });
+
+    PP.net.on('open', function () {
+      var o = oturumOku();
+      if (!o || youId === null) return;       // menudeyiz, yapacak bir sey yok
+      geriDonuyor = true;
+      PP.net.send({ t: 'resume', code: o.code, token: o.token });
     });
   }
 
@@ -275,9 +327,85 @@
     PP.input.setScheme(state.mg ? state.mg.controls : 'action');
   }
 
+  // ---------------------------------------------------------------- ses olaylari
+  //
+  // Sunucu "ses cal" diye bir sey yollamaz; sadece durum yollar. Burada iki
+  // paket karsilastirilir ve DEGISEN sey ne ise ona uygun ses calinir.
+  // Ornek: skorum 3'ten 4'e ciktiysa kostebege vurmusumdur.
+
+  var sesOnceki = {};       // gecen paketteki degerler
+  var sonNal = 0;           // at yarisi: her adimda ses calmasin diye kisitlanir
+
+  function sesOlaylari() {
+    if (state.phase !== 'play' || !state.mg || !state.st) { sesOnceki = {}; return; }
+    var id = state.mg.id, st = state.st, o = sesOnceki;
+    var ben = st.pl ? st.pl[youId] : null;
+    var y = {};               // bu paketin degerleri (bir sonrakiyle karsilasmak icin)
+
+    // Skor + yanip sonme kullanan oyunlar (kostebek, dosya, sekil, puzzle)
+    if (ben && typeof ben.s === 'number') {
+      y.s = ben.s; y.fl = ben.fl;
+      var arttiMi = o.s !== undefined && ben.s > o.s;
+      var kotuMu = ben.fl === 2 && o.fl !== 2;
+      if (id === 'mole') { if (arttiMi) PP.sfx.vur(); if (kotuMu) PP.sfx.patla(); }
+      else if (id === 'filedelete') { if (arttiMi) PP.sfx.sil(); }   // bu oyunda ceza yok
+      else if (id === 'shapesort' || id === 'puzzle') { if (arttiMi) PP.sfx.otur(); if (kotuMu) PP.sfx.hata(); }
+    }
+
+    if (id === 'wirecut' && ben) {
+      y.p = ben.p; y.pen = ben.pen;
+      if (o.p !== undefined && ben.p > o.p) PP.sfx.kes();
+      if (ben.pen > 0 && !(o.pen > 0)) PP.sfx.hata();
+    }
+    else if (id === 'race' && st.p) {
+      y.p = st.p[youId];
+      // Kisitlama gercek saatle olculur. 'time' cizim dongusunden gelir ve
+      // sekme arka plandayken durur; ona baglanirsa ses hic calmaz.
+      var simdi = performance.now();
+      if (o.p !== undefined && y.p > o.p && simdi - sonNal > 110) { sonNal = simdi; PP.sfx.nal(); }
+    }
+    else if (id === 'dodge' && ben) {
+      y.a = ben.a; y.z = ben.z;
+      if (o.a === true && ben.a === false) PP.sfx.carp();
+      if (o.z !== undefined && o.z < 0 && ben.z >= 0) PP.sfx.zipla();
+    }
+    else if (id === 'memory') {
+      y.prog = st.prog ? st.prog[youId] : 0;
+      y.out = st.out ? st.out[youId] : false;
+      if (o.prog !== undefined && y.prog > o.prog) PP.sfx.dogru();
+      if (o.out === false && y.out === true) PP.sfx.hata();
+    }
+    else if (id === 'hotpotato') {
+      y.holder = st.holder; y.fuse = st.fuse;
+      if (o.holder !== undefined && st.holder !== o.holder && !st.boom) PP.sfx.pas();
+      // Fitil bitmek uzereyken tik tik: sadece bomba bendeyken
+      if (st.holder === youId && st.fuse > 0 && st.fuse < 2 &&
+          o.fuse !== undefined && Math.floor(st.fuse * 4) !== Math.floor(o.fuse * 4)) {
+        PP.sfx.fitil();
+      }
+    }
+    sesOnceki = y;
+  }
+
+  // Faza ve mac durumuna gore fon muzigi secer.
+  function muzikAyarla() {
+    if (!state) return PP.muzik.sus();
+    // Duraklamis mac (biri koptu): muzik de dursun, bir sey oluyor gibi durmasin
+    if (kopuk || state.bekle) return PP.muzik.sus();
+    if (state.phase === 'lobby' || state.phase === 'gameover') return PP.muzik.calis('lobi');
+    // Biri sampiyonluga 1 tur kala: tempo yukselsin
+    var enYuksek = 0;
+    for (var i = 0; i < state.players.length; i++) {
+      if (state.players[i].wins > enYuksek) enYuksek = state.players[i].wins;
+    }
+    PP.muzik.calis(enYuksek >= state.needed - 1 ? 'gerilim' : 'oyun');
+  }
+
   function onSync() {
     sonSync = performance.now();
     updateScheme();
+    sesOlaylari();
+    muzikAyarla();
 
     // Refleks: isaretin ekranda ilk belirdigi ani yakala
     if (state.phase === 'play' && state.mg && state.mg.id === 'reflex' && state.st && state.st.sig) {
@@ -295,7 +423,7 @@
     // Sicak patates: patlama sesi
     var patlama = !!(state.phase === 'play' && state.mg && state.mg.id === 'hotpotato' &&
                      state.st && state.st.boom);
-    if (patlama && !wasBoom) PP.sfx.gameover();
+    if (patlama && !wasBoom) PP.sfx.patla();
     wasBoom = patlama;
 
     var shareBox = $('share');
@@ -495,6 +623,13 @@
         }
 
         f.text(ctx, p.name, cx, 115, { color: col, scale: 1, align: 'center' });
+        if (p.on === false) {
+          // Kopuk oyuncu: yeri duruyor, geri gelmesi bekleniyor
+          f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 125, {
+            color: P.red, scale: 1, align: 'center'
+          });
+          continue;
+        }
         f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 125, {
           color: p.ready ? P.green : P.gray, scale: 1, align: 'center'
         });
@@ -649,8 +784,30 @@
     });
   }
 
+  // Oyunun uzerine yari saydam perde + iki satir yazi.
+  // Hem "ben koptum" hem "arkadasi bekliyoruz" durumunda kullanilir.
+  function perdeCiz(baslik, alt, renk) {
+    ctx.save();
+    ctx.globalAlpha = 0.72;
+    g.rect(ctx, 0, 0, W, H, P.black);
+    ctx.restore();
+    var nokta = '.'.repeat(1 + Math.floor(time * 2) % 3);
+    f.text(ctx, baslik + nokta, W / 2, H / 2 - 14, {
+      color: renk || P.yellow, scale: 2, align: 'center', shadow: P.black
+    });
+    if (alt) {
+      f.text(ctx, alt, W / 2, H / 2 + 10, {
+        color: P.light, scale: 1, align: 'center', shadow: P.black
+      });
+    }
+  }
+
   function render() {
-    if (!state) return drawConnecting();
+    if (!state) {
+      // Odadaysak ve baglanti koptuysa bos ekran yerine "geri donuyoruz" de
+      if (kopuk) { g.rect(ctx, 0, 0, W, H, P.bg); perdeCiz('BAGLANTI KOPTU', 'GERI BAGLANIYOR', P.red); return; }
+      return drawConnecting();
+    }
     var sessiz = (performance.now() - sonSync) / 1000;
     switch (state.phase) {
       case 'lobby': drawLobby(); break;
@@ -660,6 +817,18 @@
       case 'gameover': drawGameover(); break;
       default: drawConnecting();
     }
+
+    // 1) Benim baglantim koptu
+    if (kopuk) {
+      perdeCiz('BAGLANTI KOPTU', 'GERI BAGLANIYOR - YERIN TUTULUYOR', P.red);
+      return;
+    }
+    // 2) Baskasinin baglantisi koptu: mac duruyor, onu bekliyoruz
+    if (state.bekle) {
+      perdeCiz(state.bekle.ad + ' KOPTU', 'MAC DURDU - ' + state.bekle.sn + ' SANIYE BEKLENIYOR', P.yellow);
+      return;
+    }
+
     // Sunucudan uzun suredir haber yoksa ekran donmus gibi gorunur; bunu soyle
     if (sessiz > 3) {
       g.rect(ctx, 0, TOP, W, 12, P.black);
@@ -673,8 +842,11 @@
     var dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     time += dt;
-    if (state && (state.phase === 'play' || state.phase === 'intro')) {
-      state.timer = Math.max(0, state.timer - dt);   // sunucu paketleri arasi yumusak sayac
+    // Sunucu paketleri arasi yumusak sayac. Mac duraklamissa (biri koptu)
+    // sayaci ilerletme - yoksa ekranda sure akar ama gercekte akmaz.
+    if (state && !kopuk && !state.bekle &&
+        (state.phase === 'play' || state.phase === 'intro')) {
+      state.timer = Math.max(0, state.timer - dt);
     }
 
     // Tek bir karede hata olursa oyun TAMAMEN donmasin: kareyi atla, dongu devam etsin.

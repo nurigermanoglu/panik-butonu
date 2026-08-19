@@ -1,4 +1,5 @@
 'use strict';
+const crypto = require('crypto');
 const cfg = require('./config');
 const Game = require('./gameLoop');
 
@@ -14,12 +15,18 @@ class Player {
     this.ready = false;
     this.wins = 0;
     this.connected = true;
+
+    // Baglanti kopup geri gelince "ben o oyuncuyum" diyebilmek icin gizli anahtar.
+    // Sadece sahibine yollanir; baskasi bilirse onun yerine gecebilirdi.
+    this.token = crypto.randomBytes(9).toString('hex');
+    this.offAt = 0;            // ne zaman koptu (0 = bagli)
   }
   toJSON() {
     return {
       id: this.id, name: this.name, slot: this.slot, char: this.char,
       ready: this.ready, wins: this.wins,
       ping: this.conn ? this.conn.rtt || 0 : 0,
+      on: this.connected,      // false = kopuk, ekranda "BAGLANIYOR" gorunur
     };
   }
 }
@@ -73,6 +80,40 @@ class Room {
     if (this.isEmpty) this.dead = true;
   }
 
+  // Baglanti koptu: oyuncuyu ATMA, yerini tut. Maci da duraklatir (bkz. gameLoop).
+  markOffline(player) {
+    player.connected = false;
+    player.conn = null;
+    player.offAt = Date.now();
+    player.ready = false;
+    this.game.dirty = true;
+  }
+
+  // Geri geldi: ayni slota, ayni skorla, ayni karakterle otur.
+  reattach(player, conn) {
+    player.conn = conn;
+    player.connected = true;
+    player.offAt = 0;
+    this.game.dirty = true;
+  }
+
+  // Elinde dogru anahtar olan kopuk oyuncuyu bul.
+  offlineByToken(token) {
+    if (!token) return null;
+    return this.players.find((p) => !p.connected && p.token === token) || null;
+  }
+
+  // Kopuk oyuncunun yerinin tutulmasina kac saniye kaldi (0 = kopuk yok)
+  graceLeft() {
+    let en = 0;
+    const pay = (this.game.phase === 'lobby' ? cfg.LOBBY_GRACE : cfg.RECONNECT_GRACE) * 1000;
+    for (const p of this.players) {
+      if (p.connected) continue;
+      en = Math.max(en, Math.ceil((pay - (Date.now() - p.offAt)) / 1000));
+    }
+    return Math.max(0, en);
+  }
+
   broadcast(obj) {
     const msg = JSON.stringify(obj);
     for (const p of this.players) {
@@ -87,6 +128,16 @@ class Room {
   }
 
   tick(dt) {
+    // Suresi dolan kopuk oyuncular gercekten atilir.
+    if (this.players.some((p) => !p.connected)) {
+      const pay = (this.game.phase === 'lobby' ? cfg.LOBBY_GRACE : cfg.RECONNECT_GRACE) * 1000;
+      const now = Date.now();
+      for (let i = this.players.length - 1; i >= 0; i--) {
+        const p = this.players[i];
+        if (!p.connected && now - p.offAt > pay) this.remove(p);
+      }
+      if (this.dead) return;
+    }
     this.game.tick(dt);
   }
 }

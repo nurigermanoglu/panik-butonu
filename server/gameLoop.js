@@ -162,6 +162,17 @@ class Game {
   // ---------- ana dongu ----------
 
   tick(dt) {
+    // Biri kopmussa mac DURUR. Yoksa o kisi geri geldiginde turlari kaybetmis
+    // olurdu; 3 saniyelik bir wifi takilmasi maci bitirebilirdi.
+    // Lobide ve sampiyon ekraninda duraklatmanin anlami yok.
+    const kopuk = this.room.players.some((p) => !p.connected);
+    const canli = this.phase === 'intro' || this.phase === 'play' || this.phase === 'result';
+    if (kopuk && canli) {
+      this.dirty = true;
+      this.room.broadcast(this.snapshot());
+      return;
+    }
+
     switch (this.phase) {
       case 'intro':
         this.timer -= dt;
@@ -214,6 +225,13 @@ class Game {
       winner: this.winner,
       notice: this.notice,
       needed: this.room.winsNeeded,
+      // Kopuk oyuncu varsa: kimi bekledigimiz ve kac saniye kaldigi
+      bekle: this.room.players.some((p) => !p.connected)
+        ? {
+            ad: this.room.players.filter((p) => !p.connected).map((p) => p.name).join(', '),
+            sn: this.room.graceLeft(),
+          }
+        : null,
       host: this.room.hostId,
       acik: this.room.acik,
       needMin: cfg.WINS_MIN,

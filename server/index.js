@@ -57,7 +57,7 @@ ws.attach(server, (conn) => {
     if (!p) { fail('ODA DOLU'); return false; }
     room = r;
     player = p;
-    conn.sendJSON({ t: 'joined', code: r.code, id: p.id, slot: p.slot });
+    conn.sendJSON({ t: 'joined', code: r.code, id: p.id, slot: p.slot, token: p.token });
     r.game.dirty = true;
     r.broadcast(r.game.snapshot());
     return true;
@@ -88,6 +88,21 @@ ws.attach(server, (conn) => {
         enter(r, msg.name);
         break;
       }
+      // Baglanti koptu ve geri geldi: eski yerine otur.
+      // Slot, skor, karakter, hepsi duruyor - mac kaldigi yerden devam eder.
+      case 'resume': {
+        if (room) return;
+        const r = rooms.get(msg.code);
+        if (!r || r.dead) return fail('ODA KAPANDI');
+        const p = r.offlineByToken(msg.token);
+        if (!p) return fail('YERIN VERILDI');
+        r.reattach(p, conn);
+        room = r;
+        player = p;
+        conn.sendJSON({ t: 'joined', code: r.code, id: p.id, slot: p.slot, token: p.token, geri: true });
+        r.broadcast(r.game.snapshot());
+        break;
+      }
       case 'ready':
         if (room) room.game.setReady(player, msg.v !== false);
         break;
@@ -113,8 +128,12 @@ ws.attach(server, (conn) => {
 
   conn.on('close', () => {
     if (room && player) {
-      room.remove(player);
-      if (!room.dead) room.broadcast(room.game.snapshot());
+      // Oyuncu zaten baska bir baglantiyla geri gelmisse (yarisan paketler),
+      // eski baglantinin kapanmasi onu tekrar kopuk yapmasin.
+      if (player.conn === conn) {
+        room.markOffline(player);
+        if (!room.dead) room.broadcast(room.game.snapshot());
+      }
       room = null;
       player = null;
     }
