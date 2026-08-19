@@ -1,0 +1,13 @@
+{
+  "name": "parti-panik",
+  "version": "1.0.0",
+  "description": "2-4 kisilik, tarayicidan oynanan pixel-art mini oyun partisi (WarioWare tarzi)",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}

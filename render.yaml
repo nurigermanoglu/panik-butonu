@@ -1,0 +1,12 @@
+# Render.com icin otomatik ayar dosyasi.
+# Render bu depoyu baglayinca asagidaki ayarlari kendiliginden kullanir.
+services:
+  - type: web
+    name: parti-panik
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
