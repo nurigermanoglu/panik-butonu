@@ -25,9 +25,12 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 14px;
   padding: 24px 16px;
+  /* Icerik sigmiyorsa kesilmesin, kaydirilabilsin (kisa/yatay ekranlar) */
+  overflow-y: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   background:
     radial-gradient(circle at 50% 30%, #29366f 0%, #1a1c2c 60%, #0d0e1a 100%);
   text-align: center;
@@ -42,6 +45,8 @@ html, body {
   line-height: 1;
 }
 #menu h1 span { display: block; color: #41a6f6; text-shadow: 4px 4px 0 #29366f, 8px 8px 0 #0d0e1a; }
+
+#menu::before, #menu::after { content: ''; margin: auto; }
 
 .tag { margin: 4px 0 12px; color: #94b0c2; letter-spacing: 2px; font-size: 13px; }
 
@@ -195,4 +200,18 @@ canvas {
   #pad { min-height: 116px; }
   .pbtn { width: 66px; height: 66px; }
   .pbtn.big { width: 150px; }
+}
+
+/* Kisa ekranlar (yatay telefon, kucuk cihazlar): menuyu sikistir ki her sey sigsin */
+@media (max-height: 620px) {
+  #menu { gap: 8px; padding: 12px 16px; }
+  #menu h1 { font-size: clamp(24px, 7vh, 40px); }
+  .tag { margin: 0 0 4px; font-size: 11px; }
+  #menu input { padding: 9px; font-size: 16px; }
+  .mbtn { padding: 10px 18px; font-size: 15px; }
+  .mbtn.quick { padding: 12px 18px; font-size: 17px; }
+  .quickhint { margin: -4px 0 2px; font-size: 11px; }
+  .sep { margin: 2px 0; }
+  #menuErr { min-height: 0; }
+  .help { display: none; }
 }
