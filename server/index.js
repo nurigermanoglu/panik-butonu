@@ -122,9 +122,18 @@ ws.attach(server, (conn) => {
       case 'again':
         if (room) room.game.requestRematch(player);
         break;
-      case 'leave':
-        conn.close();
+      // Odadan bilerek cikma. Baglantiyi KAPATMIYORUZ: kapatmak "koptu"
+      // sayilir, yeri tutulur ve istemci kendi kendine geri baglanirdi.
+      // Burada oyuncu gercekten cikarilir, soket menude tekrar kullanilir.
+      case 'leave': {
+        if (!room) return;
+        room.remove(player);
+        if (!room.dead) room.broadcast(room.game.snapshot());
+        room = null;
+        player = null;
+        conn.sendJSON({ t: 'left' });
         break;
+      }
       default:
         break;
     }

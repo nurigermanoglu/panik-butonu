@@ -98,6 +98,23 @@
         setTimeout(resize, 120);
       });
     });
+    // ---- ODADAN CIK ----
+    // Yanlis butona basip odada sikisip kalmak mumkun olmasin.
+    // Lobide/sampiyon ekraninda tek dokunus yeter; mac ortasinda ise
+    // yanlislikla cikilmasin diye ikinci bir onay ister.
+    $('btnLeave').addEventListener('click', function () {
+      PP.sfx.unlock(); PP.sfx.click();
+      var macta = state && (state.phase === 'intro' || state.phase === 'play' || state.phase === 'result');
+      if (macta && performance.now() - cikisSoruldu > 3000) {
+        cikisSoruldu = performance.now();
+        $('btnLeave').textContent = 'EMIN MISIN?';
+        $('btnLeave').classList.add('soruyor');
+        setTimeout(cikisSifirla, 3000);
+        return;
+      }
+      odadanCik();
+    });
+
     $('btnMute').addEventListener('click', function () {
       var m = !PP.sfx.isMuted();
       PP.sfx.setMuted(m);
@@ -222,6 +239,23 @@
     try { sessionStorage.removeItem('pp_oturum'); } catch (e) { /* yoksay */ }
   }
 
+  var cikisSoruldu = 0;      // "EMIN MISIN?" ne zaman soruldu
+
+  function cikisSifirla() {
+    if (performance.now() - cikisSoruldu < 3000) return;   // hala soruyoruz
+    cikisSoruldu = 0;
+    $('btnLeave').textContent = '← CIK';
+    $('btnLeave').classList.remove('soruyor');
+  }
+
+  function odadanCik() {
+    cikisSoruldu = 0;
+    $('btnLeave').textContent = '← CIK';
+    $('btnLeave').classList.remove('soruyor');
+    PP.net.send({ t: 'leave' });     // sunucu bizi gercekten cikarir
+    menuyeDon(null);
+  }
+
   function menuyeDon(hata) {
     state = null;
     youId = null;
@@ -229,6 +263,8 @@
     geriDonuyor = false;
     oturumSil();
     PP.muzik.sus();
+    // Adresteki #KOD kalmasin: F5 bizi tekrar o odaya baglamaya calismasin
+    if (history.replaceState) history.replaceState(null, '', location.pathname);
     $('game').classList.add('hidden');
     $('menu').classList.remove('hidden');
     if (hata) showErr(hata);
@@ -254,7 +290,15 @@
       showErr(m.m || 'HATA');
     });
 
-    PP.net.on('sync', function (m) { state = m; onSync(); });
+    // Odadan ciktiktan sonra yolda kalmis bir paket bizi tekrar oyun ekranina
+    // sokmasin: menudeyken youId bos olur, o paketleri yoksay.
+    PP.net.on('sync', function (m) {
+      if (youId === null) return;
+      state = m;
+      onSync();
+    });
+
+    PP.net.on('left', function () { menuyeDon(null); });
 
     // Baglanti kopunca ARTIK menuye atmiyoruz: perde gosterip geri baglanmayi bekliyoruz.
     // net.js kendi kendine tekrar deniyor; basarinca asagidaki 'open' devreye girer.

@@ -51,6 +51,18 @@ böylece oyun ekranı daha büyük olur.
 **Lobide yön tuşlarının / WASD'nin bir işlevi yoktur** — orada yapılacak tek şey hazır olmak,
 o da boşluk tuşu (veya ekrana dokunma) ile olur.
 
+### Odadan çıkmak
+
+Üst çubuktaki kırmızı **← ÇIK** butonu ana menüye döndürür. Yanlışlıkla
+`ODA KUR`a basıp `HIZLI OYNA` yerine yanlış odaya düşersen buradan çıkarsın.
+
+- Lobide ve şampiyon ekranında tek dokunuş yeter.
+- **Maç ortasındaysan iki kez** basman gerekir (buton önce `EMİN MİSİN?` diye sorar),
+  böylece oynarken yanlışlıkla basıp maçtan düşmezsin.
+
+Çıkmak koptun sayılmaz: yerin tutulmaz, diğerleri seni beklemez, oda hemen
+lobiye döner ve `ADIN AYRILDI` yazar.
+
 ## Mini oyunlar
 
 | Oyun | Süre | Amaç |

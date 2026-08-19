@@ -132,6 +132,10 @@ html, body {
   border: 2px solid #0d0e1a; border-radius: 4px; cursor: pointer; white-space: nowrap;
 }
 .mini:active { transform: translateY(2px); }
+/* Odadan cikma butonu: yanlislikla basilmasin diye ayri renkte */
+.mini.danger { background: #b13e53; color: #f4f4f4; }
+/* Mac ortasinda ikinci kez onay beklerken yanip soner */
+.mini.danger.soruyor { background: #ffcd75; color: #0d0e1a; }
 
 #stage {
   flex: 1 1 auto; min-height: 0;
