@@ -60,7 +60,7 @@ o da boşluk tuşu (veya ekrana dokunma) ile olur.
 | **Engelden Kaç** | 12 sn | Engellere çarpmadan hayatta kal ve yıldız topla (iki oyuncu birebir aynı deseni oynar). Desen her zaman geçilebilir üretilir — ölüm şansa değil reflekse bağlıdır. Kazanan sırasıyla: hayatta kalan → çok yıldız toplayan → uzun dayanan |
 | **Hafıza Dizisi** | 14 sn | Gösterilen ok dizisini ilk doğru tekrarlayan kazanır |
 | **Sıcak Patates** | ~30 sn | Bomba rastgele birinde başlar, tuşa basınca rastgele başkasına geçer. Fitil el değiştirse de yanmaya devam eder; patladığında elinde tutan elenir. Tek kişi kalana kadar sürer |
-| **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim (`img/kostebek.png`, `img/bomba.png`) |
+| **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim. Köstebeğe vurunca kısa süre sersemlemiş hâli (`img/kostebek_vur.png`) görünüp kaybolur |
 | **Dosya Silme** | 12 sn | Eski bir bilgisayar masaüstünde 7 klasörü çöp kutusuna sürükle. Hepsini en hızlı silen kazanır |
 | **Kablo Kesme** | 14 sn | Üstte gösterilen sırayla kabloları kes. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır. Sırayı ilk bitiren kazanır |
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
@@ -200,6 +200,7 @@ public/
   img/            Oyun resimleri:
                     elma1.png / elma2.png  -> Puzzle
                     kostebek.png / bomba.png -> Köstebek Avı
+                    kostebek_vur.png        -> vurulmuş köstebek
                     cekic.png / cekic_vur.png -> çekiç (normal / vuruş anı)
                     klasor.png / cop.png    -> Dosya Silme
                     karakterler.png         -> oyuncu karakterleri

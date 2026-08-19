@@ -7,6 +7,8 @@
   // tut = resmin hangi noktasi parmagin ucuna gelecek (0-1 arasi oran)
   var KAYNAK = {
     kostebek: { src: 'img/kostebek.png', kirp: { x: 54, y: 38, w: 227, h: 240 }, w: 40, h: 42 },
+    // cekic yiyince gosterilen sersemlemis hali
+    kostebekVur: { src: 'img/kostebek_vur.png', kirp: { x: 39, y: 26, w: 243, h: 253 }, w: 42, h: 44 },
     bomba: { src: 'img/bomba.png', kirp: { x: 62, y: 69, w: 483, h: 383 }, w: 46, h: 37 },
     // cekicin BASI vurdugu yer oldugu icin tutma noktasi bas hizasinda
     cekic: {
@@ -66,6 +68,10 @@
   var VURUS_SURESI = 0.15;
   var vurusBitis = -1;
 
+  // Vurulan kostebek hemen kaybolmasin: kisa sure sersemlemis hali gorunsun.
+  var VURULAN_SURESI = 0.45;
+  var vurulanlar = {};   // kostebek no -> gosterim bitis ani
+
   var TOPRAK_DIS = '#4a3729';    // yigi̇nin en dis halkasi
   var TOPRAK_ORTA = '#634833';
   var TOPRAK_UST = '#7a5a3e';    // isik alan ust yuzey
@@ -105,6 +111,16 @@
         g.rect(ctx, s + 7, v.H - 22, 1, 3, '#3a2f45');
       }
 
+      // Vurulanlari zaman damgasiyla isaretle; artik listede olmayanlari unut
+      for (var vk = 0; vk < ben.hit.length; vk++) {
+        if (vurulanlar[ben.hit[vk]] === undefined) {
+          vurulanlar[ben.hit[vk]] = v.time + VURULAN_SURESI;
+        }
+      }
+      for (var vn in vurulanlar) {
+        if (ben.hit.indexOf(+vn) < 0) delete vurulanlar[vn];
+      }
+
       var i, h;
       // ---- delikler (arka) ----
       for (i = 0; i < st.holes.length; i++) delikArka(ctx, st.holes[i]);
@@ -112,8 +128,25 @@
       // ---- kostebekler / bombalar ----
       for (var k = 0; k < st.act.length; k++) {
         var a = st.act[k];
-        if (ben.hit.indexOf(a.i) >= 0) continue;      // ben bunu zaten hallettim
         var hole = st.holes[a.h];
+        var vuruldu = ben.hit.indexOf(a.i) >= 0;
+        if (vuruldu) {
+          // Sersemlemis kostebek: kisa sure gorunur, sonra kaybolur
+          var bit = vurulanlar[a.i];
+          if (a.bomb || bit === undefined || v.time >= bit) continue;
+          var vk2 = KAYNAK.kostebekVur;
+          var vres = hazir('kostebekVur');
+          var sars = Math.round(Math.sin(v.time * 40) * 1.5);   // sersemleme titremesi
+          var vx = Math.round(hole.x - vk2.w / 2) + sars;
+          var vy = Math.round(hole.y + 8 - vk2.h);
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(0, 0, v.W, hole.y + 6);
+          ctx.clip();
+          if (vres) ctx.drawImage(vres, vx, vy, vk2.w, vk2.h);
+          ctx.restore();
+          continue;
+        }
         var ad = a.bomb ? 'bomba' : 'kostebek';
         var kk = KAYNAK[ad];
         var res = hazir(ad);
