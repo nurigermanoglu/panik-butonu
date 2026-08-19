@@ -2,26 +2,22 @@
 (function (PP) {
   'use strict';
 
-  // Her karakterin sayfadaki kutusu (otomatik olculdu - kopuk parcalar haric ana govde)
-  // sil: kutunun icinde kalan ama karaktere ait olmayan lekeler (kaynak koordinatiyla)
+  // Her karakterin sayfadaki kutusu (otomatik olculdu)
+  // tekParca: kutu icinde komsu karakterden tasan parcalar varsa temizler
   var KUTU = [
-    { x: 42, y: 21, w: 462, h: 290 },     // 0 ejder
-    { x: 1059, y: 27, w: 404, h: 300 },   // 1 ucgen
-    { x: 582, y: 84, w: 466, h: 212 },    // 2 mor agiz
-    { x: 591, y: 321, w: 342, h: 374 },   // 3 baklava
-    { x: 93, y: 363, w: 420, h: 382 },    // 4 yildiz
-    {
-      x: 996, y: 375, w: 326, h: 346,     // 5 hayalet
-      // Kutusunun sol altina, alttaki MANTAR karakterinin ust kosesi tasiyor.
-      // Ikisi ayni dikdortgende oldugu icin kirpmayla ayrilmiyor; bu yuzden
-      // kutu icinde sadece karakterin kendi bagli govdesi tutulur.
-      tekParca: true
-    },
-    { x: 789, y: 699, w: 332, h: 310 },   // 6 mantar
-    { x: 213, y: 771, w: 524, h: 214 }    // 7 pembe
+    { x: 22, y: 26, w: 168, h: 108 },     // 0 ejder
+    { x: 252, y: 13, w: 184, h: 113 },    // 1 kral (agiz + tac)
+    { x: 438, y: 26, w: 150, h: 110 },    // 2 ucgen
+    // Yildizin kutusunun altina, pembe karakterin ucu 2 piksel giriyor:
+    // kutu icinde sadece kendi bagli govdesi tutulur.
+    { x: 22, y: 154, w: 178, h: 184, tekParca: true },   // 3 yildiz
+    { x: 220, y: 148, w: 154, h: 166 },   // 4 baklava
+    { x: 386, y: 172, w: 136, h: 146 },   // 5 hayalet
+    { x: 36, y: 338, w: 154, h: 156 },    // 6 pembe
+    { x: 262, y: 330, w: 170, h: 152 }    // 7 mantar
   ];
 
-  var ADLAR = ['EJDER', 'UCGEN', 'MOR AGIZ', 'BAKLAVA', 'YILDIZ', 'HAYALET', 'MANTAR', 'PEMBE'];
+  var ADLAR = ['EJDER', 'KRAL', 'UCGEN', 'YILDIZ', 'BAKLAVA', 'HAYALET', 'PEMBE', 'MANTAR'];
 
   var img = new Image();
   var yuklendi = false;
@@ -46,10 +42,6 @@
     if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
   }
 
-  /**
-   * Kademeli kucultme: 400 px'lik resmi tek adimda 18 px'e indirmek tirtikli sonuc verir.
-   * Bunun yerine hedefe yaklasana kadar yariya indirip son adimda tam boyuta getiriyoruz.
-   */
   /**
    * Kutunun icinde birden fazla kopuk parca varsa yalnizca EN BUYUK bagli parcayi
    * birakir (komsu karakterden tasan kisimlar boylece silinir).

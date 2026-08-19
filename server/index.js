@@ -74,6 +74,11 @@ ws.attach(server, (conn) => {
         enter(rooms.create(), msg.name);
         break;
       }
+      case 'quick': {                       // HIZLI OYNA - rastgele eslesme
+        if (room) return;
+        enter(rooms.hizliOda(), msg.name);
+        break;
+      }
       case 'join': {
         if (room) return;
         const r = rooms.get(msg.code);

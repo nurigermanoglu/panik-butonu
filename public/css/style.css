@@ -78,6 +78,11 @@ html, body {
 }
 .mbtn:active { transform: translateY(5px); box-shadow: none; }
 .mbtn.primary { background: #ffcd75; box-shadow: 0 5px 0 #b13e53; width: min(300px, 80vw); }
+.mbtn.quick {
+  background: #a7f070; box-shadow: 0 5px 0 #2f7d3a;
+  width: min(300px, 80vw); font-size: 22px; padding: 18px 22px;
+}
+.quickhint { margin: -6px 0 4px; color: #94b0c2; font-size: 12px; letter-spacing: 1px; }
 
 .sep {
   width: min(300px, 80vw);

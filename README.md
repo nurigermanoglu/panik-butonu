@@ -18,8 +18,15 @@ Sunucu açıldığında ekrana iki adres yazar:
 - `http://localhost:3000` — bu bilgisayardan oynamak için
 - `http://192.168.x.x:3000` — **aynı Wi-Fi'daki telefon/başka bilgisayar** için
 
-Bir kişi **ODA KUR** der, çıkan 4 harfli kodu (veya linki) arkadaşına yollar; diğeri **KATIL** ile girer.
-İkisi de "hazır" olunca oyun başlar.
+İki yol var:
+
+- **HIZLI OYNA** — rastgele biriyle eşleşirsin. Bekleyen açık bir oda varsa oraya girersin,
+  yoksa senin adına açık bir oda kurulur ve gelen ilk kişiyle eşleşirsin (odaya 4 kişiye kadar
+  yabancı katılabilir). Lobide "HERKESE AÇIK - RAKİP ARANIYOR" yazar.
+- **ODA KUR** — özel oda. Sadece 4 harfli kodu (veya linki) verdiğin kişiler girebilir,
+  hızlı eşleşme havuzuna **girmez**. Diğerleri **KATIL** ile kodu yazar.
+
+Her iki durumda da odadaki herkes **HAZIRIM** deyince oyun başlar.
 
 Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 
@@ -91,7 +98,7 @@ yanında görünür, başkasınınkini değiştiremezsin.
 > Lobide ekranın boş bir yerine basmak hiçbir şey yapmaz — hazır olmak için
 > **HAZIRIM** butonuna basmak gerekir. Böylece yanlışlıkla hazır verilmez.
 
-Karakterler: EJDER · ÜÇGEN · MOR AĞIZ · BAKLAVA · YILDIZ · HAYALET · MANTAR · PEMBE
+Karakterler: EJDER · KRAL · ÜÇGEN · YILDIZ · BAKLAVA · HAYALET · PEMBE · MANTAR
 (hepsi tek bir sayfadan geliyor: `public/img/karakterler.png`)
 
 **İki oyuncu aynı karakteri alamaz:** odaya giren boştaki ilk karakteri alır, oklarla gezerken

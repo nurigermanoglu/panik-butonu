@@ -46,6 +46,10 @@
   }
 
   function bindMenu() {
+    $('btnQuick').addEventListener('click', function () {
+      PP.sfx.unlock(); PP.sfx.click();
+      PP.net.send({ t: 'quick', name: readName() });
+    });
     $('btnCreate').addEventListener('click', function () {
       PP.sfx.unlock(); PP.sfx.click();
       PP.net.send({ t: 'create', name: readName() });
@@ -420,6 +424,13 @@
     f.text(ctx, state.players.length + ' / ' + max + ' OYUNCU', W / 2, 76, {
       color: full ? P.green : P.light, scale: 1, align: 'center'
     });
+    // HIZLI OYNA odasi: yabancilar da katilabilir, arandigini belli et
+    if (state.acik && !full) {
+      var nokta = '.'.repeat(1 + Math.floor(time * 2) % 3);
+      f.text(ctx, 'HERKESE ACIK - RAKIP ARANIYOR' + nokta, W / 2, 66, {
+        color: P.yellow, scale: 1, align: 'center'
+      });
+    }
     for (var s = 0; s < max; s++) {
       var cx = Math.round(slotW * s + slotW / 2);
       var p = null;

@@ -29,6 +29,7 @@ class Room {
     this.code = code;
     this.players = [];         // hicbir yerde "oyuncu1/oyuncu2" sabiti yok - hep bu liste
     this.winsNeeded = cfg.WINS_NEEDED;   // odayi kuran lobide degistirebilir
+    this.acik = false;                   // true = HIZLI OYNA havuzunda, yabancilar eslesebilir
     this.game = new Game(this);
     this.dead = false;
   }
@@ -109,6 +110,19 @@ class RoomManager {
   create() {
     const room = new Room(this.makeCode());
     this.rooms.set(room.code, room);
+    return room;
+  }
+
+  // HIZLI OYNA: bekleyen acik bir oda varsa ona kat, yoksa yeni acik oda kur.
+  hizliOda() {
+    for (const [, room] of this.rooms) {
+      if (room.dead || !room.acik) continue;
+      if (room.isFull) continue;
+      if (room.game.phase !== 'lobby') continue;   // maci baslamis odaya sokma
+      return room;
+    }
+    const room = this.create();
+    room.acik = true;
     return room;
   }
 

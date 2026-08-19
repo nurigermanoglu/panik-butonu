@@ -215,6 +215,7 @@ class Game {
       notice: this.notice,
       needed: this.room.winsNeeded,
       host: this.room.hostId,
+      acik: this.room.acik,
       needMin: cfg.WINS_MIN,
       needMax: cfg.WINS_MAX,
       max: cfg.MAX_PLAYERS,
