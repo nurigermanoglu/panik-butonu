@@ -14,6 +14,8 @@
   var wasBoom = false;       // SICAK PATATES: patlama anini yakalamak icin
   var ptr = { x: 0, y: 0, down: false };   // parmak/fare konumu (yerel, gecikmesiz)
   var lastDragAt = 0;
+  var sonSync = 0;          // son durum paketi ne zaman geldi (baglanti kontrolu)
+  var cizimHatasi = false;  // ayni hatayi tekrar tekrar yazmamak icin
 
   function $(id) { return document.getElementById(id); }
 
@@ -274,6 +276,7 @@
   }
 
   function onSync() {
+    sonSync = performance.now();
     updateScheme();
 
     // Refleks: isaretin ekranda ilk belirdigi ani yakala
@@ -645,6 +648,7 @@
 
   function render() {
     if (!state) return drawConnecting();
+    var sessiz = (performance.now() - sonSync) / 1000;
     switch (state.phase) {
       case 'lobby': drawLobby(); break;
       case 'intro': drawIntro(); break;
@@ -652,6 +656,13 @@
       case 'result': drawResult(); break;
       case 'gameover': drawGameover(); break;
       default: drawConnecting();
+    }
+    // Sunucudan uzun suredir haber yoksa ekran donmus gibi gorunur; bunu soyle
+    if (sessiz > 3) {
+      g.rect(ctx, 0, TOP, W, 12, P.black);
+      f.text(ctx, 'BAGLANTI YOK... ' + Math.floor(sessiz) + ' SN', W / 2, TOP + 3, {
+        color: P.red, scale: 1, align: 'center'
+      });
     }
   }
 
@@ -662,7 +673,15 @@
     if (state && (state.phase === 'play' || state.phase === 'intro')) {
       state.timer = Math.max(0, state.timer - dt);   // sunucu paketleri arasi yumusak sayac
     }
-    render();
+
+    // Tek bir karede hata olursa oyun TAMAMEN donmasin: kareyi atla, dongu devam etsin.
+    try {
+      render();
+      cizimHatasi = false;
+    } catch (e) {
+      if (!cizimHatasi) { cizimHatasi = true; console.error('cizim hatasi:', e); }
+    }
+
     requestAnimationFrame(loop);
   }
 

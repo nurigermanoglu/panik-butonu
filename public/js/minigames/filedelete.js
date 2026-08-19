@@ -36,6 +36,23 @@
     return onbellek[anahtar];
   }
 
+  // Masaustu dokusu: her karede ~14 bin kucuk dikdortgen cizmek yerine
+  // 2x2 lik bir desen bir kez uretilip tek seferde doldurulur.
+  var desenler = {};
+  function zeminDeseni(ctx, a, b) {
+    var ic = (PP.res && PP.res.olcek) || 1;
+    var anahtar = a + b + '@' + ic;
+    if (!desenler[anahtar]) {
+      var cv = document.createElement('canvas');
+      cv.width = 2; cv.height = 2;
+      var c2 = cv.getContext('2d');
+      c2.fillStyle = a; c2.fillRect(0, 0, 2, 2);
+      c2.fillStyle = b; c2.fillRect(1, 0, 1, 1); c2.fillRect(0, 1, 1, 1);
+      desenler[anahtar] = ctx.createPattern(cv, 'repeat');
+    }
+    return desenler[anahtar];
+  }
+
   function klasorCiz(ctx, cx, cy) {
     var res = hazir('klasor'), k = KAYNAK.klasor;
     var x = Math.round(cx - k.w / 2), y = Math.round(cy - k.h / 2);
@@ -52,10 +69,10 @@
       var MAVI = ben && ben.fl ? '#2f6a8a' : '#2f4f8f';
       var MAVI2 = ben && ben.fl ? '#37789b' : '#37599e';
       g.rect(ctx, 0, 0, v.W, v.H, MAVI);
-      for (var dy = v.top; dy < v.H; dy += 2) {                 // hafif dither dokusu
-        for (var dx = (dy / 2) % 2 ? 0 : 1; dx < v.W; dx += 2) {
-          g.rect(ctx, dx, dy, 1, 1, MAVI2);
-        }
+      var desen = zeminDeseni(ctx, MAVI, MAVI2);              // hafif dither dokusu
+      if (desen) {
+        ctx.fillStyle = desen;
+        ctx.fillRect(0, v.top, v.W, v.H - v.top);
       }
 
       // ---- alttaki gorev cubugu ----

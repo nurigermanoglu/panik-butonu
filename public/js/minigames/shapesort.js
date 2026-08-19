@@ -97,25 +97,43 @@
     g.sprite(ctx, rows, Math.round(cx - S / 2), Math.round(cy - S / 2), OLCEK, { '#': renk });
   }
 
-  // Boyali ahsap blok: govde + damar cizgileri + ust kenar isigi
-  function ahsapSekil(ctx, tip, cx, cy) {
+  // Boyali ahsap blok. Her (sekil, cozunurluk) icin BIR KEZ cizilip saklanir;
+  // sonra sadece kopyalanir. Yoksa her karede yuzlerce kucuk dikdortgen cizilirdi.
+  var blokOnbellek = {};
+
+  function blokTuvali(tip) {
+    var ic = (PP.res && PP.res.olcek) || 1;
+    var anahtar = tip + '@' + ic;
+    if (blokOnbellek[anahtar]) return blokOnbellek[anahtar];
+
+    var cv = document.createElement('canvas');
+    cv.width = S * ic; cv.height = S * ic;
+    var c2 = cv.getContext('2d');
+    c2.imageSmoothingEnabled = false;
+    c2.setTransform(ic, 0, 0, ic, 0, 0);
+
     var b = BOYA[tip] || { ana: AHSAP_ACIK, acik: AHSAP_PARLAK, koyu: AHSAP };
-    sekilCiz(ctx, tip, cx, cy, b.ana);
+    sekilCiz(c2, tip, S / 2, S / 2, b.ana);
     var rows = SEKILLER[tip];
-    var x0 = Math.round(cx - S / 2), y0 = Math.round(cy - S / 2);
     for (var r = 0; r < rows.length; r++) {
       for (var c = 0; c < rows[r].length; c++) {
         if (rows[r][c] !== '#') continue;
-        var px = x0 + c * OLCEK, py = y0 + r * OLCEK;
-        // Yuzeyde cizgi yok - sadece dis kenarlarda isik/golge
+        var px = c * OLCEK, py = r * OLCEK;
         if (r === 0 || rows[r - 1][c] !== '#') {
-          g.rect(ctx, px, py, OLCEK, 1, b.acik);                            // ust kenar isigi
+          g.rect(c2, px, py, OLCEK, 1, b.acik);              // ust kenar isigi
         }
         if (r === rows.length - 1 || rows[r + 1][c] !== '#') {
-          g.rect(ctx, px, py + OLCEK - 1, OLCEK, 1, b.koyu);                // alt kenar golgesi
+          g.rect(c2, px, py + OLCEK - 1, OLCEK, 1, b.koyu);  // alt kenar golgesi
         }
       }
     }
+    blokOnbellek[anahtar] = cv;
+    return cv;
+  }
+
+  function ahsapSekil(ctx, tip, cx, cy) {
+    var cvv = blokTuvali(tip);
+    ctx.drawImage(cvv, Math.round(cx - S / 2), Math.round(cy - S / 2), S, S);
   }
 
   PP.MG = PP.MG || {};
