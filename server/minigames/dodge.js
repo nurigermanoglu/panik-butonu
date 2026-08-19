@@ -34,17 +34,22 @@ function buildSchedule() {
   let t = 0.9;
 
   while (t < DURATION) {
-    const v = 52 + t * 3.6;                       // yaklasma hizi (birim/sn)
+    // Zorluk sona dogru belirgin sekilde artar: engeller hizlanir, satirlar siklasir
+    // ve iki seridi birden kapatma ihtimali yukselir.
+    const v = 50 + t * 4.2;                       // yaklasma hizi (birim/sn)
     const acik = Math.floor(Math.random() * LANES);
     const digerleri = [0, 1, 2].filter((l) => l !== acik);
-    // %55 ihtimalle iki serit birden kapali (zor), yoksa tek serit
-    const kapali = Math.random() < 0.55
+    const ciftIhtimal = Math.min(0.85, 0.45 + t * 0.025);
+    const kapali = Math.random() < ciftIhtimal
       ? digerleri
       : [digerleri[Math.floor(Math.random() * digerleri.length)]];
     const alcak = Math.random() < 0.4;            // alcak engel: ziplayarak da gecilir
 
     rows.push({ t, v, kapali, alcak });
-    t += Math.max(0.58, 1.15 - t * 0.035);        // zamanla siklasir
+
+    // Alt sinir 0.50 sn: iki serit gecisi 0.27 sn surdugu icin gecilebilir kalir,
+    // ama son saniyeler belirgin sekilde cetinlesir.
+    t += Math.max(0.50, 1.15 - t * 0.045);
   }
   return rows;
 }
