@@ -75,6 +75,25 @@
         });
       }
     });
+    // Tam ekran: tarayici cubuklarini gizler, oyun alani buyur.
+    // (Cozunurlugu artirmaz - ayni kareler daha buyuk gorunur.)
+    $('btnFull').addEventListener('click', function () {
+      var el = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        var iste = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (iste) iste.call(el);
+      } else {
+        var cik = document.exitFullscreen || document.webkitExitFullscreen;
+        if (cik) cik.call(document);
+      }
+    });
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+      document.addEventListener(ev, function () {
+        var tam = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        $('btnFull').textContent = tam ? 'CIK' : 'TAM EKRAN';
+        setTimeout(resize, 120);
+      });
+    });
     $('btnMute').addEventListener('click', function () {
       var m = !PP.sfx.isMuted();
       PP.sfx.setMuted(m);
