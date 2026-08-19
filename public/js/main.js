@@ -412,7 +412,10 @@
     return {
       W: W, H: H, top: TOP, time: time,
       players: state.players, you: youId,
-      ptr: ptr                      // dokunmatik oyunlar yerel parmak konumunu kullanir
+      ptr: ptr,                     // dokunmatik oyunlar yerel parmak konumunu kullanir
+      // Son durum paketinden bu yana gecen sure. Hizli hareket eden nesneler
+      // (kosu pistindeki engeller) bununla suzulup 60 fps akici cizilir.
+      gecikme: Math.max(0, Math.min(0.25, (performance.now() - sonSync) / 1000))
     };
   }
 

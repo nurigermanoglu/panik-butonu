@@ -44,12 +44,24 @@ function buildSchedule() {
       ? digerleri
       : [digerleri[Math.floor(Math.random() * digerleri.length)]];
     const alcak = Math.random() < 0.4;            // alcak engel: ziplayarak da gecilir
+    const kalinlik = 13 + Math.floor(Math.random() * 6);   // 13-18: her satir ayni durmasin
+    const tip = Math.floor(Math.random() * 3);             // gorsel cesit (duvar/sandik/bariyer)
 
-    rows.push({ t, v, kapali, alcak });
+    rows.push({ t, v, kapali, alcak, h: kalinlik, tip });
 
-    // Alt sinir 0.50 sn: iki serit gecisi 0.27 sn surdugu icin gecilebilir kalir,
-    // ama son saniyeler belirgin sekilde cetinlesir.
-    t += Math.max(0.50, 1.15 - t * 0.045);
+    // Aralik biraz sasirtilir ki desen makine gibi duzenli durmasin.
+    //
+    // Alt sinir SABIT DEGIL, satirin kendisinden hesaplanir:
+    //   satirin bandi terk etme suresi (kalinlik/hiz)
+    // + en genis serit gecisi (2 serit = 0.27 sn)
+    // + tepki payi
+    // Boylece kalin ve hizli satirlarda bile bir sonraki satira yetismek
+    // her zaman mumkun kalir; desen hicbir zaman gecilemez hale gelmez.
+    const gecis = 2 / SWITCH_SPEED;
+    const tepkiPayi = 0.36 - t * 0.016;      // tur ilerledikce daralir = zorlasir
+    const enAzAra = kalinlik / v + gecis + tepkiPayi;
+    var ara = (1.15 - t * 0.045) * (0.85 + Math.random() * 0.32);
+    t += Math.max(enAzAra, ara);
   }
   return rows;
 }
@@ -105,7 +117,7 @@ module.exports = {
 
         while (this.nextRow < this.plan.length && this.plan[this.nextRow].t <= this.t) {
           const r = this.plan[this.nextRow++];
-          this.rows.push({ y: -ROW_H, v: r.v, kapali: r.kapali, alcak: r.alcak });
+          this.rows.push({ y: -r.h, v: r.v, kapali: r.kapali, alcak: r.alcak, h: r.h, tip: r.tip });
         }
 
         for (let i = this.rows.length - 1; i >= 0; i--) {
@@ -133,7 +145,7 @@ module.exports = {
           const ucuyor = this.havada(p);
 
           for (const r of this.rows) {
-            if (PLAYER_Y >= r.y + ROW_H || PLAYER_Y + PLAYER_H <= r.y) continue;
+            if (PLAYER_Y >= r.y + r.h || PLAYER_Y + PLAYER_H <= r.y) continue;
             if (r.alcak && ucuyor) continue;                  // ustunden atladi
             let carpti = false;
             for (const l of r.kapali) {
@@ -180,7 +192,11 @@ module.exports = {
         return {
           w: this.W, h: ARENA_H, lanes: LANES,
           pw: PLAYER_W, ph: PLAYER_H, py: PLAYER_Y, rh: ROW_H,
-          rows: this.rows.map((r) => ({ y: Math.round(r.y), k: r.kapali, al: r.alcak })),
+          // v = hiz: istemci paketler arasinda konumu suzerek akici cizer
+          rows: this.rows.map((r) => ({
+            y: Math.round(r.y * 10) / 10, v: Math.round(r.v), h: r.h,
+            k: r.kapali, al: r.alcak, tip: r.tip
+          })),
           pl,
         };
       },

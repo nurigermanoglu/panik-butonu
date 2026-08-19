@@ -8,7 +8,7 @@
   var KAYNAK = {
     kostebek: { src: 'img/kostebek.png', kirp: { x: 54, y: 38, w: 227, h: 240 }, w: 40, h: 42 },
     // cekic yiyince gosterilen sersemlemis hali
-    kostebekVur: { src: 'img/kostebek_vur.png', kirp: { x: 39, y: 26, w: 243, h: 253 }, w: 42, h: 44 },
+    kostebekVur: { src: 'img/kostebek_vur.png', kirp: { x: 38, y: 26, w: 244, h: 252 }, w: 42, h: 44 },
     bomba: { src: 'img/bomba.png', kirp: { x: 62, y: 69, w: 483, h: 383 }, w: 46, h: 37 },
     // cekicin BASI vurdugu yer oldugu icin tutma noktasi bas hizasinda
     cekic: {
