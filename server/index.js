@@ -94,8 +94,12 @@ ws.attach(server, (conn) => {
         if (room) return;
         const r = rooms.get(msg.code);
         if (!r || r.dead) return fail('ODA KAPANDI');
-        const p = r.offlineByToken(msg.token);
+        const p = r.byToken(msg.token);
         if (!p) return fail('YERIN VERILDI');
+        // Eski baglanti hala aciksa (F5 yarisinda olabilir) onu kapat:
+        // ayni oyuncu iki soketle durmasin.
+        const eski = p.conn;
+        if (eski && eski !== conn) { try { eski.close(); } catch (e) { /* yoksay */ } }
         r.reattach(p, conn);
         room = r;
         player = p;

@@ -97,10 +97,15 @@ class Room {
     this.game.dirty = true;
   }
 
-  // Elinde dogru anahtar olan kopuk oyuncuyu bul.
-  offlineByToken(token) {
+  // Elinde dogru anahtar olan oyuncuyu bul.
+  //
+  // "Kopuk olma" sarti ARANMAZ: sayfa F5 ile yenilendiginde yeni baglanti,
+  // eskisinin kapandigi haberi sunucuya ulasmadan once gelebiliyor. O anda
+  // oyuncu hala "bagli" gorundugu icin geri oturma reddedilir ve kisi odaya
+  // ikinci kez katilmak zorunda kalirdi. Anahtar kimligi zaten kanitliyor.
+  byToken(token) {
     if (!token) return null;
-    return this.players.find((p) => !p.connected && p.token === token) || null;
+    return this.players.find((p) => p.token === token) || null;
   }
 
   // Kopuk oyuncunun yerinin tutulmasina kac saniye kaldi (0 = kopuk yok)

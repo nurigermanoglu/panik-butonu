@@ -266,7 +266,11 @@
 
     PP.net.on('open', function () {
       var o = oturumOku();
-      if (!o || youId === null) return;       // menudeyiz, yapacak bir sey yok
+      if (!o) return;                         // menudeyiz, donecek bir yer yok
+      // DIKKAT: youId'ye BAKMIYORUZ. Sayfa F5 ile yenilendiginde youId bos olur
+      // ama oturum sessionStorage'da durur - geri oturmamiz gereken an tam da odur.
+      // Yoksa eski yerimiz bir sure daha tutulurken yeniden katiliyoruz ve
+      // odada kendimizin iki kopyasi gorunuyor.
       geriDonuyor = true;
       PP.net.send({ t: 'resume', code: o.code, token: o.token });
     });
@@ -391,8 +395,9 @@
   function muzikAyarla() {
     if (!state) return PP.muzik.sus();
     // Duraklamis mac (biri koptu): muzik de dursun, bir sey oluyor gibi durmasin
-    if (kopuk || state.bekle) return PP.muzik.sus();
+    if (kopuk) return PP.muzik.sus();
     if (state.phase === 'lobby' || state.phase === 'gameover') return PP.muzik.calis('lobi');
+    if (state.bekle) return PP.muzik.sus();      // mac duraklamis
     // Biri sampiyonluga 1 tur kala: tempo yukselsin
     var enYuksek = 0;
     for (var i = 0; i < state.players.length; i++) {
@@ -824,7 +829,11 @@
       return;
     }
     // 2) Baskasinin baglantisi koptu: mac duruyor, onu bekliyoruz
-    if (state.bekle) {
+    // Perde SADECE mac sirasinda. Lobide mac zaten durmuyor; perde hem yanlis
+    // bilgi verir hem de HAZIR butonunun ustunu kapatir. Lobide kopan kisi
+    // kendi kutusunda "KOPTU..." yazisiyla zaten gorunuyor.
+    var macSuruyor = state.phase === 'intro' || state.phase === 'play' || state.phase === 'result';
+    if (state.bekle && macSuruyor) {
       perdeCiz(state.bekle.ad + ' KOPTU', 'MAC DURDU - ' + state.bekle.sn + ' SANIYE BEKLENIYOR', P.yellow);
       return;
     }

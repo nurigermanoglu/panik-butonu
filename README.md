@@ -86,8 +86,8 @@ MIN_PLAYERS: 2,     // oyunun başlayabilmesi için gereken en az kişi
 WINS_NEEDED: 5,     // başlangıç hedefi (odayı kuran lobide değiştirebilir)
 WINS_MIN: 1,        // hedefin inebileceği en düşük değer
 WINS_MAX: 9,        // hedefin çıkabileceği en yüksek değer
-RECONNECT_GRACE: 45, // maç ortasında kopan oyuncunun yeri kaç saniye tutulur
-LOBBY_GRACE: 12,     // lobide kopan için aynısı (beklemenin anlamı yok, kısa)
+RECONNECT_GRACE: 15, // maç ortasında kopan oyuncunun yeri kaç saniye tutulur
+LOBBY_GRACE: 8,      // lobide kopan için aynısı (beklemenin anlamı yok, kısa)
 PORT: 3000,
 ```
 
@@ -233,7 +233,7 @@ oyuncu **odadan atılmaz**:
 - **Maç durur.** Diğerlerinin ekranında `AYSE KOPTU - MAC DURDU` ve geri sayım çıkar.
 - Kopan kişi dönünce aynı turdan, aynı skorla devam edilir. Tarayıcı kendi kendine
   bağlanmayı dener (önce yarım saniyede bir, sonra aralığı açarak, en fazla 6 sn).
-- Süre dolarsa (maçta 45 sn, lobide 12 sn) oyuncu gerçekten çıkarılır, oda lobiye döner.
+- Süre dolarsa (maçta 15 sn, lobide 8 sn) oyuncu gerçekten çıkarılır, oda lobiye döner.
 
 Yer tutma, sekmeye özel gizli bir anahtarla çalışır: oda kodunu bilen biri bile
 kopan oyuncunun yerine geçemez. Sekmeyi kapatırsan anahtar da silinir.
