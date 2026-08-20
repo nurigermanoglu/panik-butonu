@@ -20,6 +20,7 @@
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
       c2.drawImage(bombaImg, BOMBA.kirp.x, BOMBA.kirp.y, BOMBA.kirp.w, BOMBA.kirp.h,
         0, 0, BOMBA.w * ic, BOMBA.h * ic);
+      PP.gfx.pixelArt(cv, { renk: 12, hat: '#20140c' });   // fotograf -> pixel art
       cv._ic = ic;
       bombaOnbellek = cv;
     }

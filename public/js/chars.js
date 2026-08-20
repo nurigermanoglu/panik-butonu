@@ -118,6 +118,12 @@
     yumusak(scx);
     scx.drawImage(cur, 0, 0, cw, ch, 0, 0, w, h);
 
+    // 5) fotograftan pixel art'a: kenarlari sertlestir, renkleri azalt,
+    //    silueti koyu hatla cevrele. Bir kez calisir, sonuc saklanir.
+    if (PP.gfx && PP.gfx.pixelArt) {
+      PP.gfx.pixelArt(son, { renk: 16, hat: '#20140c' });
+    }
+
     onbellek[anahtar] = son;
     return son;
   }
@@ -148,10 +154,10 @@
       return { w: w, h: h };
     }
 
-    // Kucultulmus kopya zaten yumusak; cizerken de yumusak birakiyoruz ki
-    // 1:1 olmayan durumlarda tirtik olusmasin.
+    // Onbellekteki kopya artik gercek pixel art (keskin kenar, az renk).
+    // Cizerken yumusatma ACIK olsaydi hepsini tekrar bulaniklastirirdi.
     var eskiSmooth = ctx.imageSmoothingEnabled;
-    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingEnabled = false;
     if (opts && opts.dead) {
       ctx.save();
       ctx.globalAlpha = 0.3;

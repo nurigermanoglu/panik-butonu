@@ -46,6 +46,7 @@
       c2.imageSmoothingEnabled = true;
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
       c2.drawImage(img[ad], k.kirp.x, k.kirp.y, k.kirp.w, k.kirp.h, 0, 0, k.w * ic, k.h * ic);
+      PP.gfx.pixelArt(cv, { renk: 14, hat: '#20140c' });   // fotograf -> pixel art
       onbellek[anahtar] = cv;
     }
     return onbellek[anahtar];

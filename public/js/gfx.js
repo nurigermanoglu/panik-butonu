@@ -222,6 +222,140 @@
   }
 
   // ================================================================
+  //  FOTOGRAF -> PIXEL ART
+  //
+  //  Oyundaki gorseller (karakterler, kostebek, cekic, elma...) fotograf
+  //  kirpintisi. Kucultunce ortaya binlerce renk ve yumusak, yari saydam
+  //  kenarlar cikiyor - yani kucuk bir fotograf, pixel art degil.
+  //  Olculdu: bir karakter 2705 renk, 231 saydamlik seviyesi kullaniyordu.
+  //
+  //  Bu islem uc sey yapar:
+  //    1. Saydamligi sertlestirir  -> kenarlar keskin, sisli hale yok
+  //    2. Renkleri az sayida tona indirir (medyan kesme) -> pixel art paleti
+  //    3. Silueti koyu bir hatla cevreler -> zeminden ayrilir, okunakli olur
+  //
+  //  Gorsel onbellege alinirken BIR KEZ calisir, her karede degil.
+  // ================================================================
+
+  // Medyan kesme: renk bulutunu tekrar tekrar en genis eksenden ikiye boler,
+  // her kutunun ortalamasi bir palet rengi olur.
+  function paletCikar(pikseller, hedefAdet) {
+    var kutular = [pikseller];
+    while (kutular.length < hedefAdet) {
+      // en cok renk barindiran, bolunebilir kutuyu sec
+      var en = -1, enBoy = 1;
+      for (var i = 0; i < kutular.length; i++) {
+        if (kutular[i].length > enBoy) { enBoy = kutular[i].length; en = i; }
+      }
+      if (en < 0) break;
+      var kutu = kutular[en];
+      var minR = 255, maxR = 0, minG = 255, maxG = 0, minB = 255, maxB = 0;
+      for (var j = 0; j < kutu.length; j++) {
+        var p = kutu[j];
+        if (p[0] < minR) minR = p[0]; if (p[0] > maxR) maxR = p[0];
+        if (p[1] < minG) minG = p[1]; if (p[1] > maxG) maxG = p[1];
+        if (p[2] < minB) minB = p[2]; if (p[2] > maxB) maxB = p[2];
+      }
+      var dR = maxR - minR, dG = maxG - minG, dB = maxB - minB;
+      var eksen = dR >= dG && dR >= dB ? 0 : (dG >= dB ? 1 : 2);
+      kutu.sort(function (a, b) { return a[eksen] - b[eksen]; });
+      var orta = Math.floor(kutu.length / 2);
+      if (orta === 0 || orta === kutu.length) break;
+      kutular.splice(en, 1, kutu.slice(0, orta), kutu.slice(orta));
+    }
+    var palet = [];
+    for (var k = 0; k < kutular.length; k++) {
+      var b2 = kutular[k];
+      if (!b2.length) continue;
+      var sr = 0, sg = 0, sb = 0;
+      for (var m = 0; m < b2.length; m++) { sr += b2[m][0]; sg += b2[m][1]; sb += b2[m][2]; }
+      palet.push([Math.round(sr / b2.length), Math.round(sg / b2.length), Math.round(sb / b2.length)]);
+    }
+    return palet;
+  }
+
+  /**
+   * pixelArt(cv, opts)
+   *   cv: hazir kucultulmus tuval (yerinde degistirilir)
+   *   opts: { renk: kac ton (varsayilan 14), hat: dis hat rengi ya da false,
+   *           esik: saydamlik esigi (varsayilan 128) }
+   */
+  function pixelArt(cv, opts) {
+    opts = opts || {};
+    var adet = opts.renk || 14;
+    var esik = opts.esik === undefined ? 128 : opts.esik;
+    var hat = opts.hat === undefined ? '#20140c' : opts.hat;
+
+    var c = cv.getContext('2d', { willReadFrequently: true });
+    if (!c) return cv;
+    var w = cv.width, h = cv.height;
+    if (!w || !h) return cv;
+    var im = c.getImageData(0, 0, w, h);
+    var d = im.data;
+
+    // 1) saydamligi sertlestir
+    //    Palet cikarirken TUM pikselleri kullanmak gereksiz pahali; buyuk
+    //    resimlerde en fazla ~20 bin piksel orneklemek ayni paleti verir.
+    var toplamPiksel = (d.length / 4) | 0;
+    var adim = Math.max(1, Math.ceil(toplamPiksel / 20000));
+    var opak = [], sayac = 0;
+    for (var i = 0; i < d.length; i += 4) {
+      if (d[i + 3] >= esik) {
+        d[i + 3] = 255;
+        if ((sayac++ % adim) === 0) opak.push([d[i], d[i + 1], d[i + 2]]);
+      } else { d[i + 3] = 0; }
+    }
+    if (opak.length < 4) { c.putImageData(im, 0, 0); return cv; }
+
+    // 2) renkleri azalt
+    //    Her piksel icin paleti bastan taramak yerine 15 bitlik renk
+    //    kutucuklarindan olusan bir tablo tutuluyor: ayni tondaki pikseller
+    //    hesabi bir kez yapip sonucu paylasiyor.
+    var palet = paletCikar(opak, adet);
+    var tablo = new Int16Array(32768);
+    for (var z = 0; z < tablo.length; z++) tablo[z] = -1;
+
+    for (var j = 0; j < d.length; j += 4) {
+      if (d[j + 3] === 0) continue;
+      var r = d[j], g2 = d[j + 1], b = d[j + 2];
+      var kova = ((r >> 3) << 10) | ((g2 >> 3) << 5) | (b >> 3);
+      var idx = tablo[kova];
+      if (idx < 0) {
+        var enIyi = 0, enYakin = 1e9;
+        for (var q = 0; q < palet.length; q++) {
+          var pr = palet[q][0] - r, pg = palet[q][1] - g2, pb = palet[q][2] - b;
+          var uz = pr * pr + pg * pg + pb * pb;
+          if (uz < enYakin) { enYakin = uz; enIyi = q; }
+        }
+        idx = enIyi;
+        tablo[kova] = idx;
+      }
+      d[j] = palet[idx][0]; d[j + 1] = palet[idx][1]; d[j + 2] = palet[idx][2];
+    }
+
+    // 3) siluetin cevresine koyu hat (bos piksel, dolu piksele komsuysa)
+    if (hat) {
+      var hr = parseInt(hat.slice(1, 3), 16), hg = parseInt(hat.slice(3, 5), 16), hb = parseInt(hat.slice(5, 7), 16);
+      var kopya = new Uint8ClampedArray(d);
+      for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+          var o = (y * w + x) * 4;
+          if (kopya[o + 3] !== 0) continue;
+          var komsu = false;
+          if (x > 0 && kopya[o - 4 + 3] !== 0) komsu = true;
+          else if (x < w - 1 && kopya[o + 4 + 3] !== 0) komsu = true;
+          else if (y > 0 && kopya[o - w * 4 + 3] !== 0) komsu = true;
+          else if (y < h - 1 && kopya[o + w * 4 + 3] !== 0) komsu = true;
+          if (komsu) { d[o] = hr; d[o + 1] = hg; d[o + 2] = hb; d[o + 3] = 255; }
+        }
+      }
+    }
+
+    c.putImageData(im, 0, 0);
+    return cv;
+  }
+
+  // ================================================================
   //  PANELLER
   //
   //  Stardew'daki gibi: koyu dis hat, ahsap cerceve, ic isik cizgisi,
@@ -286,6 +420,7 @@
     arrowSize: arrowSize,
     bar: bar,
     doku: doku,
+    pixelArt: pixelArt,
     panel: panel,
     tabela: tabela,
     colorForSlot: colorForSlot,

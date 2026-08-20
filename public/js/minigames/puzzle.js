@@ -39,6 +39,7 @@
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
       var kr = KAYNAK[k].kirp;
       c2.drawImage(img[k], kr.x, kr.y, kr.w, kr.h, 0, 0, gw, gh);
+      PP.gfx.pixelArt(cv, { renk: 24, hat: false });       // bulmaca resmi: hat yok
       onbellek[k] = cv;
       onbellekBoyut[k] = anahtar;
     }
