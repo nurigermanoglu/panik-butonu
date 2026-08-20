@@ -17,7 +17,7 @@
   PP.MG = PP.MG || {};
   PP.MG.dodge = {
     draw: function (ctx, st, v) {
-      g.rect(ctx, 0, 0, v.W, v.H, P.bg);
+      g.doku(ctx, 0, 0, v.W, v.H, 'ahsap');
 
       var n = v.players.length;
       var colW = v.W / n;
@@ -39,7 +39,7 @@
 
         // ---- pist ----
         g.rect(ctx, ax - 1, ay - 1, st.w + 2, ah + 2, P.black);
-        g.rect(ctx, ax, ay, st.w, ah, ZEMIN);
+        g.doku(ctx, ax, ay, st.w, ah, 'toprak');       // toprak yol
         // serit ayirici cizgiler (akiyormus gibi)
         for (var l = 1; l < st.lanes; l++) {
           var lx = ax + Math.round(seritW * l);
@@ -47,9 +47,12 @@
             g.rect(ctx, lx, ay + d, 1, 6, CIZGI);
           }
         }
-        g.rect(ctx, ax, ay, 2, ah, KENAR);
-        g.rect(ctx, ax + st.w - 2, ay, 2, ah, KENAR);
-        g.rect(ctx, ax + 2, ay, st.w - 4, 10, '#4a341f');     // uzaklik hissi
+        g.doku(ctx, ax, ay, 3, ah, 'cim');                    // sol cim seridi
+        g.doku(ctx, ax + st.w - 3, ay, 3, ah, 'cim');         // sag cim seridi
+        g.rect(ctx, ax + 3, ay, st.w - 6, 9, '#4a341f');      // uzaklik hissi
+        ctx.save(); ctx.globalAlpha = 0.35;
+        g.rect(ctx, ax + 3, ay + 9, st.w - 6, 5, '#4a341f');  // yumusak gecis
+        ctx.restore();
 
         // ---- engel satirlari ----
         for (var r = 0; r < st.rows.length; r++) {

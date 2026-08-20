@@ -102,13 +102,13 @@
     draw: function (ctx, st, v) {
       var ben = st.pl[v.you] || { s: 0, hit: [], fl: 0 };
 
-      // zemin: vurus yesil, bomba kirmizi parlar
-      var zemin = ben.fl === 1 ? '#2f4a22' : ben.fl === 2 ? '#4a2418' : '#3d2b1f';
-      g.rect(ctx, 0, 0, v.W, v.H, zemin);
-      // cimen dokusu
-      for (var s = 0; s < v.W; s += 14) {
-        g.rect(ctx, s, v.top + 8, 1, 3, '#5a4029');
-        g.rect(ctx, s + 7, v.H - 22, 1, 3, '#5a4029');
+      // Zemin: cim tarla. Vurusta yesil, bombada kirmizi parlar.
+      g.doku(ctx, 0, 0, v.W, v.H, 'cim');
+      if (ben.fl) {
+        ctx.save();
+        ctx.globalAlpha = 0.45;
+        g.rect(ctx, 0, 0, v.W, v.H, ben.fl === 1 ? '#9bd45a' : '#c0503f');
+        ctx.restore();
       }
 
       // Vurulanlari zaman damgasiyla isaretle; artik listede olmayanlari unut

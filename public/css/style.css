@@ -64,13 +64,23 @@ html, body {
 
 #menu h1 {
   margin: 0;
-  font-size: clamp(32px, 11vw, 64px);
+  padding: 14px 26px;
+  font-size: clamp(28px, 9vw, 54px);
   letter-spacing: 4px;
   color: #f5c542;
-  text-shadow: 4px 4px 0 #c0503f, 8px 8px 0 #1a1108;
-  line-height: 1;
+  line-height: 1.05;
+  /* Asili ahsap tabela: koyu dis hat + ahsap cerceve + ic isik */
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0 1px, rgba(0,0,0,0) 1px 6px),
+    linear-gradient(180deg, #a87a4a 0%, #8a5a34 45%, #6b4426 100%);
+  border: 4px solid #2a1c12;
+  box-shadow:
+    inset 0 0 0 2px #b98a55,
+    inset 0 4px 0 rgba(255,255,255,0.12),
+    0 8px 0 #2a1c12;
+  text-shadow: 3px 3px 0 #5a3a22;
 }
-#menu h1 span { display: block; color: #5aa9e6; text-shadow: 4px 4px 0 #5a4029, 8px 8px 0 #1a1108; }
+#menu h1 span { display: block; color: #9bd45a; text-shadow: 3px 3px 0 #3c7a3f; }
 
 #menu::before, #menu::after { content: ''; margin: auto; }
 
@@ -125,7 +135,7 @@ html, body {
 }
 .sep span {
   position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-  background: #33241a; padding: 0 10px; color: #8a7050; font-size: 13px; letter-spacing: 2px;
+  background: #4a341f; padding: 0 10px; color: #e8d5a8; font-size: 13px; letter-spacing: 2px;
 }
 
 #menuErr { min-height: 20px; margin: 2px 0 0; color: #e08a3c; letter-spacing: 2px; font-size: 14px; }
@@ -136,8 +146,15 @@ html, body {
   75% { transform: translateX(7px); }
 }
 
-.help { color: #8a7050; font-size: 12px; letter-spacing: 1px; line-height: 1.7; margin-top: 10px; }
-.help b { color: #e8d5a8; }
+.help {
+  color: #5a3a22; font-size: 12px; letter-spacing: 1px; line-height: 1.7;
+  margin-top: 10px; padding: 10px 16px;
+  background: #e8d5a8;
+  border: 3px solid #2a1c12;
+  box-shadow: inset 0 0 0 2px #c9ae7c;
+  max-width: min(340px, 86vw);
+}
+.help b { color: #a8533f; }
 
 /* ------------------------- OYUN ------------------------- */
 
@@ -146,7 +163,8 @@ html, body {
 #topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; padding: 5px 8px; min-height: 30px;
-  background: #1a1108; border-bottom: 2px solid #3d2b1f;
+  background: linear-gradient(180deg, #5a4029 0%, #3d2b1f 100%);
+  border-bottom: 3px solid #2a1c12;
 }
 #share { display: flex; align-items: center; gap: 6px; min-width: 0; }
 #share .lbl { color: #8a7050; font-size: 11px; letter-spacing: 1px; }
@@ -168,7 +186,7 @@ html, body {
 #stage {
   flex: 1 1 auto; min-height: 0;
   display: flex; align-items: center; justify-content: center;
-  background: #1a1108; padding: 4px;
+  background: #2a1c12; padding: 6px;
 }
 
 canvas {
@@ -176,7 +194,8 @@ canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   background: #3d2b1f;
-  border: 2px solid #2a1c12;
+  border: 3px solid #2a1c12;
+  box-shadow: 0 0 0 2px #8a5a34;
   touch-action: none;
 }
 
@@ -187,7 +206,8 @@ canvas {
   display: flex; align-items: center; justify-content: center;
   gap: 40px; padding: 10px;
   min-height: 150px;
-  background: #1a1108; border-top: 2px solid #3d2b1f;
+  background: linear-gradient(180deg, #3d2b1f 0%, #2a1c12 100%);
+  border-top: 3px solid #2a1c12;
 }
 
 #pad .grp { display: none; }

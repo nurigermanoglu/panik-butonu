@@ -622,14 +622,26 @@
   }
 
   function drawLobby() {
-    g.rect(ctx, 0, 0, W, H, P.bg);
-    for (var i = 0; i < W; i += 16) {
-      g.rect(ctx, i, 0, 8, H, '#33241a');   // ahsap tahta ekleri
-    }
+    // Zemin: ustte cim tarla, altta ahsap veranda - Stardew'daki gibi
+    g.doku(ctx, 0, 0, W, 74, 'cim');
+    g.doku(ctx, 0, 74, W, H - 74, 'ahsap');
+    g.rect(ctx, 0, 73, W, 1, '#2a1c12');            // cim/ahsap ayrimi
+    g.rect(ctx, 0, 74, W, 1, '#a87a4a');
 
-    f.text(ctx, 'PARTI PANIK', W / 2, 8, { color: P.yellow, scale: 3, align: 'center', shadow: P.black });
-    f.text(ctx, 'ODA KODU', W / 2, 36, { color: P.light, scale: 1, align: 'center' });
-    f.text(ctx, state.code, W / 2, 46, { color: P.white, scale: 4, align: 'center', shadow: P.purple });
+    // Baslik: asili ahsap tabela + ipleri
+    var tw = f.width('PARTI PANIK', 3) + 22, tx = Math.round((W - tw) / 2);
+    g.rect(ctx, tx + 10, 0, 2, 6, '#5a3a22');
+    g.rect(ctx, tx + tw - 12, 0, 2, 6, '#5a3a22');
+    g.tabela(ctx, tx, 4, tw, 26);
+    f.text(ctx, 'PARTI PANIK', W / 2, 12, {
+      color: P.yellow, scale: 3, align: 'center', shadow: '#2a1c12'
+    });
+
+    // Oda kodu: parsomen levha
+    var kw = f.width(state.code, 4) + 20, kx = Math.round((W - kw) / 2);
+    g.panel(ctx, kx, 34, kw, 30);
+    f.text(ctx, 'ODA KODU', W / 2, 30, { color: P.white, scale: 1, align: 'center', shadow: '#2a1c12' });
+    f.text(ctx, state.code, W / 2, 42, { color: '#5a3a22', scale: 4, align: 'center' });
 
     var max = state.max;
     var slotW = W / max;
@@ -657,6 +669,8 @@
         var ok = benimSlot ? karakterOklari() : null;
         var kutuW = ok ? ok.kw : Math.min(56, Math.max(28, slotW - 46));
 
+        // Karakterin altinda golge + ustunde duracagi tahta zemin
+        g.rect(ctx, cx - 13, 114, 26, 2, '#3d2b1f');
         PP.chars.ciz(ctx, p.char, cx, 99 + bob, kutuW, 28);
 
         // Kendi karakterimin yaninda degistirme oklari
@@ -669,7 +683,10 @@
           });
         }
 
-        f.text(ctx, p.name, cx, 115, { color: col, scale: 1, align: 'center' });
+        // Isim levhasi: kucuk parsomen tabela
+        var lw = Math.max(f.width(p.name, 1) + 12, 40);
+        g.panel(ctx, cx - lw / 2, 112, lw, 14, { civi: false });
+        f.text(ctx, p.name, cx, 116, { color: '#5a3a22', scale: 1, align: 'center' });
         if (p.on === false) {
           // Kopuk oyuncu: yeri duruyor, geri gelmesi bekleniyor
           f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 125, {
@@ -685,11 +702,14 @@
           f.text(ctx, p.ping + ' MS', cx, 134, { color: pc, scale: 1, align: 'center' });
         }
       } else {
-        for (var d = 0; d < 24; d += 4) {
-          g.rect(ctx, cx - 12 + d, 88, 2, 2, P.dark);
-          g.rect(ctx, cx - 12 + d, 108, 2, 2, P.dark);
+        // Bos yer: iple cevrili bos tahta alan
+        for (var d = 0; d < 26; d += 4) {
+          g.rect(ctx, cx - 13 + d, 90, 2, 1, '#5a3a22');
+          g.rect(ctx, cx - 13 + d, 112, 2, 1, '#5a3a22');
         }
-        f.text(ctx, 'BOS', cx, 115, { color: P.dark, scale: 1, align: 'center' });
+        g.rect(ctx, cx - 14, 90, 1, 23, '#5a3a22');
+        g.rect(ctx, cx + 13, 90, 1, 23, '#5a3a22');
+        f.text(ctx, 'BOS', cx, 117, { color: '#8a7050', scale: 1, align: 'center' });
       }
     }
 
@@ -729,10 +749,17 @@
 
   function drawIntro() {
     var pulse = Math.floor(time * 8) % 2 === 0;
-    g.rect(ctx, 0, 0, W, H, pulse ? P.bg2 : P.bg);
+    g.doku(ctx, 0, 0, W, H, 'ahsap');
+    ctx.save();
+    ctx.globalAlpha = pulse ? 0.30 : 0.42;                // nabiz gibi karartma
+    g.rect(ctx, 0, 0, W, H, '#2a1c12');
+    ctx.restore();
 
-    f.text(ctx, state.mg.name, W / 2, 34, { color: P.white, scale: 2, align: 'center', shadow: P.black });
-    f.text(ctx, state.mg.instruction, W / 2, 58, { color: P.yellow, scale: 2, align: 'center', shadow: P.black });
+    // Oyun adi ve talimati parsomen levhada dursun
+    var pw = Math.max(f.width(state.mg.name, 2), f.width(state.mg.instruction, 2)) + 24;
+    g.panel(ctx, Math.round((W - pw) / 2), 26, pw, 48);
+    f.text(ctx, state.mg.name, W / 2, 34, { color: '#5a3a22', scale: 2, align: 'center' });
+    f.text(ctx, state.mg.instruction, W / 2, 56, { color: '#a8533f', scale: 2, align: 'center' });
 
     var c = Math.max(0, Math.ceil(state.timer));
     if (c > 0) {
@@ -763,12 +790,14 @@
 
   function drawResult() {
     drawPlay();
-    ctx.fillStyle = 'rgba(13,14,26,0.80)';
+    ctx.fillStyle = 'rgba(26,17,8,0.82)';       // sicak karartma
     ctx.fillRect(0, 0, W, H);
 
     var wins = (state.result && state.result.winners) || [];
     if (!wins.length) {
-      f.text(ctx, 'BERABERE!', W / 2, 56, { color: P.yellow, scale: 3, align: 'center', shadow: P.black });
+      var bw = f.width('BERABERE!', 3) + 24;
+      g.panel(ctx, Math.round((W - bw) / 2), 48, bw, 26);
+      f.text(ctx, 'BERABERE!', W / 2, 56, { color: '#5a3a22', scale: 3, align: 'center' });
     } else {
       var names = [];
       for (var i = 0; i < wins.length; i++) {
