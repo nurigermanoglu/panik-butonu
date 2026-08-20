@@ -133,9 +133,13 @@
     var olcek = Math.min(maxW / k.w, maxH / k.h);
     var w = Math.max(4, Math.round(k.w * olcek));
     var h = Math.max(4, Math.round(k.h * olcek));
-    var x = Math.round(cx - w / 2), y = Math.round(cy - h / 2);
     // Ekranda kac kat gorunuyorsa o oranda detayli hazirla
     var ic = (PP.res && PP.res.olcek) || 1;
+    // Konum EKRAN pikseline oturtulur, oyun pikseline degil: 3x olcekte uc kat
+    // daha ince konum demek. Tam ekran pikseline denk geldigi icin bulaniklik
+    // olusmaz, ama hareket eden karakter adim adim ziplamaz.
+    var x = Math.round((cx - w / 2) * ic) / ic;
+    var y = Math.round((cy - h / 2) * ic) / ic;
     var res = hazir(idx, w * ic, h * ic);
 
     if (!res) {

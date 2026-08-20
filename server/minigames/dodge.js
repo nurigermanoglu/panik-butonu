@@ -178,11 +178,15 @@ module.exports = {
           pl[id] = {
             k: Math.round(p.kayma * 100) / 100,
             a: p.alive,
+            // hedef serit: istemci paketler arasinda oyuncuyu da suzerek
+            // ilerletsin diye gonderilir (yoksa karakter adim adim ziplar)
+            h: p.hedef,
           };
         }
         return {
           w: this.W, h: ARENA_H, lanes: LANES,
           pw: PLAYER_W, ph: PLAYER_H, py: PLAYER_Y, rh: ROW_H,
+          sw: SWITCH_SPEED,        // serit/sn - istemci ayni suzulmeyi tekrar eder
           // v = hiz: istemci paketler arasinda konumu suzerek akici cizer
           rows: this.rows.map((r) => ({
             y: Math.round(r.y * 10) / 10, v: Math.round(r.v), h: r.h,

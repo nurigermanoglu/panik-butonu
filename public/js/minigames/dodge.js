@@ -88,7 +88,19 @@
         }
 
         // ---- oyuncu ----
-        var px = ax + Math.round(st.w * (me.k + 0.5) / st.lanes);
+        // Engeller gibi oyuncu da paketler arasinda suzulerek ilerletilir.
+        // Sunucu hedef seridi (h) ve gecis hizini (sw) yolluyor; burada AYNI
+        // suzulme tekrar edilir. Yoksa karakter paket basina bir zipliyor ve
+        // en cok bakilan sey oldugu icin butun oyun kasiyormus gibi gorunuyor.
+        var k = me.k;
+        if (me.h !== undefined && st.sw) {
+          var fark = me.h - k, adim = st.sw * gec;
+          k = Math.abs(fark) <= adim ? me.h : k + (fark > 0 ? adim : -adim);
+        }
+        // Ekran pikseline degil, IC cozunurluk pikseline oturt: 3x olcekte
+        // uc kat daha ince konum -> gozle gorulur sekilde daha akici.
+        var ic = (PP.res && PP.res.olcek) || 1;
+        var px = ax + Math.round(st.w * (k + 0.5) / st.lanes * ic) / ic;
         var py = ay + st.py;
         PP.chars.ciz(ctx, p.char, px, py + st.ph / 2, st.pw + 6, st.ph + 2, { dead: !me.a });
 

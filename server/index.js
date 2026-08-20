@@ -155,13 +155,27 @@ ws.attach(server, (conn) => {
 
 // ---------------- Ana dongu ----------------
 
+// Windows'ta zamanlayici cozunurlugu ~15.6 ms. setInterval(33) istenen 33'e
+// degil 46.8'e yuvarlanir; yani "30 Hz" aslinda 21 Hz olur ve hareket tirtiklanir.
+// Cozum: dongu SABIT 33 ms beklemez, her seferinde bir sonraki tik anina kalan
+// sureyi hesaplar. Yuvarlama yukari kacinca bir sonraki bekleme kisalir ve
+// ortalama tam TICK_HZ'de kalir.
+const ADIM_MS = 1000 / cfg.TICK_HZ;
 let last = Date.now();
-setInterval(() => {
+let sonrakiTik = Date.now() + ADIM_MS;
+
+function dongu() {
   const now = Date.now();
   const dt = Math.min(0.1, (now - last) / 1000);   // sekme donunca dev adim atmasin
   last = now;
   rooms.tickAll(dt);
-}, Math.round(1000 / cfg.TICK_HZ));
+
+  sonrakiTik += ADIM_MS;
+  // Cok geri kaldiysak (uyku/askiya alma) birikmis tiklari kovalamaya calisma
+  if (sonrakiTik < now) sonrakiTik = now + ADIM_MS;
+  setTimeout(dongu, Math.max(0, sonrakiTik - Date.now()));
+}
+setTimeout(dongu, ADIM_MS);
 
 // ---------------- Baslat ----------------
 
