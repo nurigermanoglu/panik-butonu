@@ -6,20 +6,20 @@
   // olursa olsun uzerine oturur. Isimler ayni kaldi, bu yuzden butun oyun
   // tek yerden tema degistirir.
   var PAL = {
-    bg: '#1e1e24',      // koyu gri - genel arka plan
-    bg2: '#2c2c36',     // biraz acik gri - vurgulu arka plan
-    dark: '#141419',    // golge / cerceve ici
-    gray: '#6b6b78',    // pasif yazi
-    light: '#d8d8e0',   // normal yazi
-    white: '#f6f6fa',   // one cikan yazi
-    yellow: '#ffcd4a',
-    orange: '#f08a3c',
-    red: '#e05a4a',
-    green: '#7ed957',
-    teal: '#3fb488',
-    blue: '#4aa8e0',
-    purple: '#a06cd8',
-    black: '#0b0b0f'    // en koyu ton
+    bg: '#232145',      // derin lacivert - genel arka plan
+    bg2: '#33305e',     // moru andiran ust ton - vurgulu arka plan
+    dark: '#171630',    // golge / cerceve ici
+    gray: '#7b78a8',    // pasif yazi
+    light: '#d9d6f2',   // normal yazi
+    white: '#fbfaff',   // one cikan yazi
+    yellow: '#ffd34d',
+    orange: '#ff8a3c',
+    red: '#f45b69',
+    green: '#5fe08a',
+    teal: '#31c9b7',
+    blue: '#49b4ff',
+    purple: '#b06cf0',
+    black: '#0e0d1c'    // en koyu ton
   };
 
   // Oyuncu renkleri slot sirasina gore (4 kisiye kadar hazir)
@@ -146,54 +146,54 @@
   var DOKU_TARIF = {
     // Metal panel: plaka ekleri, hafif cizik ve percler
     metal: function (c) {
-      c.fillStyle = '#26262e'; c.fillRect(0, 0, KARO, KARO);
+      c.fillStyle = '#2b2952'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 1);
-          if (y % 8 === 7) { c.fillStyle = '#191920'; c.fillRect(x, y, 1, 1); }      // plaka eki
-          else if (r > 0.90) { c.fillStyle = '#32323c'; c.fillRect(x, y, 1, 1); }    // isik cizigi
-          else if (r < 0.08) { c.fillStyle = '#1f1f26'; c.fillRect(x, y, 1, 1); }
+          if (y % 8 === 7) { c.fillStyle = '#1d1b3c'; c.fillRect(x, y, 1, 1); }      // plaka eki
+          else if (r > 0.90) { c.fillStyle = '#393670'; c.fillRect(x, y, 1, 1); }    // isik cizigi
+          else if (r < 0.08) { c.fillStyle = '#252348'; c.fillRect(x, y, 1, 1); }
         }
       }
-      c.fillStyle = '#3a3a46';
+      c.fillStyle = '#454180';
       c.fillRect(0, 0, KARO, 1); c.fillRect(0, 8, KARO, 1);                          // ek ustu isik
-      c.fillStyle = '#43434f';                                                       // percler
+      c.fillStyle = '#5b56a0';                                                       // percler
       c.fillRect(1, 1, 1, 1); c.fillRect(KARO - 2, 1, 1, 1);
       c.fillRect(1, 9, 1, 1); c.fillRect(KARO - 2, 9, 1, 1);
     },
     // Zemin karolari: koyu doseme + ince derz
     zemin: function (c) {
-      c.fillStyle = '#232329'; c.fillRect(0, 0, KARO, KARO);
+      c.fillStyle = '#262450'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 2);
-          if (r > 0.93) { c.fillStyle = '#2c2c34'; c.fillRect(x, y, 1, 1); }
-          else if (r < 0.07) { c.fillStyle = '#1c1c22'; c.fillRect(x, y, 1, 1); }
+          if (r > 0.93) { c.fillStyle = '#302d5e'; c.fillRect(x, y, 1, 1); }
+          else if (r < 0.07) { c.fillStyle = '#201e44'; c.fillRect(x, y, 1, 1); }
         }
       }
-      c.fillStyle = '#17171d';
+      c.fillStyle = '#171630';
       c.fillRect(0, 0, KARO, 1); c.fillRect(0, 0, 1, KARO);                          // derz
-      c.fillStyle = '#2e2e38';
+      c.fillStyle = '#3b3872';
       c.fillRect(1, 1, KARO - 1, 1);                                                 // derz isigi
     },
     // Cakil: kosu pisti / kostebek zemini
     cakil: function (c) {
-      c.fillStyle = '#33333c'; c.fillRect(0, 0, KARO, KARO);
+      c.fillStyle = '#343163'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 5);
-          if (r > 0.92) { c.fillStyle = '#454550'; c.fillRect(x, y, 1, 1); }         // acik tas
-          else if (r < 0.10) { c.fillStyle = '#26262e'; c.fillRect(x, y, 1, 1); }    // koyu tas
+          if (r > 0.92) { c.fillStyle = '#413d78'; c.fillRect(x, y, 1, 1); }         // acik tas
+          else if (r < 0.10) { c.fillStyle = '#2a2852'; c.fillRect(x, y, 1, 1); }    // koyu tas
         }
       }
     },
     tas: function (c) {
-      c.fillStyle = '#4a4a56'; c.fillRect(0, 0, KARO, KARO);
+      c.fillStyle = '#4f4a8c'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 6);
-          if (r > 0.90) { c.fillStyle = '#5c5c6a'; c.fillRect(x, y, 1, 1); }
-          else if (r < 0.10) { c.fillStyle = '#3a3a44'; c.fillRect(x, y, 1, 1); }
+          if (r > 0.90) { c.fillStyle = '#605aa5'; c.fillRect(x, y, 1, 1); }
+          else if (r < 0.10) { c.fillStyle = '#3d3a70'; c.fillRect(x, y, 1, 1); }
         }
       }
     }
@@ -373,10 +373,10 @@
    */
   function panel(ctx, x, y, w, h, opts) {
     opts = opts || {};
-    var dolgu = opts.dolgu || '#d8d8e0';
-    var cerceve = opts.cerceve || '#3a3a46';
-    var koyu = opts.koyu || '#0b0b0f';
-    var isik = opts.isik || '#4e4e5c';
+    var dolgu = opts.dolgu || '#d9d6f2';
+    var cerceve = opts.cerceve || '#4a4590';
+    var koyu = opts.koyu || '#0e0d1c';
+    var isik = opts.isik || '#6b64c0';
     x = Math.round(x); y = Math.round(y); w = Math.round(w); h = Math.round(h);
     if (w < 8 || h < 8) return;
 
@@ -386,13 +386,13 @@
     rect(ctx, x + 1, y + h - 2, w - 2, 1, koyu);       // cerceve alti golge
     rect(ctx, x + 3, y + 3, w - 6, h - 6, koyu);       // ic hat
     rect(ctx, x + 4, y + 4, w - 8, h - 8, dolgu);      // parsomen
-    rect(ctx, x + 4, y + 4, w - 8, 1, '#f6f6fa');      // panel ustu isik
+    rect(ctx, x + 4, y + 4, w - 8, 1, '#fbfaff');      // panel ustu isik
 
     if (opts.civi !== false && w >= 16 && h >= 16) {   // kose percleri
       var c = [[x + 2, y + 2], [x + w - 4, y + 2], [x + 2, y + h - 4], [x + w - 4, y + h - 4]];
       for (var i = 0; i < c.length; i++) {
         rect(ctx, c[i][0], c[i][1], 2, 2, koyu);
-        rect(ctx, c[i][0], c[i][1], 1, 1, '#6e6e80');
+        rect(ctx, c[i][0], c[i][1], 1, 1, '#8f88d8');
       }
     }
   }
@@ -400,11 +400,11 @@
   /** Metal levha: baslik/isim icin. Dolgusu da metal. */
   function tabela(ctx, x, y, w, h) {
     panel(ctx, x, y, w, h, {
-      dolgu: '#2c2c36', cerceve: '#43434f', koyu: '#0b0b0f', isik: '#5a5a68'
+      dolgu: '#33305e', cerceve: '#5b56a0', koyu: '#0e0d1c', isik: '#7a73d0'
     });
     // plaka cizgileri
     for (var i = y + 7; i < y + h - 5; i += 4) {
-      rect(ctx, x + 6, i, w - 12, 1, '#26262e');
+      rect(ctx, x + 6, i, w - 12, 1, '#2a2852');
     }
   }
 

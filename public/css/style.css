@@ -1,22 +1,22 @@
 /* PARTI PANIK - arayuz stilleri */
 
-/* Oyun yazi tipi: Pixelify Sans (SIL Open Font License).
+/* Oyun yazi tipi: Rubik (SIL Open Font License), degisken agirlikli.
    Dosyalar public/fonts/ altinda duruyor - internet baglantisi gerekmez.
    Iki parca: latin (Ç Ö Ü burada) + latin-ext (Ğ İ Ş burada). */
 @font-face {
-  font-family: 'PixelOyun';
+  font-family: 'OyunYazi';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 800;
   font-display: block;
-  src: url('../fonts/pixelify-latin.woff2') format('woff2');
+  src: url('../fonts/rubik-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122;
 }
 @font-face {
-  font-family: 'PixelOyun';
+  font-family: 'OyunYazi';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 800;
   font-display: block;
-  src: url('../fonts/pixelify-latinext.woff2') format('woff2');
+  src: url('../fonts/rubik-latinext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -25,9 +25,9 @@
 html, body {
   height: 100%;
   margin: 0;
-  background: #0b0b0f;
-  color: #f6f6fa;
-  font-family: 'PixelOyun', "Courier New", ui-monospace, monospace;
+  background: #0e0d1c;
+  color: #fbfaff;
+  font-family: 'OyunYazi', 'Segoe UI', Roboto, Arial, sans-serif;
   font-weight: bold;
   overflow: hidden;
   -webkit-user-select: none;
@@ -52,93 +52,114 @@ html, body {
   overflow-y: auto;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
-  /* Ahsap tahta: dikey ekler + ustten gelen sicak isik */
+  /* Canli gece gokyuzu: mor-lacivert gecis + hafif isik lekeleri */
   background:
-    repeating-linear-gradient(90deg,
-      rgba(0,0,0,0.16) 0 2px, rgba(0,0,0,0) 2px 46px),
-    repeating-linear-gradient(0deg,
-      rgba(255,255,255,0.03) 0 1px, rgba(0,0,0,0) 1px 7px),
-    radial-gradient(circle at 50% 26%, #33333c 0%, #26262e 55%, #141419 100%);
+    radial-gradient(ellipse 70% 50% at 20% 0%, rgba(176,108,240,0.28), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 85% 15%, rgba(73,180,255,0.22), transparent 60%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(49,201,183,0.16), transparent 60%),
+    linear-gradient(170deg, #2c2960 0%, #232145 45%, #14132c 100%);
   text-align: center;
 }
 
 #menu h1 {
   margin: 0;
-  padding: 14px 26px;
-  font-size: clamp(28px, 9vw, 54px);
-  letter-spacing: 4px;
-  color: #ffcd4a;
-  line-height: 1.05;
-  /* Asili ahsap tabela: koyu dis hat + ahsap cerceve + ic isik */
-  background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0 1px, rgba(0,0,0,0) 1px 6px),
-    linear-gradient(180deg, #5a5a68 0%, #3a3a46 45%, #2a2a33 100%);
-  border: 4px solid #141419;
-  box-shadow:
-    inset 0 0 0 2px #6e6e80,
-    inset 0 4px 0 rgba(255,255,255,0.12),
-    0 8px 0 #141419;
-  text-shadow: 3px 3px 0 #43434f;
+  font-size: clamp(34px, 12vw, 68px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1;
+  /* Basligin kendisi renk gecisi; altinda yumusak bir isima */
+  background: linear-gradient(180deg, #fff6c9 0%, #ffd34d 55%, #ff8a3c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(0,0,0,0.45)) drop-shadow(0 0 18px rgba(255,211,77,0.35));
 }
-#menu h1 span { display: block; color: #7ed957; text-shadow: 3px 3px 0 #2f8a4a; }
+#menu h1 span {
+  display: block;
+  background: linear-gradient(180deg, #d6fff0 0%, #5fe08a 55%, #31c9b7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 #menu::before, #menu::after { content: ''; margin: auto; }
 
-.tag { margin: 4px 0 12px; color: #d8d8e0; letter-spacing: 2px; font-size: 13px; }
+.tag { margin: 4px 0 12px; color: #d9d6f2; letter-spacing: 2px; font-size: 13px; }
 
 #menu input {
   width: min(300px, 80vw);
-  padding: 14px;
+  padding: 13px 16px;
   font: inherit;
-  font-size: 20px;
-  letter-spacing: 4px;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 3px;
   text-align: center;
   text-transform: uppercase;
-  color: #f6f6fa;
-  background: #1e1e24;
-  border: 3px solid #141419;
-  border-radius: 0;
-  box-shadow: inset 0 0 0 2px #33333c;
+  color: #fbfaff;
+  background: rgba(14,13,28,0.55);
+  border: 2px solid rgba(139,132,216,0.45);
+  border-radius: 12px;
   outline: none;
+  transition: border-color .15s, box-shadow .15s;
 }
-#menu input:focus { border-color: #ffcd4a; }
+#menu input::placeholder { color: #7b78a8; letter-spacing: 2px; }
+#menu input:focus {
+  border-color: #ffd34d;
+  box-shadow: 0 0 0 4px rgba(255,211,77,0.18);
+}
 #code { width: 130px; letter-spacing: 8px; }
 
 .joinrow { display: flex; gap: 10px; align-items: stretch; }
 
 .mbtn {
-  padding: 14px 22px;
+  padding: 14px 24px;
   font: inherit;
-  font-size: 18px;
-  letter-spacing: 3px;
-  color: #1e1e24;
-  background: #d8d8e0;
-  /* Ic cizgi + dis cizgi: Stardew arayuzundeki cift cerceve hissi */
-  border: 3px solid #141419;
-  border-radius: 0;
-  box-shadow: inset 0 0 0 2px #9a9aab, 0 5px 0 #141419;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #fbfaff;
+  background: linear-gradient(180deg, #4a4590 0%, #363173 100%);
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 #211e4a, 0 6px 14px rgba(0,0,0,0.35);
   cursor: pointer;
+  transition: transform .08s, box-shadow .08s, filter .15s;
 }
-.mbtn:active { transform: translateY(5px); box-shadow: none; }
-.mbtn.primary { background: #ffcd4a; box-shadow: 0 5px 0 #e05a4a; width: min(300px, 80vw); }
+.mbtn:hover { filter: brightness(1.12); }
+.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 #211e4a; }
+
+.mbtn.primary {
+  width: min(300px, 80vw);
+  color: #2a1c05;
+  background: linear-gradient(180deg, #ffe07a 0%, #ffc22e 100%);
+  box-shadow: 0 4px 0 #b5811a, 0 6px 16px rgba(255,194,46,0.28);
+}
+.mbtn.primary:active { box-shadow: 0 0 0 #b5811a; }
+
 .mbtn.quick {
-  background: #7ed957; box-shadow: 0 5px 0 #2f8a4a;
-  width: min(300px, 80vw); font-size: 22px; padding: 18px 22px;
+  width: min(300px, 80vw);
+  font-size: 21px;
+  padding: 18px 24px;
+  color: #06301a;
+  background: linear-gradient(180deg, #7bf0a4 0%, #34c46d 100%);
+  box-shadow: 0 5px 0 #1d8a4a, 0 8px 20px rgba(52,196,109,0.30);
 }
-.quickhint { margin: -6px 0 4px; color: #d8d8e0; font-size: 12px; letter-spacing: 1px; }
+.mbtn.quick:active { box-shadow: 0 0 0 #1d8a4a; }
+.quickhint { margin: -6px 0 4px; color: #d9d6f2; font-size: 12px; letter-spacing: 1px; }
 
 .sep {
   width: min(300px, 80vw);
-  border-top: 2px dashed #141419;
+  border-top: 1px solid rgba(139,132,216,0.28);
   position: relative;
-  margin: 6px 0;
+  margin: 10px 0 6px;
 }
 .sep span {
-  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-  background: #26262e; padding: 0 10px; color: #d8d8e0; font-size: 13px; letter-spacing: 2px;
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: #232145; padding: 0 12px; color: #8f88d8;
+  font-size: 12px; font-weight: 600; letter-spacing: 2px;
 }
 
-#menuErr { min-height: 20px; margin: 2px 0 0; color: #f08a3c; letter-spacing: 2px; font-size: 14px; }
+#menuErr { min-height: 20px; margin: 2px 0 0; color: #ff8a3c; letter-spacing: 2px; font-size: 14px; }
 #menuErr.shake { animation: shake .35s; }
 @keyframes shake {
   0%,100% { transform: translateX(0); }
@@ -147,14 +168,14 @@ html, body {
 }
 
 .help {
-  color: #43434f; font-size: 12px; letter-spacing: 1px; line-height: 1.7;
-  margin-top: 10px; padding: 10px 16px;
-  background: #d8d8e0;
-  border: 3px solid #141419;
-  box-shadow: inset 0 0 0 2px #9a9aab;
+  color: #9d99cc; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
+  margin-top: 12px; padding: 12px 18px;
+  background: rgba(14,13,28,0.40);
+  border: 1px solid rgba(139,132,216,0.22);
+  border-radius: 12px;
   max-width: min(340px, 86vw);
 }
-.help b { color: #c04a3a; }
+.help b { color: #ffd34d; font-weight: 700; }
 
 /* ------------------------- OYUN ------------------------- */
 
@@ -163,39 +184,39 @@ html, body {
 #topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; padding: 5px 8px; min-height: 30px;
-  background: linear-gradient(180deg, #2c2c36 0%, #1e1e24 100%);
-  border-bottom: 3px solid #141419;
+  background: linear-gradient(180deg, #33305e 0%, #232145 100%);
+  border-bottom: 3px solid #171630;
 }
 #share { display: flex; align-items: center; gap: 6px; min-width: 0; }
-#share .lbl { color: #6b6b78; font-size: 11px; letter-spacing: 1px; }
+#share .lbl { color: #7b78a8; font-size: 11px; letter-spacing: 1px; }
 #shareUrl {
-  color: #ffcd4a; font-size: 12px;
+  color: #ffd34d; font-size: 12px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45vw;
 }
 .mini {
   padding: 5px 9px; font: inherit; font-size: 11px; letter-spacing: 1px;
-  color: #0b0b0f; background: #d8d8e0;
-  border: 2px solid #0b0b0f; border-radius: 0; cursor: pointer; white-space: nowrap;
+  color: #0e0d1c; background: #d9d6f2;
+  border: 2px solid #0e0d1c; border-radius: 0; cursor: pointer; white-space: nowrap;
 }
 .mini:active { transform: translateY(2px); }
 /* Odadan cikma butonu: yanlislikla basilmasin diye ayri renkte */
-.mini.danger { background: #e05a4a; color: #f6f6fa; }
+.mini.danger { background: #f45b69; color: #fbfaff; }
 /* Mac ortasinda ikinci kez onay beklerken yanip soner */
-.mini.danger.soruyor { background: #ffcd4a; color: #0b0b0f; }
+.mini.danger.soruyor { background: #ffd34d; color: #0e0d1c; }
 
 #stage {
   flex: 1 1 auto; min-height: 0;
   display: flex; align-items: center; justify-content: center;
-  background: #141419; padding: 6px;
+  background: #171630; padding: 6px;
 }
 
 canvas {
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background: #1e1e24;
-  border: 3px solid #141419;
-  box-shadow: 0 0 0 2px #3a3a46;
+  background: #232145;
+  border: 3px solid #171630;
+  box-shadow: 0 0 0 2px #4a4590;
   touch-action: none;
 }
 
@@ -206,8 +227,8 @@ canvas {
   display: flex; align-items: center; justify-content: center;
   gap: 40px; padding: 10px;
   min-height: 150px;
-  background: linear-gradient(180deg, #1e1e24 0%, #141419 100%);
-  border-top: 3px solid #141419;
+  background: linear-gradient(180deg, #232145 0%, #171630 100%);
+  border-top: 3px solid #171630;
 }
 
 #pad .grp { display: none; }
@@ -233,13 +254,13 @@ canvas {
 .pbtn {
   width: 84px; height: 84px;
   font: inherit; font-size: 26px; letter-spacing: 2px;
-  color: #0b0b0f; background: #4aa8e0;
-  border: 3px solid #0b0b0f; border-radius: 0;
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25), 0 6px 0 #141419;
+  color: #0e0d1c; background: #49b4ff;
+  border: 3px solid #0e0d1c; border-radius: 0;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25), 0 6px 0 #171630;
   cursor: pointer; touch-action: none;
   display: flex; align-items: center; justify-content: center;
 }
-.pbtn.big { width: 190px; background: #ffcd4a; box-shadow: 0 6px 0 #e05a4a; font-size: 30px; }
+.pbtn.big { width: 190px; background: #ffd34d; box-shadow: 0 6px 0 #f45b69; font-size: 30px; }
 .pbtn.down { transform: translateY(6px); box-shadow: none; filter: brightness(1.15); }
 
 /* Fare + klavye olan cihazlarda ekran butonlarina gerek yok: tamamen gizle.

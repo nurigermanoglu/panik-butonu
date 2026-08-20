@@ -76,10 +76,10 @@
   var S = 11 * OLCEK;              // cizim boyutu = 22
 
   // tahta (ust panel) tonlari
-  var AHSAP_KOYU = '#43434f';
-  var AHSAP = '#3a3a46';
-  var AHSAP_ACIK = '#4e4e5c';
-  var AHSAP_PARLAK = '#c9955c';
+  var AHSAP_KOYU = '#5a3a22';
+  var AHSAP = '#8a5a34';
+  var AHSAP_ACIK = '#b07a45';
+  var AHSAP_PARLAK = '#d9a866';
   var DELIK = '#241608';
 
   // Her blogun kendi boyasi - ahsap oyuncaklardaki gibi renkli
@@ -141,7 +141,8 @@
     draw: function (ctx, st, v) {
       var ben = st.pl[v.you];
       var yanip = ben && ben.fl === 2;
-      g.rect(ctx, 0, 0, v.W, v.H, yanip ? '#3a1a20' : '#1e1e24');
+      // Bu oyun ahsap bir oyuncak: masa da ahsap kalsin.
+      g.rect(ctx, 0, 0, v.W, v.H, yanip ? '#5a2a24' : '#3a2a1c');
 
       // ---- ust: delikli ahsap tahta ----
       var tx = 6, ty = st.slots[0].y - 26, tw = v.W - 12, th = 52;
@@ -176,7 +177,7 @@
       }
 
       // ---- alt: zemin ----
-      g.rect(ctx, 0, st.slots[0].y + 60, v.W, v.H - st.slots[0].y - 60, '#26262e');
+      g.rect(ctx, 0, st.slots[0].y + 60, v.W, v.H - st.slots[0].y - 60, '#4a341f');
       g.rect(ctx, 0, st.slots[0].y + 60, v.W, 1, AHSAP_KOYU);
 
       if (ben) {
