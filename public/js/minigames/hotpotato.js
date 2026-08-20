@@ -20,7 +20,7 @@
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
       c2.drawImage(bombaImg, BOMBA.kirp.x, BOMBA.kirp.y, BOMBA.kirp.w, BOMBA.kirp.h,
         0, 0, BOMBA.w * ic, BOMBA.h * ic);
-      PP.gfx.pixelArt(cv, { renk: 12, hat: '#20140c' });   // fotograf -> pixel art
+      PP.gfx.pixelArt(cv, { renk: 12, hat: '#0b0b0f' });   // fotograf -> pixel art
       cv._ic = ic;
       bombaOnbellek = cv;
     }
@@ -36,7 +36,7 @@
       // Fitil bittikce zemin kizarir; bomba bendeyse daha da belirgin
       var zemin = P.bg;
       if (st.boom) zemin = P.white;
-      else if (bendeMi) zemin = tehlike > 0.7 ? (Math.floor(v.time * 14) % 2 ? P.red : '#8f3524') : '#4a2418';
+      else if (bendeMi) zemin = tehlike > 0.7 ? (Math.floor(v.time * 14) % 2 ? P.red : '#8f3524') : '#3a1a20';
       g.rect(ctx, 0, 0, v.W, v.H, zemin);
 
       // ---- ust mesaj ----

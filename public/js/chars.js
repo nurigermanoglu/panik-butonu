@@ -121,7 +121,7 @@
     // 5) fotograftan pixel art'a: kenarlari sertlestir, renkleri azalt,
     //    silueti koyu hatla cevrele. Bir kez calisir, sonuc saklanir.
     if (PP.gfx && PP.gfx.pixelArt) {
-      PP.gfx.pixelArt(son, { renk: 16, hat: '#20140c' });
+      PP.gfx.pixelArt(son, { renk: 16, hat: '#0b0b0f' });
     }
 
     onbellek[anahtar] = son;

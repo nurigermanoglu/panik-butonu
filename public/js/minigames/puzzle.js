@@ -50,7 +50,7 @@
   PP.MG.puzzle = {
     draw: function (ctx, st, v) {
       var ben = st.pl[v.you];
-      var zemin = ben && ben.fl === 1 ? '#2f4a22' : ben && ben.fl === 2 ? '#4a2418' : P.bg;
+      var zemin = ben && ben.fl === 1 ? '#1f3a24' : ben && ben.fl === 2 ? '#3a1a20' : P.bg;
       g.rect(ctx, 0, 0, v.W, v.H, zemin);
 
       var ic = (PP.res && PP.res.olcek) || 1;   // ekranda kac kat gorunuyorsa o kadar detay
@@ -67,7 +67,7 @@
       }
 
       // resim cercevesi
-      g.frame(ctx, st.gx - 3, st.gy - 3, gw + 6, gh + 6, '#3d2b1f', P.gray);
+      g.frame(ctx, st.gx - 3, st.gy - 3, gw + 6, gh + 6, '#1e1e24', P.gray);
 
       if (!kynk) {
         f.text(ctx, 'RESIM YUKLENIYOR...', v.W / 2, st.gy + gh / 2, {
@@ -102,7 +102,7 @@
           g.rect(ctx, cx, cy, st.cw, 1, P.green);
           g.rect(ctx, cx, cy + st.ch - 1, st.cw, 1, P.green);
         } else {
-          g.rect(ctx, cx, cy, st.cw, st.ch, '#2a1c12');
+          g.rect(ctx, cx, cy, st.cw, st.ch, '#141419');
           for (var dd = 0; dd < st.cw; dd += 5) {          // kesikli cerceve
             g.rect(ctx, cx + dd, cy, 3, 1, P.dark);
             g.rect(ctx, cx + dd, cy + st.ch - 1, 3, 1, P.dark);
@@ -120,7 +120,7 @@
           var pc = ben.p[k];
           if (pc.st !== 0) continue;
           g.frame(ctx, pc.x - st.cw / 2 - 1, pc.y - st.ch / 2 - 1, st.cw + 2, st.ch + 2,
-            '#3d2b1f', P.gray);
+            '#1e1e24', P.gray);
           hucreCiz(pc.c, pc.x - st.cw / 2, pc.y - st.ch / 2);
         }
 

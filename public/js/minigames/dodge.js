@@ -3,21 +3,23 @@
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
 
-  var ZEMIN = '#6b4d31';
-  var CIZGI = '#8a6a45';
-  var KENAR = '#4a7a3a';
+  var ZEMIN = '#33333c';
+  var CIZGI = '#454550';
+  var KENAR = '#4a4a56';
 
-  // Engel cesitleri - ciftlik yolunda karsina cikacak seyler
+  // Engel cesitleri - hepsi ayni durmasin diye uc farkli malzeme
+  // Uc engel cesidi. Ucu de gri cakil pistten ve birbirinden ayirt edilir
+  // olmali - oyuncu bir bakista "burasi kapali" diyebilmeli.
   var TIPLER = [
-    { ana: '#a8533f', ust: '#c9705a', koyu: '#71321f' },   // tugla duvar
-    { ana: '#8a5a34', ust: '#b07a45', koyu: '#5a3a22' },   // tahta sandik
-    { ana: '#7d7566', ust: '#a49a88', koyu: '#544e44' }    // tas bariyer
+    { ana: '#c04a3a', ust: '#e0705c', koyu: '#7d2b20' },   // kirmizi duvar
+    { ana: '#d9a13c', ust: '#f0c060', koyu: '#8f6520' },   // sari sandik
+    { ana: '#4a7fa8', ust: '#6ba8d0', koyu: '#2f5570' }    // mavi bariyer
   ];
 
   PP.MG = PP.MG || {};
   PP.MG.dodge = {
     draw: function (ctx, st, v) {
-      g.doku(ctx, 0, 0, v.W, v.H, 'ahsap');
+      g.doku(ctx, 0, 0, v.W, v.H, 'metal');
 
       var n = v.players.length;
       var colW = v.W / n;
@@ -39,7 +41,7 @@
 
         // ---- pist ----
         g.rect(ctx, ax - 1, ay - 1, st.w + 2, ah + 2, P.black);
-        g.doku(ctx, ax, ay, st.w, ah, 'toprak');       // toprak yol
+        g.doku(ctx, ax, ay, st.w, ah, 'cakil');        // cakil pist
         // serit ayirici cizgiler (akiyormus gibi)
         for (var l = 1; l < st.lanes; l++) {
           var lx = ax + Math.round(seritW * l);
@@ -47,11 +49,11 @@
             g.rect(ctx, lx, ay + d, 1, 6, CIZGI);
           }
         }
-        g.doku(ctx, ax, ay, 3, ah, 'cim');                    // sol cim seridi
-        g.doku(ctx, ax + st.w - 3, ay, 3, ah, 'cim');         // sag cim seridi
-        g.rect(ctx, ax + 3, ay, st.w - 6, 9, '#4a341f');      // uzaklik hissi
+        g.doku(ctx, ax, ay, 3, ah, 'tas');                    // sol tas bordur
+        g.doku(ctx, ax + st.w - 3, ay, 3, ah, 'tas');         // sag tas bordur
+        g.rect(ctx, ax + 3, ay, st.w - 6, 9, '#26262e');      // uzaklik hissi
         ctx.save(); ctx.globalAlpha = 0.35;
-        g.rect(ctx, ax + 3, ay + 9, st.w - 6, 5, '#4a341f');  // yumusak gecis
+        g.rect(ctx, ax + 3, ay + 9, st.w - 6, 5, '#26262e');  // yumusak gecis
         ctx.restore();
 
         // ---- engel satirlari ----

@@ -46,7 +46,7 @@
       c2.imageSmoothingEnabled = true;
       if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
       c2.drawImage(img[ad], k.kirp.x, k.kirp.y, k.kirp.w, k.kirp.h, 0, 0, k.w * ic, k.h * ic);
-      PP.gfx.pixelArt(cv, { renk: 14, hat: '#20140c' });   // fotograf -> pixel art
+      PP.gfx.pixelArt(cv, { renk: 14, hat: '#0b0b0f' });   // fotograf -> pixel art
       onbellek[anahtar] = cv;
     }
     return onbellek[anahtar];
@@ -103,12 +103,12 @@
     draw: function (ctx, st, v) {
       var ben = st.pl[v.you] || { s: 0, hit: [], fl: 0 };
 
-      // Zemin: cim tarla. Vurusta yesil, bombada kirmizi parlar.
-      g.doku(ctx, 0, 0, v.W, v.H, 'cim');
+      // Zemin: cakil. Vurusta yesil, bombada kirmizi parlar.
+      g.doku(ctx, 0, 0, v.W, v.H, 'cakil');
       if (ben.fl) {
         ctx.save();
         ctx.globalAlpha = 0.45;
-        g.rect(ctx, 0, 0, v.W, v.H, ben.fl === 1 ? '#9bd45a' : '#c0503f');
+        g.rect(ctx, 0, 0, v.W, v.H, ben.fl === 1 ? '#7ed957' : '#e05a4a');
         ctx.restore();
       }
 

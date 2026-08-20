@@ -2,24 +2,24 @@
 (function (PP) {
   'use strict';
 
-  // Stardew Valley havasi: soguk mavi/mor yerine sicak ahsap, parsomen ve
-  // tarla yesilleri. Isimler ayni kaldi, bu yuzden butun oyun tek yerden
-  // yeni temaya gecer.
+  // Notr koyu tema: zemin gri/antrasit, vurgular canli. Hangi mini oyun
+  // olursa olsun uzerine oturur. Isimler ayni kaldi, bu yuzden butun oyun
+  // tek yerden tema degistirir.
   var PAL = {
-    bg: '#3d2b1f',      // koyu ahsap - genel arka plan
-    bg2: '#5a4029',     // acik ahsap - vurgulu arka plan
-    dark: '#2a1c12',    // golge / cerceve ici
-    gray: '#8a7050',    // solgun ahsap - pasif yazi
-    light: '#e8d5a8',   // parsomen - normal yazi
-    white: '#fff4dc',   // sicak beyaz - one cikan yazi
-    yellow: '#f5c542',  // bugday sarisi
-    orange: '#e08a3c',  // kabak turuncusu
-    red: '#c0503f',     // kiremit kirmizisi
-    green: '#9bd45a',   // taze yaprak
-    teal: '#4a9d5f',    // koyu yaprak
-    blue: '#5aa9e6',    // gokyuzu
-    purple: '#a06cb5',  // lavanta
-    black: '#1a1108'    // en koyu ton
+    bg: '#1e1e24',      // koyu gri - genel arka plan
+    bg2: '#2c2c36',     // biraz acik gri - vurgulu arka plan
+    dark: '#141419',    // golge / cerceve ici
+    gray: '#6b6b78',    // pasif yazi
+    light: '#d8d8e0',   // normal yazi
+    white: '#f6f6fa',   // one cikan yazi
+    yellow: '#ffcd4a',
+    orange: '#f08a3c',
+    red: '#e05a4a',
+    green: '#7ed957',
+    teal: '#3fb488',
+    blue: '#4aa8e0',
+    purple: '#a06cd8',
+    black: '#0b0b0f'    // en koyu ton
   };
 
   // Oyuncu renkleri slot sirasina gore (4 kisiye kadar hazir)
@@ -124,7 +124,7 @@
   // ================================================================
   //  DOKULAR
   //
-  //  Duz renk yerine ahsap damari, cim tutamlari, toprak taneleri.
+  //  Duz renk yerine metal plaka, zemin derzi, cakil taneleri.
   //  Her doku 16x16'lik bir karo olarak BIR KEZ cizilip desen olarak
   //  saklanir; ekrana tek bir fillRect ile basilir. Boylece binlerce
   //  kucuk dikdortgen cizmek gerekmez.
@@ -144,52 +144,56 @@
   }
 
   var DOKU_TARIF = {
-    ahsap: function (c) {
-      c.fillStyle = '#6b4d31'; c.fillRect(0, 0, KARO, KARO);
+    // Metal panel: plaka ekleri, hafif cizik ve percler
+    metal: function (c) {
+      c.fillStyle = '#26262e'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 1);
-          if (y % 8 === 7) { c.fillStyle = '#4a341f'; c.fillRect(x, y, 1, 1); }      // tahta eki
-          else if (r > 0.88) { c.fillStyle = '#7d5b3b'; c.fillRect(x, y, 1, 1); }    // acik damar
-          else if (r < 0.10) { c.fillStyle = '#5a4029'; c.fillRect(x, y, 1, 1); }    // koyu damar
+          if (y % 8 === 7) { c.fillStyle = '#191920'; c.fillRect(x, y, 1, 1); }      // plaka eki
+          else if (r > 0.90) { c.fillStyle = '#32323c'; c.fillRect(x, y, 1, 1); }    // isik cizigi
+          else if (r < 0.08) { c.fillStyle = '#1f1f26'; c.fillRect(x, y, 1, 1); }
         }
       }
-      c.fillStyle = '#8a6a45';
+      c.fillStyle = '#3a3a46';
       c.fillRect(0, 0, KARO, 1); c.fillRect(0, 8, KARO, 1);                          // ek ustu isik
+      c.fillStyle = '#43434f';                                                       // percler
+      c.fillRect(1, 1, 1, 1); c.fillRect(KARO - 2, 1, 1, 1);
+      c.fillRect(1, 9, 1, 1); c.fillRect(KARO - 2, 9, 1, 1);
     },
-    cim: function (c) {
-      c.fillStyle = '#3f7a3a'; c.fillRect(0, 0, KARO, KARO);
+    // Zemin karolari: koyu doseme + ince derz
+    zemin: function (c) {
+      c.fillStyle = '#232329'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 2);
-          if (r > 0.90) { c.fillStyle = '#5a9b45'; c.fillRect(x, y, 1, 1); }
-          else if (r < 0.12) { c.fillStyle = '#33632f'; c.fillRect(x, y, 1, 1); }
+          if (r > 0.93) { c.fillStyle = '#2c2c34'; c.fillRect(x, y, 1, 1); }
+          else if (r < 0.07) { c.fillStyle = '#1c1c22'; c.fillRect(x, y, 1, 1); }
         }
       }
-      // ot tutamlari
-      for (var t = 0; t < 5; t++) {
-        var tx = Math.floor(karisik(t, 0, 3) * KARO), ty = Math.floor(karisik(0, t, 4) * KARO);
-        c.fillStyle = '#6cb050';
-        c.fillRect(tx, ty, 1, 2); c.fillRect(tx + 1, ty + 1, 1, 1);
-      }
+      c.fillStyle = '#17171d';
+      c.fillRect(0, 0, KARO, 1); c.fillRect(0, 0, 1, KARO);                          // derz
+      c.fillStyle = '#2e2e38';
+      c.fillRect(1, 1, KARO - 1, 1);                                                 // derz isigi
     },
-    toprak: function (c) {
-      c.fillStyle = '#6b4d31'; c.fillRect(0, 0, KARO, KARO);
+    // Cakil: kosu pisti / kostebek zemini
+    cakil: function (c) {
+      c.fillStyle = '#33333c'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 5);
-          if (r > 0.93) { c.fillStyle = '#8a6a45'; c.fillRect(x, y, 1, 1); }         // tane
-          else if (r < 0.09) { c.fillStyle = '#513922'; c.fillRect(x, y, 1, 1); }    // cakil
+          if (r > 0.92) { c.fillStyle = '#454550'; c.fillRect(x, y, 1, 1); }         // acik tas
+          else if (r < 0.10) { c.fillStyle = '#26262e'; c.fillRect(x, y, 1, 1); }    // koyu tas
         }
       }
     },
     tas: function (c) {
-      c.fillStyle = '#7d7566'; c.fillRect(0, 0, KARO, KARO);
+      c.fillStyle = '#4a4a56'; c.fillRect(0, 0, KARO, KARO);
       for (var y = 0; y < KARO; y++) {
         for (var x = 0; x < KARO; x++) {
           var r = karisik(x, y, 6);
-          if (r > 0.90) { c.fillStyle = '#98907f'; c.fillRect(x, y, 1, 1); }
-          else if (r < 0.10) { c.fillStyle = '#635c50'; c.fillRect(x, y, 1, 1); }
+          if (r > 0.90) { c.fillStyle = '#5c5c6a'; c.fillRect(x, y, 1, 1); }
+          else if (r < 0.10) { c.fillStyle = '#3a3a44'; c.fillRect(x, y, 1, 1); }
         }
       }
     }
@@ -209,7 +213,7 @@
     return p;
   }
 
-  /** Dokulu dolgu. tip: 'ahsap' | 'cim' | 'toprak' | 'tas' */
+  /** Dokulu dolgu. tip: 'metal' | 'zemin' | 'cakil' | 'tas' */
   function doku(ctx, x, y, w, h, tip) {
     var p = desen(ctx, tip);
     if (!p) return rect(ctx, x, y, w, h, PAL.bg);
@@ -369,10 +373,10 @@
    */
   function panel(ctx, x, y, w, h, opts) {
     opts = opts || {};
-    var dolgu = opts.dolgu || '#e8d5a8';
-    var cerceve = opts.cerceve || '#8a5a34';
-    var koyu = opts.koyu || '#3d2b1f';
-    var isik = opts.isik || '#b07a45';
+    var dolgu = opts.dolgu || '#d8d8e0';
+    var cerceve = opts.cerceve || '#3a3a46';
+    var koyu = opts.koyu || '#0b0b0f';
+    var isik = opts.isik || '#4e4e5c';
     x = Math.round(x); y = Math.round(y); w = Math.round(w); h = Math.round(h);
     if (w < 8 || h < 8) return;
 
@@ -382,25 +386,25 @@
     rect(ctx, x + 1, y + h - 2, w - 2, 1, koyu);       // cerceve alti golge
     rect(ctx, x + 3, y + 3, w - 6, h - 6, koyu);       // ic hat
     rect(ctx, x + 4, y + 4, w - 8, h - 8, dolgu);      // parsomen
-    rect(ctx, x + 4, y + 4, w - 8, 1, '#fff4dc');      // parsomen ustu isik
+    rect(ctx, x + 4, y + 4, w - 8, 1, '#f6f6fa');      // panel ustu isik
 
     if (opts.civi !== false && w >= 16 && h >= 16) {   // kose percleri
       var c = [[x + 2, y + 2], [x + w - 4, y + 2], [x + 2, y + h - 4], [x + w - 4, y + h - 4]];
       for (var i = 0; i < c.length; i++) {
         rect(ctx, c[i][0], c[i][1], 2, 2, koyu);
-        rect(ctx, c[i][0], c[i][1], 1, 1, '#d8b98a');
+        rect(ctx, c[i][0], c[i][1], 1, 1, '#6e6e80');
       }
     }
   }
 
-  /** Ahsap tabela: baslik/isim icin. Dolgusu da ahsap. */
+  /** Metal levha: baslik/isim icin. Dolgusu da metal. */
   function tabela(ctx, x, y, w, h) {
     panel(ctx, x, y, w, h, {
-      dolgu: '#8a5a34', cerceve: '#5a3a22', koyu: '#2a1c12', isik: '#a87a4a'
+      dolgu: '#2c2c36', cerceve: '#43434f', koyu: '#0b0b0f', isik: '#5a5a68'
     });
-    // tahta damari
+    // plaka cizgileri
     for (var i = y + 7; i < y + h - 5; i += 4) {
-      rect(ctx, x + 6, i, w - 12, 1, '#7d5230');
+      rect(ctx, x + 6, i, w - 12, 1, '#26262e');
     }
   }
 
