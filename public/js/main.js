@@ -624,7 +624,7 @@
   function drawLobby() {
     g.rect(ctx, 0, 0, W, H, P.bg);
     for (var i = 0; i < W; i += 16) {
-      g.rect(ctx, i, 0, 8, H, '#1e2035');
+      g.rect(ctx, i, 0, 8, H, '#33241a');   // ahsap tahta ekleri
     }
 
     f.text(ctx, 'PARTI PANIK', W / 2, 8, { color: P.yellow, scale: 3, align: 'center', shadow: P.black });

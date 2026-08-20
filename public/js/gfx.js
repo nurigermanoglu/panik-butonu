@@ -2,21 +2,24 @@
 (function (PP) {
   'use strict';
 
+  // Stardew Valley havasi: soguk mavi/mor yerine sicak ahsap, parsomen ve
+  // tarla yesilleri. Isimler ayni kaldi, bu yuzden butun oyun tek yerden
+  // yeni temaya gecer.
   var PAL = {
-    bg: '#1a1c2c',
-    bg2: '#29366f',
-    dark: '#333c57',
-    gray: '#566c86',
-    light: '#94b0c2',
-    white: '#f4f4f4',
-    yellow: '#ffcd75',
-    orange: '#ef7d57',
-    red: '#b13e53',
-    green: '#a7f070',
-    teal: '#38b764',
-    blue: '#41a6f6',
-    purple: '#b55088',
-    black: '#0d0e1a'
+    bg: '#3d2b1f',      // koyu ahsap - genel arka plan
+    bg2: '#5a4029',     // acik ahsap - vurgulu arka plan
+    dark: '#2a1c12',    // golge / cerceve ici
+    gray: '#8a7050',    // solgun ahsap - pasif yazi
+    light: '#e8d5a8',   // parsomen - normal yazi
+    white: '#fff4dc',   // sicak beyaz - one cikan yazi
+    yellow: '#f5c542',  // bugday sarisi
+    orange: '#e08a3c',  // kabak turuncusu
+    red: '#c0503f',     // kiremit kirmizisi
+    green: '#9bd45a',   // taze yaprak
+    teal: '#4a9d5f',    // koyu yaprak
+    blue: '#5aa9e6',    // gokyuzu
+    purple: '#a06cb5',  // lavanta
+    black: '#1a1108'    // en koyu ton
   };
 
   // Oyuncu renkleri slot sirasina gore (4 kisiye kadar hazir)

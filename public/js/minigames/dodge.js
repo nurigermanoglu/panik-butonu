@@ -3,15 +3,15 @@
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
 
-  var ZEMIN = '#3a3550';
-  var CIZGI = '#6b6390';
-  var KENAR = '#8d84b8';
+  var ZEMIN = '#6b4d31';
+  var CIZGI = '#8a6a45';
+  var KENAR = '#4a7a3a';
 
-  // Engel cesitleri - hepsi ayni durmasin diye
+  // Engel cesitleri - ciftlik yolunda karsina cikacak seyler
   var TIPLER = [
-    { ana: '#b13e53', ust: '#e0687f', koyu: '#7d2739' },   // duvar
-    { ana: '#7b4bb5', ust: '#a878e0', koyu: '#553180' },   // mor blok
-    { ana: '#3f7fa8', ust: '#6bb2d8', koyu: '#2a5875' }    // metal bariyer
+    { ana: '#a8533f', ust: '#c9705a', koyu: '#71321f' },   // tugla duvar
+    { ana: '#8a5a34', ust: '#b07a45', koyu: '#5a3a22' },   // tahta sandik
+    { ana: '#7d7566', ust: '#a49a88', koyu: '#544e44' }    // tas bariyer
   ];
 
   PP.MG = PP.MG || {};
@@ -49,7 +49,7 @@
         }
         g.rect(ctx, ax, ay, 2, ah, KENAR);
         g.rect(ctx, ax + st.w - 2, ay, 2, ah, KENAR);
-        g.rect(ctx, ax + 2, ay, st.w - 4, 10, '#2f2b44');     // uzaklik hissi
+        g.rect(ctx, ax + 2, ay, st.w - 4, 10, '#4a341f');     // uzaklik hissi
 
         // ---- engel satirlari ----
         for (var r = 0; r < st.rows.length; r++) {

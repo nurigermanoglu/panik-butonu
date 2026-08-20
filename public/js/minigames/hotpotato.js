@@ -35,7 +35,7 @@
       // Fitil bittikce zemin kizarir; bomba bendeyse daha da belirgin
       var zemin = P.bg;
       if (st.boom) zemin = P.white;
-      else if (bendeMi) zemin = tehlike > 0.7 ? (Math.floor(v.time * 14) % 2 ? P.red : '#7a2438') : '#3a1f2e';
+      else if (bendeMi) zemin = tehlike > 0.7 ? (Math.floor(v.time * 14) % 2 ? P.red : '#8f3524') : '#4a2418';
       g.rect(ctx, 0, 0, v.W, v.H, zemin);
 
       // ---- ust mesaj ----

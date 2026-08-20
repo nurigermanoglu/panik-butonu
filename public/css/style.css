@@ -1,12 +1,33 @@
 /* PARTI PANIK - arayuz stilleri */
+
+/* Oyun yazi tipi: Pixelify Sans (SIL Open Font License).
+   Dosyalar public/fonts/ altinda duruyor - internet baglantisi gerekmez.
+   Iki parca: latin (Ç Ö Ü burada) + latin-ext (Ğ İ Ş burada). */
+@font-face {
+  font-family: 'PixelOyun';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../fonts/pixelify-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122;
+}
+@font-face {
+  font-family: 'PixelOyun';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../fonts/pixelify-latinext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF;
+}
+
 * { box-sizing: border-box; }
 
 html, body {
   height: 100%;
   margin: 0;
-  background: #0d0e1a;
-  color: #f4f4f4;
-  font-family: "Courier New", ui-monospace, monospace;
+  background: #1a1108;
+  color: #fff4dc;
+  font-family: 'PixelOyun', "Courier New", ui-monospace, monospace;
   font-weight: bold;
   overflow: hidden;
   -webkit-user-select: none;
@@ -31,8 +52,13 @@ html, body {
   overflow-y: auto;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
+  /* Ahsap tahta: dikey ekler + ustten gelen sicak isik */
   background:
-    radial-gradient(circle at 50% 30%, #29366f 0%, #1a1c2c 60%, #0d0e1a 100%);
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,0.16) 0 2px, rgba(0,0,0,0) 2px 46px),
+    repeating-linear-gradient(0deg,
+      rgba(255,255,255,0.03) 0 1px, rgba(0,0,0,0) 1px 7px),
+    radial-gradient(circle at 50% 26%, #6b4d31 0%, #4a341f 55%, #2a1c12 100%);
   text-align: center;
 }
 
@@ -40,15 +66,15 @@ html, body {
   margin: 0;
   font-size: clamp(32px, 11vw, 64px);
   letter-spacing: 4px;
-  color: #ffcd75;
-  text-shadow: 4px 4px 0 #b13e53, 8px 8px 0 #0d0e1a;
+  color: #f5c542;
+  text-shadow: 4px 4px 0 #c0503f, 8px 8px 0 #1a1108;
   line-height: 1;
 }
-#menu h1 span { display: block; color: #41a6f6; text-shadow: 4px 4px 0 #29366f, 8px 8px 0 #0d0e1a; }
+#menu h1 span { display: block; color: #5aa9e6; text-shadow: 4px 4px 0 #5a4029, 8px 8px 0 #1a1108; }
 
 #menu::before, #menu::after { content: ''; margin: auto; }
 
-.tag { margin: 4px 0 12px; color: #94b0c2; letter-spacing: 2px; font-size: 13px; }
+.tag { margin: 4px 0 12px; color: #e8d5a8; letter-spacing: 2px; font-size: 13px; }
 
 #menu input {
   width: min(300px, 80vw);
@@ -58,13 +84,14 @@ html, body {
   letter-spacing: 4px;
   text-align: center;
   text-transform: uppercase;
-  color: #f4f4f4;
-  background: #1a1c2c;
-  border: 3px solid #566c86;
-  border-radius: 6px;
+  color: #fff4dc;
+  background: #3d2b1f;
+  border: 3px solid #2a1c12;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 2px #6b4d31;
   outline: none;
 }
-#menu input:focus { border-color: #ffcd75; }
+#menu input:focus { border-color: #f5c542; }
 #code { width: 130px; letter-spacing: 8px; }
 
 .joinrow { display: flex; gap: 10px; align-items: stretch; }
@@ -74,33 +101,34 @@ html, body {
   font: inherit;
   font-size: 18px;
   letter-spacing: 3px;
-  color: #0d0e1a;
-  background: #94b0c2;
-  border: 3px solid #0d0e1a;
-  border-radius: 6px;
-  box-shadow: 0 5px 0 #333c57;
+  color: #3d2b1f;
+  background: #e8d5a8;
+  /* Ic cizgi + dis cizgi: Stardew arayuzundeki cift cerceve hissi */
+  border: 3px solid #2a1c12;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 2px #c9ae7c, 0 5px 0 #2a1c12;
   cursor: pointer;
 }
 .mbtn:active { transform: translateY(5px); box-shadow: none; }
-.mbtn.primary { background: #ffcd75; box-shadow: 0 5px 0 #b13e53; width: min(300px, 80vw); }
+.mbtn.primary { background: #f5c542; box-shadow: 0 5px 0 #c0503f; width: min(300px, 80vw); }
 .mbtn.quick {
-  background: #a7f070; box-shadow: 0 5px 0 #2f7d3a;
+  background: #9bd45a; box-shadow: 0 5px 0 #3c7a3f;
   width: min(300px, 80vw); font-size: 22px; padding: 18px 22px;
 }
-.quickhint { margin: -6px 0 4px; color: #94b0c2; font-size: 12px; letter-spacing: 1px; }
+.quickhint { margin: -6px 0 4px; color: #e8d5a8; font-size: 12px; letter-spacing: 1px; }
 
 .sep {
   width: min(300px, 80vw);
-  border-top: 2px dashed #333c57;
+  border-top: 2px dashed #2a1c12;
   position: relative;
   margin: 6px 0;
 }
 .sep span {
   position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-  background: #171a2c; padding: 0 10px; color: #566c86; font-size: 13px; letter-spacing: 2px;
+  background: #33241a; padding: 0 10px; color: #8a7050; font-size: 13px; letter-spacing: 2px;
 }
 
-#menuErr { min-height: 20px; margin: 2px 0 0; color: #ef7d57; letter-spacing: 2px; font-size: 14px; }
+#menuErr { min-height: 20px; margin: 2px 0 0; color: #e08a3c; letter-spacing: 2px; font-size: 14px; }
 #menuErr.shake { animation: shake .35s; }
 @keyframes shake {
   0%,100% { transform: translateX(0); }
@@ -108,8 +136,8 @@ html, body {
   75% { transform: translateX(7px); }
 }
 
-.help { color: #566c86; font-size: 12px; letter-spacing: 1px; line-height: 1.7; margin-top: 10px; }
-.help b { color: #94b0c2; }
+.help { color: #8a7050; font-size: 12px; letter-spacing: 1px; line-height: 1.7; margin-top: 10px; }
+.help b { color: #e8d5a8; }
 
 /* ------------------------- OYUN ------------------------- */
 
@@ -118,37 +146,37 @@ html, body {
 #topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; padding: 5px 8px; min-height: 30px;
-  background: #0d0e1a; border-bottom: 2px solid #1a1c2c;
+  background: #1a1108; border-bottom: 2px solid #3d2b1f;
 }
 #share { display: flex; align-items: center; gap: 6px; min-width: 0; }
-#share .lbl { color: #566c86; font-size: 11px; letter-spacing: 1px; }
+#share .lbl { color: #8a7050; font-size: 11px; letter-spacing: 1px; }
 #shareUrl {
-  color: #ffcd75; font-size: 12px;
+  color: #f5c542; font-size: 12px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45vw;
 }
 .mini {
   padding: 5px 9px; font: inherit; font-size: 11px; letter-spacing: 1px;
-  color: #0d0e1a; background: #94b0c2;
-  border: 2px solid #0d0e1a; border-radius: 4px; cursor: pointer; white-space: nowrap;
+  color: #1a1108; background: #e8d5a8;
+  border: 2px solid #1a1108; border-radius: 0; cursor: pointer; white-space: nowrap;
 }
 .mini:active { transform: translateY(2px); }
 /* Odadan cikma butonu: yanlislikla basilmasin diye ayri renkte */
-.mini.danger { background: #b13e53; color: #f4f4f4; }
+.mini.danger { background: #c0503f; color: #fff4dc; }
 /* Mac ortasinda ikinci kez onay beklerken yanip soner */
-.mini.danger.soruyor { background: #ffcd75; color: #0d0e1a; }
+.mini.danger.soruyor { background: #f5c542; color: #1a1108; }
 
 #stage {
   flex: 1 1 auto; min-height: 0;
   display: flex; align-items: center; justify-content: center;
-  background: #0d0e1a; padding: 4px;
+  background: #1a1108; padding: 4px;
 }
 
 canvas {
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background: #1a1c2c;
-  border: 2px solid #333c57;
+  background: #3d2b1f;
+  border: 2px solid #2a1c12;
   touch-action: none;
 }
 
@@ -159,7 +187,7 @@ canvas {
   display: flex; align-items: center; justify-content: center;
   gap: 40px; padding: 10px;
   min-height: 150px;
-  background: #0d0e1a; border-top: 2px solid #1a1c2c;
+  background: #1a1108; border-top: 2px solid #3d2b1f;
 }
 
 #pad .grp { display: none; }
@@ -185,13 +213,13 @@ canvas {
 .pbtn {
   width: 84px; height: 84px;
   font: inherit; font-size: 26px; letter-spacing: 2px;
-  color: #0d0e1a; background: #41a6f6;
-  border: 3px solid #0d0e1a; border-radius: 10px;
-  box-shadow: 0 6px 0 #29366f;
+  color: #1a1108; background: #5aa9e6;
+  border: 3px solid #1a1108; border-radius: 0;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25), 0 6px 0 #2a1c12;
   cursor: pointer; touch-action: none;
   display: flex; align-items: center; justify-content: center;
 }
-.pbtn.big { width: 190px; background: #ffcd75; box-shadow: 0 6px 0 #b13e53; font-size: 30px; }
+.pbtn.big { width: 190px; background: #f5c542; box-shadow: 0 6px 0 #c0503f; font-size: 30px; }
 .pbtn.down { transform: translateY(6px); box-shadow: none; filter: brightness(1.15); }
 
 /* Fare + klavye olan cihazlarda ekran butonlarina gerek yok: tamamen gizle.

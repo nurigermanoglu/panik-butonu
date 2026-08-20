@@ -20,7 +20,7 @@
       var ben = st.pl[v.you] || { p: 0, pen: 0, cut: [] };
       var sikisik = ben.pen > 0;
 
-      g.rect(ctx, 0, 0, v.W, v.H, sikisik ? '#3a2028' : '#181b28');
+      g.rect(ctx, 0, 0, v.W, v.H, sikisik ? '#4a2418' : '#2a1c12');
 
       // ---- ust panel: kesim sirasi ----
       f.text(ctx, 'SIRA:', 6, v.top + 3, { color: P.light, scale: 1 });

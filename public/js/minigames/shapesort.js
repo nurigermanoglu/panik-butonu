@@ -141,7 +141,7 @@
     draw: function (ctx, st, v) {
       var ben = st.pl[v.you];
       var yanip = ben && ben.fl === 2;
-      g.rect(ctx, 0, 0, v.W, v.H, yanip ? '#3a2028' : '#2a1a10');
+      g.rect(ctx, 0, 0, v.W, v.H, yanip ? '#4a2418' : '#3d2b1f');
 
       // ---- ust: delikli ahsap tahta ----
       var tx = 6, ty = st.slots[0].y - 26, tw = v.W - 12, th = 52;
@@ -176,7 +176,7 @@
       }
 
       // ---- alt: zemin ----
-      g.rect(ctx, 0, st.slots[0].y + 60, v.W, v.H - st.slots[0].y - 60, '#3a2416');
+      g.rect(ctx, 0, st.slots[0].y + 60, v.W, v.H - st.slots[0].y - 60, '#4a341f');
       g.rect(ctx, 0, st.slots[0].y + 60, v.W, 1, AHSAP_KOYU);
 
       if (ben) {
