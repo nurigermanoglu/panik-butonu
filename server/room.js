@@ -5,10 +5,16 @@ const Game = require('./gameLoop');
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // karistirilabilir harfler (I,O,0,1) yok
 
+// Isim tek bir kuralla duzenlenir; hem oyuncu olusturulurken hem de
+// "ayni isimle geri donen var mi" aranirken ayni sonucu vermeli.
+function adDuzenle(name) {
+  return (name || '').toString().trim().slice(0, 10).toUpperCase() || 'OYUNCU';
+}
+
 class Player {
   constructor(conn, name, slot) {
     this.conn = conn;
-    this.name = (name || '').toString().trim().slice(0, 10).toUpperCase() || 'OYUNCU';
+    this.name = adDuzenle(name);
     this.slot = slot;          // 0..MAX_PLAYERS-1  -> renk ve konum bu slota gore
     this.id = 'p' + slot;
     this.char = slot % cfg.CHAR_COUNT;   // baslangicta herkes farkli karakter
@@ -108,6 +114,14 @@ class Room {
     return this.players.find((p) => p.token === token) || null;
   }
 
+  // Ayni isimle kopmus ve yeri hala tutulan biri var mi?
+  // Sekmesini kapatip geri gelen kisi, oda "mac suruyor" diye disarida
+  // kalmasin: eski yerine otursun.
+  kopukIsimle(name) {
+    const ad = adDuzenle(name);
+    return this.players.find((p) => !p.connected && p.name === ad) || null;
+  }
+
   // Kopuk oyuncunun yerinin tutulmasina kac saniye kaldi (0 = kopuk yok)
   graceLeft() {
     let en = 0;
@@ -183,7 +197,10 @@ class RoomManager {
   }
 
   get(code) {
-    return this.rooms.get(String(code || '').trim().toUpperCase()) || null;
+    const r = this.rooms.get(String(code || '').trim().toUpperCase());
+    // Bosalmis oda bir sonraki tikte silinir; o arada birinin icine
+    // girmesine izin verirsek oyun donmus bir odaya duser.
+    return r && !r.dead ? r : null;
   }
 
   tickAll(dt) {

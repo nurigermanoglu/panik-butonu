@@ -83,6 +83,23 @@ ws.attach(server, (conn) => {
         if (room) return;
         const r = rooms.get(msg.code);
         if (!r) return fail('ODA BULUNAMADI');
+
+        // Sekmesini kapatip geri gelen kisi burada takiliyordu: yeri hala
+        // tutuluyor, oda onu bekliyor, ama "OYUN BASLAMIS" deyip iceri
+        // almiyorduk. Ayni isimle kopuk bekleyen varsa eski yerine otur.
+        const geri = r.kopukIsimle(msg.name);
+        if (geri) {
+          r.reattach(geri, conn);
+          room = r;
+          player = geri;
+          conn.sendJSON({
+            t: 'joined', code: r.code, id: geri.id, slot: geri.slot,
+            token: geri.token, geri: true,
+          });
+          r.broadcast(r.game.snapshot());
+          break;
+        }
+
         if (r.isFull) return fail('ODA DOLU');
         if (r.game.phase !== 'lobby') return fail('OYUN BASLAMIS');
         enter(r, msg.name);
