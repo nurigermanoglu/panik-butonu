@@ -55,7 +55,7 @@
     '*': '...../#.#.#/.###./#####/.###./#.#.#/.....',
     '<': '...#./..#../.#.../#..../.#.../..#../...#.',
     '>': '.#.../..#../...#./....#/...#./..#../.#...',
-    '%': '#...#/...#./...#./..#../.#.../.#.../#...#'
+    '%': '##..#/##.#./...#./..#../.#.../.#.##/#..##'
   };
 
   // Turkce harfler: temel harf + ustune/altina isaret
@@ -71,6 +71,43 @@
 
   var CW = 5, CH = 7, GAP = 1;
 
+  // ---- orantili genislik ----
+  //
+  // Harfler 5 piksel genisliginde sabit kalir (blok gorunum bozulmasin), ama
+  // NOKTA, VIRGUL, UNLEM gibi aslinda 1-2 piksel olan isaretler de 5 piksel
+  // yer kapliyordu. "3 / 5 DOSYA" ya da "1.INCI!" gibi yazilarda arada kocaman
+  // bosluklar olusuyordu. Bu isaretler artik gercek genisligi kadar yer kaplar.
+  var DAR = { '!': 1, '.': 1, ':': 1, "'": 1, ',': 2, '1': 3, '(': 3, ')': 3, ' ': 3 };
+
+  // Her glifin mürekkebinin hangi sutunda basladigi/bittigi bir kez olculur;
+  // dar glifler soldan hizalanarak cizilir, yoksa kendi bosluguyla gelirdi.
+  var OLCU = {};
+  (function olc() {
+    for (var ch in G) {
+      var rows = G[ch].split('/');
+      var min = 99, max = -1;
+      for (var r = 0; r < rows.length; r++) {
+        for (var c = 0; c < rows[r].length; c++) {
+          if (rows[r][c] === '#') { if (c < min) min = c; if (c > max) max = c; }
+        }
+      }
+      OLCU[ch] = max < 0 ? { off: 0, w: CW } : { off: min, w: max - min + 1 };
+    }
+  })();
+
+  // Bu glif ekranda kac piksel yer kaplar (bosluk haric)
+  function glifW(ch) {
+    var d = DECO[ch];
+    if (d) return CW;                       // Turkce harfler temel harf kadar
+    return DAR[ch] !== undefined ? DAR[ch] : CW;
+  }
+
+  // Dar glifler soldan hizalansin diye cizerken uygulanacak kaydirma
+  function glifOff(ch) {
+    if (DECO[ch] || DAR[ch] === undefined) return 0;
+    return OLCU[ch] ? OLCU[ch].off : 0;
+  }
+
   function rowsOf(ch) {
     if (G[ch]) return G[ch].split('/');
     return null;
@@ -81,6 +118,7 @@
     var base = deco ? deco.b : ch;
     var rows = rowsOf(base);
     if (!rows) return;
+    x -= glifOff(ch) * s;                   // dar glifi sola cek
 
     for (var r = 0; r < rows.length; r++) {
       var row = rows[r];
@@ -110,8 +148,11 @@
 
   function width(text, s) {
     s = s || 1;
-    var n = String(text).length;
-    return n <= 0 ? 0 : (n * (CW + GAP) - GAP) * s;
+    var str = String(text).toUpperCase();
+    if (!str.length) return 0;
+    var w = 0;
+    for (var i = 0; i < str.length; i++) w += glifW(str[i]) + GAP;
+    return (w - GAP) * s;                   // sondaki bosluk sayilmaz
   }
 
   /**
@@ -129,15 +170,20 @@
     sx = Math.round(sx);
     y = Math.round(y);
 
+    var ilerle;
     if (opts.shadow) {
       ctx.fillStyle = opts.shadow;
+      ilerle = sx;
       for (var k = 0; k < str.length; k++) {
-        drawGlyph(ctx, str[k], sx + k * (CW + GAP) * s, y + s, s);
+        drawGlyph(ctx, str[k], ilerle, y + s, s);
+        ilerle += (glifW(str[k]) + GAP) * s;
       }
     }
     ctx.fillStyle = opts.color || '#f4f4f4';
+    ilerle = sx;
     for (var i = 0; i < str.length; i++) {
-      drawGlyph(ctx, str[i], sx + i * (CW + GAP) * s, y, s);
+      drawGlyph(ctx, str[i], ilerle, y, s);
+      ilerle += (glifW(str[i]) + GAP) * s;
     }
     return w;
   }
