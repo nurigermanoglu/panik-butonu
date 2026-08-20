@@ -26,7 +26,10 @@ module.exports = {
   controls: 'pointer',
   duration: DURATION,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const s = Math.max(0, Math.min(1, seviye || 0));
+    const tempo = 1 + 0.40 * s;     // turlar ilerledikce %40'a kadar hizlanir
+    const sure = DURATION;
     // Program: ayni anda 1-2 kostebek olacak sekilde.
     // AYNI DELIKTEN UST USTE CIKMA ENGELI: bir delik bosaldiktan sonra en az MIN_GAP
     // saniye beklenir ve ust uste ayni delik hic secilmez. Boylece oyuncu bir delige
@@ -36,8 +39,8 @@ module.exports = {
     let sonDelik = -1;
     let t = 0.6;
 
-    while (t < DURATION - 0.5) {
-      const dur = Math.max(0.55, 1.25 - t * 0.045);      // zamanla kisalir
+    while (t < sure - 0.5) {
+      const dur = Math.max(0.34, (1.25 - t * 0.045) / tempo);   // tur icinde ve turlar boyunca kisalir
 
       let uygun = [];
       for (let h = 0; h < HOLES.length; h++) {
@@ -53,7 +56,7 @@ module.exports = {
       pops.push({ t, h, bomb: Math.random() < BOMB_CHANCE, dur });
       bosaldi[h] = t + dur;
       sonDelik = h;
-      t += Math.max(0.32, 0.85 - t * 0.035);
+      t += Math.max(0.20, (0.85 - t * 0.035) / tempo);
     }
 
     const pl = {};
@@ -61,6 +64,7 @@ module.exports = {
 
     return {
       ids: playerIds.slice(),
+      sure,
       pops,
       pl,
       t: 0,

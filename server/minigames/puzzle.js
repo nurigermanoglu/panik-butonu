@@ -55,7 +55,11 @@ module.exports = {
   controls: 'pointer',
   duration: DURATION,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const sv = Math.max(0, Math.min(1, seviye || 0));
+    // Parca sayisi ekrandaki 3 yuvaya sabit; hizlanma sureyi kisaltarak olur
+    const sure = DURATION * (1 - 0.28 * sv);
+
     const img = sonrakiResim();
     const eksik = karistir(CANDIDATES).slice(0, MISSING);
     const parcaSirasi = karistir(eksik);
@@ -67,12 +71,13 @@ module.exports = {
           cell: cellIdx, x: PIECE_POS[i].x, y: PIECE_POS[i].y,
           hx: PIECE_POS[i].x, hy: PIECE_POS[i].y, st: 0,
         })),
-        held: -1, score: 0, lastAt: DURATION, flash: 0, good: true,
+        held: -1, score: 0, lastAt: sure, flash: 0, good: true,
       };
     }
 
     return {
       ids: playerIds.slice(),
+      sure,
       img,
       eksik,
       pl,

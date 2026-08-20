@@ -10,6 +10,7 @@ class Game {
     this.timer = 0;
     this.mg = null;        // mini oyun modulu (meta)
     this.inst = null;      // mini oyun ornegi (mantik)
+    this.tur = 0;          // kacinci tur oynaniyor (hiz bunun uzerinden artar)
     this.bag = [];         // karistirilmis torba: her oyun tekrar etmeden bir kez gelir
     this.lastId = null;
     this.result = null;
@@ -34,6 +35,7 @@ class Game {
     if (!ps.every((p) => p.ready)) return;
     for (const p of ps) { p.wins = 0; p.ready = false; }
     this.notice = null;
+    this.tur = 0;
     this.bag = [];
     this.nextRound();
   }
@@ -98,6 +100,7 @@ class Game {
     this.winner = null;
     this.notice = notice;
     for (const p of this.room.players) { p.ready = false; p.wins = 0; }
+    this.tur = 0;
     this.dirty = true;
   }
 
@@ -119,9 +122,17 @@ class Game {
     return chosen;
   }
 
+  // 0 = ilk tur (normal hiz), 1 = en yuksek hiz. Aradaki turlarda dogru orantili.
+  seviye() {
+    const n = Math.max(2, cfg.SPEED_ROUNDS);
+    return Math.max(0, Math.min(1, (this.tur - 1) / (n - 1)));
+  }
+
   nextRound() {
+    this.tur++;
     this.mg = this.pickMinigame();
-    this.inst = this.mg.create(this.room.players.map((p) => p.id));
+    // Mini oyun kendi hizini bu seviyeye gore ayarlar.
+    this.inst = this.mg.create(this.room.players.map((p) => p.id), this.seviye());
     this.result = null;
     this.phase = 'intro';
     this.timer = cfg.INTRO_TIME;
@@ -130,7 +141,8 @@ class Game {
 
   startPlay() {
     this.phase = 'play';
-    this.timer = this.mg.duration;
+    // Oyun kendi suresini kisaltmis olabilir (hizlandikca sureler de kisalir)
+    this.timer = (this.inst && this.inst.sure) || this.mg.duration;
     if (this.inst.start) this.inst.start();
   }
 
@@ -218,13 +230,15 @@ class Game {
       timer: Math.round(this.timer * 100) / 100,
       players: this.room.playersJSON(),
       mg: this.mg
-        ? { id: this.mg.id, name: this.mg.name, instruction: this.mg.instruction, controls: this.mg.controls, dur: this.mg.duration }
+        ? { id: this.mg.id, name: this.mg.name, instruction: this.mg.instruction, controls: this.mg.controls, dur: Math.round(((this.inst && this.inst.sure) || this.mg.duration) * 10) / 10 }
         : null,
       st: this.inst && this.phase !== 'intro' ? this.inst.snap() : null,
       result: this.result,
       winner: this.winner,
       notice: this.notice,
       needed: this.room.winsNeeded,
+      tur: this.tur,
+      seviye: Math.round(this.seviye() * 100) / 100,
       // Kopuk oyuncu varsa: kimi bekledigimiz ve kac saniye kaldigi
       bekle: this.room.players.some((p) => !p.connected)
         ? {

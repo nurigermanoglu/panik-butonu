@@ -16,17 +16,23 @@ module.exports = {
   controls: 'action',
   duration: 10,
 
-  create(playerIds) {
+  // NOT: Bu oyun turlar ilerledikce ZORLASMAZ - tepki suresi tepki suresidir,
+  // hizlandirmakla insan daha hizli refleks kazanmaz. Sadece TEMPO artar:
+  // isaret daha erken gelir ve tur daha cabuk biter.
+  create(playerIds, seviye) {
+    const sv = Math.max(0, Math.min(1, seviye || 0));
+    const sure = 10 * (1 - 0.25 * sv);
     const fouled = {};
     const reaction = {};
     for (const id of playerIds) { fouled[id] = false; reaction[id] = null; }
 
     return {
       ids: playerIds.slice(),
+      sure,
       fouled,
       reaction,
       t: 0,
-      wait: 1.8 + Math.random() * 2.9,
+      wait: (1.8 + Math.random() * 2.9) * (1 - 0.3 * sv),
       signal: false,
       signalAt: 0,
 

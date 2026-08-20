@@ -19,7 +19,13 @@ module.exports = {
   controls: 'pointer',
   duration: DURATION,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const sv = Math.max(0, Math.min(1, seviye || 0));
+    // Kablo sayisi ekrana sabit yerlesmis; onun yerine sure kisalir ve
+    // yanlis kesince makasin sikisma cezasi agirlasir.
+    const sure = DURATION * (1 - 0.25 * sv);
+    const ceza = PENALTY * (1 + 0.4 * sv);
+
     // kablo konumlari
     const wires = [];
     for (let i = 0; i < WIRE_COUNT; i++) {
@@ -34,11 +40,12 @@ module.exports = {
 
     const pl = {};
     for (const id of playerIds) {
-      pl[id] = { prog: 0, pen: 0, cut: [], bitAt: DURATION + 1 };
+      pl[id] = { prog: 0, pen: 0, cut: [], bitAt: sure + 1 };
     }
 
     return {
       ids: playerIds.slice(),
+      sure, ceza,
       wires,
       order,
       pl,
@@ -67,7 +74,7 @@ module.exports = {
           me.prog++;
           if (me.prog >= this.order.length) me.bitAt = this.t;
         } else {
-          me.pen = PENALTY;                       // yanlis kablo: makas sikisti
+          me.pen = this.ceza;                       // yanlis kablo: makas sikisti
         }
       },
 

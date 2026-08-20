@@ -14,18 +14,25 @@ module.exports = {
   controls: 'dpad',
   duration: 14,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const s = Math.max(0, Math.min(1, seviye || 0));
+    // Turlar ilerledikce dizi UZAR (4 -> 6) ve gosterim HIZLANIR (%35'e kadar)
+    const uzunluk = SEQ_LEN + Math.round(2 * s);
+    const on = ON_TIME * (1 - 0.35 * s);
+    const off = OFF_TIME * (1 - 0.35 * s);
+
     const seq = [];
-    for (let i = 0; i < SEQ_LEN; i++) seq.push(DIRS[Math.floor(Math.random() * DIRS.length)]);
+    for (let i = 0; i < uzunluk; i++) seq.push(DIRS[Math.floor(Math.random() * DIRS.length)]);
 
     const prog = {};
     const out = {};
     for (const id of playerIds) { prog[id] = 0; out[id] = false; }
 
-    const showTotal = LEAD_IN + SEQ_LEN * (ON_TIME + OFF_TIME);
+    const showTotal = LEAD_IN + uzunluk * (on + off);
 
     return {
       ids: playerIds.slice(),
+      on, off,
       seq,
       prog,
       out,
@@ -80,10 +87,10 @@ module.exports = {
         if (!this.showing) return null;
         const rel = this.t - LEAD_IN;
         if (rel < 0) return null;
-        const idx = Math.floor(rel / (ON_TIME + OFF_TIME));
+        const idx = Math.floor(rel / (this.on + this.off));
         if (idx >= this.seq.length) return null;
-        const inCell = rel - idx * (ON_TIME + OFF_TIME);
-        return inCell <= ON_TIME ? this.seq[idx] : null;
+        const inCell = rel - idx * (this.on + this.off);
+        return inCell <= this.on ? this.seq[idx] : null;
       },
 
       snap() {

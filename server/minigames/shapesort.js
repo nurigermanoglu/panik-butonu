@@ -27,7 +27,11 @@ module.exports = {
   controls: 'pointer',
   duration: DURATION,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const sv = Math.max(0, Math.min(1, seviye || 0));
+    // Sekil sayisi ekrana sabit yerlesmis (5 yuva); hizlanma sureyi kisaltarak olur
+    const sure = DURATION * (1 - 0.28 * sv);
+
     const yuvaSirasi = karistir(TIPLER);          // ustteki yuvalarin sirasi
     const sekilSirasi = karistir(TIPLER);         // alttaki sekillerin sirasi
 
@@ -39,12 +43,13 @@ module.exports = {
         shapes: sekilSirasi.map((tip, i) => ({
           tip, x: XS[i], y: HOME_Y, hx: XS[i], hy: HOME_Y, st: 0, slot: -1,
         })),
-        held: -1, score: 0, lastAt: DURATION, flash: 0, good: true,
+        held: -1, score: 0, lastAt: sure, flash: 0, good: true,
       };
     }
 
     return {
       ids: playerIds.slice(),
+      sure,
       slots,
       pl,
       t: 0,

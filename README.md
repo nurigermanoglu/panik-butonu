@@ -100,6 +100,7 @@ WINS_MIN: 1,        // hedefin inebileceği en düşük değer
 WINS_MAX: 9,        // hedefin çıkabileceği en yüksek değer
 RECONNECT_GRACE: 15, // maç ortasında kopan oyuncunun yeri kaç saniye tutulur
 LOBBY_GRACE: 8,      // lobide kopan için aynısı (beklemenin anlamı yok, kısa)
+SPEED_ROUNDS: 10,    // kaçıncı turda oyunlar en hızlı hâline gelir
 PORT: 3000,
 ```
 
@@ -235,6 +236,34 @@ Resim, ızgara boyutuna bir kez yumuşak küçültülüp saklanır; kareler sonr
 yani dither deseni bulanıklaşmaz.
 
 Harici kütüphane yok — `npm install` gerekmez.
+
+## Turlar ilerledikçe hızlanma
+
+WarioWare gibi: 1. turda oyunlar normal hızda, **10. turda en hızlı** hâlinde
+ve orada kalıyor. Geri sayım ekranında `TUR 7` ve `HIZ +%67` yazar.
+
+| Mini oyun | 1. turda | 10. turda |
+|---|---|---|
+| Köstebek Avı | 20 köstebek, 13 sn | **28 köstebek**, daha kısa süre kalıyorlar |
+| Hafıza Dizisi | 4 sembol, 0.72 sn/sembol | **6 sembol**, 0.47 sn/sembol |
+| Dosya Silme | 7 dosya, 12 sn | **10 dosya**, 10.2 sn |
+| Engelden Kaç | 17 engel sırası | **20 engel sırası**, %25 daha hızlı |
+| Sıcak Patates | normal fitil | **%35 daha kısa fitil** |
+| Kablo Kesme | 14 sn, 1.2 sn ceza | 10.5 sn, **1.68 sn ceza** |
+| Şekil Yerleştir / Puzzle | 14 sn | **10.1 sn** |
+| At Yarışı | 8 sn | **6 sn** (aynı mesafe) |
+| Refleks Düellosu | 10 sn | 7.5 sn — *zorlaşmaz, sadece tempo artar* |
+
+Refleks Düellosu bilerek zorlaşmıyor: tepki süresi tepki süresidir, oyunu
+hızlandırmak insanı daha hızlı reflekse sahip yapmaz — sadece haksızlık olurdu.
+
+**Engelden Kaç hızlanırken bile adil kalır.** Satır aralığının alt sınırı
+engelin kalınlığı ve hızından hesaplanıyor; sıkıştırma, geçilebilirliğin izin
+verdiği yere kadar iner ve orada durur. Ölçüldü: her hız seviyesinde üretilen
+desenlerin **%100'ü** zıplama kullanılmadan bile geçilebilir.
+
+Hızlanma turla artar, **skorla değil** — beraberlikler de turu ilerletir.
+Hızı kapatmak ya da yavaşlatmak için `SPEED_ROUNDS` değerini büyüt.
 
 ## Bağlantı koparsa ne olur
 

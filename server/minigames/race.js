@@ -14,7 +14,9 @@ module.exports = {
   controls: 'action',
   duration: DURATION,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const sv = Math.max(0, Math.min(1, seviye || 0));
+    const sure = DURATION * (1 - 0.25 * sv);   // ayni mesafe, daha az zaman
     const prog = {};
     const budget = {};
     const bitis = {};
@@ -22,6 +24,7 @@ module.exports = {
 
     return {
       ids: playerIds.slice(),
+      sure,
       prog,
       budget,
       bitis,

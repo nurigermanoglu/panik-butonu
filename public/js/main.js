@@ -740,6 +740,19 @@
     if (c > 0) {
       f.text(ctx, String(c), W / 2, 92, { color: P.orange, scale: 8, align: 'center', shadow: P.black });
     }
+
+    // Kacinci turdayiz + oyunlar hizlandiysa bunu belli et
+    if (state.tur) {
+      f.text(ctx, 'TUR ' + state.tur, W / 2, 14, {
+        color: P.gray, scale: 1, align: 'center', shadow: P.black
+      });
+    }
+    if (state.seviye > 0) {
+      var yanip = Math.floor(time * 6) % 2 === 0;
+      f.text(ctx, 'HIZ +%' + Math.round(state.seviye * 100), W / 2, 148, {
+        color: yanip ? P.red : P.orange, scale: 2, align: 'center', shadow: P.black
+      });
+    }
     drawTopBar();
   }
 

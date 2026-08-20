@@ -20,5 +20,9 @@ module.exports = {
   // yuzunden mac bozulmasin. Lobide beklemenin anlami yok, kisa tutulur.
   RECONNECT_GRACE: 15,
   LOBBY_GRACE: 8,
+
+  // Turlar ilerledikce oyunlar hizlanir (WarioWare gibi).
+  // 1. turda seviye 0, SPEED_ROUNDS. turda seviye 1 (en hizli) olur ve orada kalir.
+  SPEED_ROUNDS: 10,
   PORT: Number(process.env.PORT) || 3000,
 };

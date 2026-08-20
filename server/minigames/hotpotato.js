@@ -18,7 +18,9 @@ module.exports = {
   controls: 'action',
   duration: DURATION,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const s = Math.max(0, Math.min(1, seviye || 0));
+    const kisalt = 1 - 0.35 * s;    // fitil %35'e kadar kisalir
     const alive = {};
     for (const id of playerIds) alive[id] = true;
 
@@ -28,7 +30,8 @@ module.exports = {
       ids: playerIds.slice(),
       alive,
       holder: ilk,
-      fuse: rastgele(FUSE_MIN, FUSE_MAX),
+      kisalt,                  // fitil carpani (turlar ilerledikce kucilur)
+      fuse: rastgele(FUSE_MIN * kisalt, FUSE_MAX * kisalt),
       fuseMax: 0,
       held: 0,                 // mevcut sahibin bombayi tutma suresi
       boom: 0,
@@ -76,7 +79,7 @@ module.exports = {
           const yeni = this.aliveIds();
           if (yeni.length > 1) {
             this.holder = yeni[Math.floor(Math.random() * yeni.length)];
-            this.fuse = rastgele(FUSE_MIN, FUSE_MAX);
+            this.fuse = rastgele(FUSE_MIN * this.kisalt, FUSE_MAX * this.kisalt);
             this.fuseMax = this.fuse;
             this.held = 0;
           } else {

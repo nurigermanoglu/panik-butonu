@@ -29,14 +29,18 @@ function laneX(i, W) {
   return Math.round(W * (i + 0.5) / LANES);
 }
 
-function buildSchedule() {
+function buildSchedule(sv) {
   const rows = [];
   let t = 0.9;
+  // Turlar ilerledikce engeller %30'a kadar hizlanir. Satir araligi zaten
+  // hizdan hesaplandigi icin (asagidaki enAzAra) desen otomatik olarak
+  // gecilebilir kalir - hizlaninca aralar da kendiliginden acilir.
+  const hizCarpani = 1 + 0.25 * sv;
 
   while (t < DURATION) {
     // Zorluk sona dogru belirgin sekilde artar: engeller hizlanir, satirlar siklasir
     // ve iki seridi birden kapatma ihtimali yukselir.
-    const v = 50 + t * 4.2;                       // yaklasma hizi (birim/sn)
+    const v = (50 + t * 4.2) * hizCarpani;        // yaklasma hizi (birim/sn)
     const acik = Math.floor(Math.random() * LANES);
     const digerleri = [0, 1, 2].filter((l) => l !== acik);
     const ciftIhtimal = Math.min(0.85, 0.45 + t * 0.025);
@@ -60,7 +64,10 @@ function buildSchedule() {
     const gecis = 2 / SWITCH_SPEED;
     const tepkiPayi = 0.36 - t * 0.016;      // tur ilerledikce daralir = zorlasir
     const enAzAra = kalinlik / v + gecis + tepkiPayi;
-    var ara = (1.15 - t * 0.045) * (0.85 + Math.random() * 0.32);
+    // Turlar ilerledikce satirlar SIKLASIR (asil zorluk kaldiraci bu).
+    // enAzAra alt siniri yine devrede oldugu icin desen gecilemez hale gelemez:
+    // sikistirma, adaletin izin verdigi yere kadar iner ve orada durur.
+    var ara = (1.15 - t * 0.045) * (0.85 + Math.random() * 0.32) * (1 - 0.32 * sv);
     t += Math.max(enAzAra, ara);
   }
   return rows;
@@ -73,9 +80,10 @@ module.exports = {
   controls: 'dpad',
   duration: DURATION,
 
-  create(playerIds) {
+  create(playerIds, seviye) {
+    const sv = Math.max(0, Math.min(1, seviye || 0));
     const W = arenaWidth(playerIds.length);
-    const plan = buildSchedule();
+    const plan = buildSchedule(sv);
 
     const pl = {};
     for (const id of playerIds) {

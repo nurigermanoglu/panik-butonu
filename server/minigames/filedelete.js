@@ -24,25 +24,31 @@ module.exports = {
   controls: 'pointer',
   duration: DURATION,
 
-  create(playerIds) {
-    // 12 slottan FILE_COUNT tanesini sec (herkes icin ayni)
+  create(playerIds, seviye) {
+    const sv = Math.max(0, Math.min(1, seviye || 0));
+    // Turlar ilerledikce daha cok dosya (7 -> 10) ve biraz daha kisa sure
+    const adet = Math.min(SLOTS.length, FILE_COUNT + Math.round(3 * sv));
+    const sure = DURATION * (1 - 0.15 * sv);
+
+    // 12 slottan "adet" tanesini sec (herkes icin ayni)
     const idx = SLOTS.map((_, i) => i);
     for (let i = idx.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       const t = idx[i]; idx[i] = idx[j]; idx[j] = t;
     }
-    const sablon = idx.slice(0, FILE_COUNT).map((si) => ({ hx: SLOTS[si].x, hy: SLOTS[si].y }));
+    const sablon = idx.slice(0, adet).map((si) => ({ hx: SLOTS[si].x, hy: SLOTS[si].y }));
 
     const pl = {};
     for (const id of playerIds) {
       pl[id] = {
         files: sablon.map((s) => ({ x: s.hx, y: s.hy, hx: s.hx, hy: s.hy, st: 0 })),
-        held: -1, score: 0, lastAt: DURATION, flash: 0,
+        held: -1, score: 0, lastAt: sure, flash: 0,
       };
     }
 
     return {
       ids: playerIds.slice(),
+      adet, sure,
       pl,
       t: 0,
 
@@ -102,7 +108,7 @@ module.exports = {
 
       // Herkes butun dosyalarini sildiyse tur erken bitsin
       done() {
-        return this.ids.every((id) => this.pl[id].score >= FILE_COUNT);
+        return this.ids.every((id) => this.pl[id].score >= this.adet);
       },
 
       winners() {
@@ -119,7 +125,7 @@ module.exports = {
         const w = this.winners();
         if (!w.length) return 'TAM BERABERE!';
         const s = this.pl[w[0]].score;
-        return s >= FILE_COUNT ? 'HEPSINI SILDI!' : s + ' / ' + FILE_COUNT + ' DOSYA';
+        return s >= this.adet ? 'HEPSINI SILDI!' : s + ' / ' + this.adet + ' DOSYA';
       },
 
       snap() {
@@ -131,7 +137,7 @@ module.exports = {
             f: me.files.map((q) => ({ x: Math.round(q.x), y: Math.round(q.y), st: q.st })),
           };
         }
-        return { trash: TRASH, fw: FILE_W, fh: FILE_H, total: FILE_COUNT, pl };
+        return { trash: TRASH, fw: FILE_W, fh: FILE_H, total: this.adet, pl };
       },
     };
   },
