@@ -361,7 +361,6 @@
       var ms = signalSeenAt === null ? undefined : Math.round(performance.now() - signalSeenAt);
       PP.net.send({ t: 'in', a: 'press', d: ms });
     }
-    else if (kind === 'move') PP.net.send({ t: 'in', a: 'move', d: value });
     else if (kind === 'dir') { PP.sfx.press(); PP.net.send({ t: 'in', a: 'dir', d: value }); }
   }
 
@@ -413,9 +412,8 @@
       if (o.p !== undefined && y.p > o.p && simdi - sonNal > 110) { sonNal = simdi; PP.sfx.nal(); }
     }
     else if (id === 'dodge' && ben) {
-      y.a = ben.a; y.z = ben.z;
+      y.a = ben.a;
       if (o.a === true && ben.a === false) PP.sfx.carp();
-      if (o.z !== undefined && o.z < 0 && ben.z >= 0) PP.sfx.zipla();
     }
     else if (id === 'memory') {
       y.prog = st.prog ? st.prog[youId] : 0;

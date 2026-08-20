@@ -2,7 +2,8 @@
 // ENGELDEN KAC (Subway Surfers tarzi) - 3 seritli kosu.
 //
 //   sol / sag  -> serit degistir
-//   yukari     -> zipla (sadece ALCAK engeller ziplayarak gecilir)
+//
+// Ziplama YOK: her engel tam bir duvar, tek kurtulus serit degistirmek.
 //
 // Desen bir kez uretilir ve HERKES ayni engelleri oynar. Her satirda en az bir
 // serit acik birakilir; satirlar arasi sure en genis serit gecisine (2 serit,
@@ -15,8 +16,6 @@ const ARENA_H = 140;
 const PLAYER_W = 14, PLAYER_H = 16;
 const PLAYER_Y = ARENA_H - 34;        // oyuncunun durdugu cizgi
 const SWITCH_SPEED = 7.5;             // serit/sn (bir serit ~0.13 sn)
-const JUMP_TIME = 0.5;                // ziplama toplam suresi
-const AIR_FROM = 0.08, AIR_TO = 0.42; // bu aralikta havada sayilir
 const ROW_H = 16;                     // engel satirinin kalinligi
 const DURATION = 14;
 
@@ -32,7 +31,7 @@ function laneX(i, W) {
 function buildSchedule(sv) {
   const rows = [];
   let t = 0.9;
-  // Turlar ilerledikce engeller %30'a kadar hizlanir. Satir araligi zaten
+  // Turlar ilerledikce engeller %25'e kadar hizlanir. Satir araligi zaten
   // hizdan hesaplandigi icin (asagidaki enAzAra) desen otomatik olarak
   // gecilebilir kalir - hizlaninca aralar da kendiliginden acilir.
   const hizCarpani = 1 + 0.25 * sv;
@@ -47,11 +46,10 @@ function buildSchedule(sv) {
     const kapali = Math.random() < ciftIhtimal
       ? digerleri
       : [digerleri[Math.floor(Math.random() * digerleri.length)]];
-    const alcak = Math.random() < 0.4;            // alcak engel: ziplayarak da gecilir
     const kalinlik = 13 + Math.floor(Math.random() * 6);   // 13-18: her satir ayni durmasin
-    const tip = Math.floor(Math.random() * 3);             // gorsel cesit (duvar/sandik/bariyer)
+    const tip = Math.floor(Math.random() * 3);             // gorsel cesit (duvar/blok/bariyer)
 
-    rows.push({ t, v, kapali, alcak, h: kalinlik, tip });
+    rows.push({ t, v, kapali, h: kalinlik, tip });
 
     // Aralik biraz sasirtilir ki desen makine gibi duzenli durmasin.
     //
@@ -76,8 +74,8 @@ function buildSchedule(sv) {
 module.exports = {
   id: 'dodge',
   name: 'ENGELDEN KAC',
-  instruction: 'SERIT DEGISTIR, ZIPLA!',
-  controls: 'dpad',
+  instruction: 'SERIT DEGISTIR!',
+  controls: 'lr',                  // sadece sol/sag - ziplama yok
   duration: DURATION,
 
   create(playerIds, seviye) {
@@ -89,7 +87,6 @@ module.exports = {
     for (const id of playerIds) {
       pl[id] = {
         lane: 1, hedef: 1, kayma: 1,      // kayma = suzulen serit konumu
-        jump: -1,                          // ziplama baslangic ani (-1 = yerde)
         alive: true, deadAt: DURATION,
       };
     }
@@ -103,21 +100,12 @@ module.exports = {
       rows: [],
       t: 0,
 
-      havada(p) {
-        if (p.jump < 0) return false;
-        const d = this.t - p.jump;
-        return d >= AIR_FROM && d <= AIR_TO;
-      },
-
       input(pid, a, d) {
         const p = this.pl[pid];
         if (!p || !p.alive) return;
         if (a !== 'dir') return;
         if (d === 'left') p.hedef = Math.max(0, p.hedef - 1);
         else if (d === 'right') p.hedef = Math.min(LANES - 1, p.hedef + 1);
-        else if (d === 'up') {
-          if (p.jump < 0 || this.t - p.jump > JUMP_TIME) p.jump = this.t;
-        }
       },
 
       update(dt) {
@@ -125,7 +113,7 @@ module.exports = {
 
         while (this.nextRow < this.plan.length && this.plan[this.nextRow].t <= this.t) {
           const r = this.plan[this.nextRow++];
-          this.rows.push({ y: -r.h, v: r.v, kapali: r.kapali, alcak: r.alcak, h: r.h, tip: r.tip });
+          this.rows.push({ y: -r.h, v: r.v, kapali: r.kapali, h: r.h, tip: r.tip });
         }
 
         for (let i = this.rows.length - 1; i >= 0; i--) {
@@ -146,15 +134,11 @@ module.exports = {
           else p.kayma += Math.sign(fark) * adim;
           p.lane = Math.round(p.kayma);
 
-          if (p.jump >= 0 && this.t - p.jump > JUMP_TIME) p.jump = -1;
-
           const px = laneX(0, this.W) + p.kayma * (laneX(1, this.W) - laneX(0, this.W));
           const solum = px - PLAYER_W / 2, sagim = px + PLAYER_W / 2;
-          const ucuyor = this.havada(p);
 
           for (const r of this.rows) {
             if (PLAYER_Y >= r.y + r.h || PLAYER_Y + PLAYER_H <= r.y) continue;
-            if (r.alcak && ucuyor) continue;                  // ustunden atladi
             let carpti = false;
             for (const l of r.kapali) {
               const lx = laneX(l, this.W);
@@ -194,7 +178,6 @@ module.exports = {
           pl[id] = {
             k: Math.round(p.kayma * 100) / 100,
             a: p.alive,
-            z: p.jump >= 0 ? Math.round(Math.min(1, (this.t - p.jump) / JUMP_TIME) * 100) / 100 : -1,
           };
         }
         return {
@@ -203,7 +186,7 @@ module.exports = {
           // v = hiz: istemci paketler arasinda konumu suzerek akici cizer
           rows: this.rows.map((r) => ({
             y: Math.round(r.y * 10) / 10, v: Math.round(r.v), h: r.h,
-            k: r.kapali, al: r.alcak, tip: r.tip
+            k: r.kapali, tip: r.tip
           })),
           pl,
         };

@@ -296,7 +296,6 @@
     nal: function () { patlat(0.05, 0.09, 900, 240); },                 // toynak
 
     // --- ENGELDEN KAC ---
-    zipla: function () { slide(420, 820, 0.12, 'square', 0.07); },
     carp: function () {                                                  // engele tosladim
       patlat(0.22, 0.26, 1500, 120);
       slide(260, 70, 0.28, 'sawtooth', 0.12);

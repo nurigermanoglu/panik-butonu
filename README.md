@@ -39,7 +39,7 @@ Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 | Hedef tur sayısını değiştir (lobide, **sadece odayı kuran**) | `←` `→` | Yanlardaki ok butonları |
 | Karakter değiştir (lobide, herkes kendi karakterini) | Karakterinin yanındaki oklara **tıkla** | Oklara **dokun** |
 | At Yarışı, Refleks Düellosu, Sıcak Patates | `BOŞLUK` / `ENTER` ya da **ekrana sol tıkla** | Büyük **BAS** butonu ya da ekrana dokun |
-| Engelden Kaç | `←` `→` şerit, `↑` zıpla (veya `A` `D` `W`) | 4 yön butonu |
+| Engelden Kaç | `←` `→` şerit değiştir (veya `A` `D`) | Sol / sağ butonu |
 | Hafıza Dizisi | Yön tuşları veya `W` `A` `S` `D` | 4 yön butonu |
 | Sıcak Patates | `BOŞLUK` | Büyük **BAS** butonu |
 | Köstebek Avı, Kablo Kesme | Fareyle **tıkla** | Ekrana **dokun** |
@@ -69,7 +69,7 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 |---|---|---|
 | **At Yarışı** | 8 sn | Tuşa bastıkça kulvarında koşarsın; bitiş çizgisine ilk varan kazanır |
 | **Refleks Düellosu** | ~10 sn | Ekran yeşile dönünce en hızlı tepki veren kazanır. İşaret gelmeden basarsan **o tur yanarsın** ve tuşun geri kalanında işlemez — ekranda "ERKEN BASTIN! / BU TUR YANDIN" yazar. Kazanan, tuşu sunucuya ilk ulaşan değil, gerçekten en hızlı tepki verendir (bkz. aşağıda "adalet") |
-| **Engelden Kaç** | 14 sn | Subway Surfers tarzı 3 şeritli koşu: **sol/sağ** ile şerit değiştir, **yukarı** ile zıpla (turuncu alçak engeller zıplanarak geçilir, kırmızı yüksek engeller geçilmez). Herkes birebir aynı deseni oynar ve desen her zaman geçilebilir üretilir. Kazanan: hayatta kalan → daha uzun koşan |
+| **Engelden Kaç** | 14 sn | Subway Surfers tarzı 3 şeritli koşu: **sol/sağ** ile şerit değiştir. Zıplama yok — her engel tam bir duvar, tek kurtuluş doğru şeride geçmek. Herkes birebir aynı deseni oynar ve desen her zaman geçilebilir üretilir. Kazanan: hayatta kalan → daha uzun koşan |
 | **Hafıza Dizisi** | 14 sn | Gösterilen ok dizisini ilk doğru tekrarlayan kazanır |
 | **Sıcak Patates** | ~30 sn | Bomba rastgele birinde başlar, tuşa basınca rastgele başkasına geçer. Fitil el değiştirse de yanmaya devam eder; patladığında elinde tutan elenir. Tek kişi kalana kadar sürer |
 | **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim. Köstebeğe vurunca kısa süre sersemlemiş hâli (`img/kostebek_vur.png`) görünüp kaybolur |
@@ -247,7 +247,7 @@ ve orada kalıyor. Geri sayım ekranında `TUR 7` ve `HIZ +%67` yazar.
 | Köstebek Avı | 20 köstebek, 13 sn | **28 köstebek**, daha kısa süre kalıyorlar |
 | Hafıza Dizisi | 4 sembol, 0.72 sn/sembol | **6 sembol**, 0.47 sn/sembol |
 | Dosya Silme | 7 dosya, 12 sn | **10 dosya**, 10.2 sn |
-| Engelden Kaç | 17 engel sırası | **20 engel sırası**, %25 daha hızlı |
+| Engelden Kaç | 16 engel sırası | **20 engel sırası**, %25 daha hızlı |
 | Sıcak Patates | normal fitil | **%35 daha kısa fitil** |
 | Kablo Kesme | 14 sn, 1.2 sn ceza | 10.5 sn, **1.68 sn ceza** |
 | Şekil Yerleştir / Puzzle | 14 sn | **10.1 sn** |
@@ -260,7 +260,7 @@ hızlandırmak insanı daha hızlı reflekse sahip yapmaz — sadece haksızlık
 **Engelden Kaç hızlanırken bile adil kalır.** Satır aralığının alt sınırı
 engelin kalınlığı ve hızından hesaplanıyor; sıkıştırma, geçilebilirliğin izin
 verdiği yere kadar iner ve orada durur. Ölçüldü: her hız seviyesinde üretilen
-desenlerin **%100'ü** zıplama kullanılmadan bile geçilebilir.
+desenlerin **%100'ü** geçilebilir.
 
 Hızlanma turla artar, **skorla değil** — beraberlikler de turu ilerletir.
 Hızı kapatmak ya da yavaşlatmak için `SPEED_ROUNDS` değerini büyüt.

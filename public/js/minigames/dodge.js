@@ -1,4 +1,4 @@
-/* ENGELDEN KAC (Subway Surfers tarzi) - 3 seritli kosu pisti */
+/* ENGELDEN KAC (Subway Surfers tarzi) - 3 seritli kosu, ziplama yok */
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
@@ -7,15 +7,12 @@
   var CIZGI = '#6b6390';
   var KENAR = '#8d84b8';
 
-  // Yuksek engel cesitleri (gecilmez) - hepsi ayni durmasin diye
+  // Engel cesitleri - hepsi ayni durmasin diye
   var TIPLER = [
     { ana: '#b13e53', ust: '#e0687f', koyu: '#7d2739' },   // duvar
     { ana: '#7b4bb5', ust: '#a878e0', koyu: '#553180' },   // mor blok
     { ana: '#3f7fa8', ust: '#6bb2d8', koyu: '#2a5875' }    // metal bariyer
   ];
-  var ALCAK = '#c9743a';
-  var ALCAK_UST = '#e8a05e';
-  var ALCAK_KOYU = '#8f4f24';
 
   PP.MG = PP.MG || {};
   PP.MG.dodge = {
@@ -33,7 +30,7 @@
       for (var i = 0; i < n; i++) {
         var p = v.players[i];
         var col = g.colorForSlot(p.slot);
-        var me = st.pl[p.id] || { k: 1, a: true, z: -1 };
+        var me = st.pl[p.id] || { k: 1, a: true };
         var ax = Math.round(colW * i + (colW - st.w) / 2);
 
         f.text(ctx, p.name, Math.round(colW * i + colW / 2), nameY, {
@@ -69,20 +66,6 @@
             var ex = ax + Math.round(seritW * row.k[q]) + 1;
             var ew = Math.round(seritW) - 2;
 
-            if (row.al) {
-              // ALCAK engel: kisa, ustunden ziplanabilir
-              var ay2 = Math.max(ust, ry + rh * 0.45);
-              if (alt > ay2) {
-                g.rect(ctx, ex, ay2, ew, alt - ay2, ALCAK);
-                if (ry + rh * 0.45 >= ay) g.rect(ctx, ex, ay2, ew, 2, ALCAK_UST);
-                g.rect(ctx, ex, alt - 1, ew, 1, ALCAK_KOYU);
-                for (var s2 = 3; s2 < ew - 3; s2 += 7) {        // sari-siyah serit
-                  g.rect(ctx, ex + s2, ay2 + 2, 3, Math.max(1, alt - ay2 - 4), ALCAK_KOYU);
-                }
-              }
-              continue;
-            }
-
             var T = TIPLER[(row.tip || 0) % TIPLER.length];
             g.rect(ctx, ex, ust, ew, alt - ust, T.ana);
             if (ry >= ay) g.rect(ctx, ex, ry, ew, 2, T.ust);
@@ -106,13 +89,7 @@
 
         // ---- oyuncu ----
         var px = ax + Math.round(st.w * (me.k + 0.5) / st.lanes);
-        var zipla = 0;
-        if (me.z >= 0) zipla = Math.round(Math.sin(Math.PI * me.z) * 16);
-        var py = ay + st.py - zipla;
-
-        if (me.a && zipla > 2) {
-          g.rect(ctx, px - 5, ay + st.py + st.ph - 1, 10, 2, '#2a2640');
-        }
+        var py = ay + st.py;
         PP.chars.ciz(ctx, p.char, px, py + st.ph / 2, st.pw + 6, st.ph + 2, { dead: !me.a });
 
         if (!me.a) {
@@ -124,7 +101,7 @@
         if (i > 0) g.rect(ctx, Math.round(colW * i) - 1, v.top, 1, v.H - v.top, P.dark);
       }
 
-      f.text(ctx, 'SOL/SAG = SERIT   YUKARI = ZIPLA', v.W / 2, v.H - 8, {
+      f.text(ctx, 'SOL / SAG = SERIT DEGISTIR', v.W / 2, v.H - 8, {
         color: P.light, scale: 1, align: 'center', shadow: P.black
       });
     }

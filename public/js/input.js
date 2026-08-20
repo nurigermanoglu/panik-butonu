@@ -2,28 +2,22 @@
 (function (PP) {
   'use strict';
 
-  var scheme = 'none';               // 'none' | 'action' | 'lr' | 'dpad'
-  var held = { left: false, right: false };
-  var lastMove = 0;
+  // 'lr'   = sol/sag (Engelden Kac)      'dpad' = 4 yon (Hafiza)
+  // 'lobby'= sol/sag + BAS               'action' = tek buton
+  var scheme = 'none';
   var handler = null;
 
   function fire(kind, value) {
     if (handler) handler(kind, value);
   }
 
-  function updateMove() {
-    var d = (held.right ? 1 : 0) - (held.left ? 1 : 0);
-    if (d !== lastMove) {
-      lastMove = d;
-      fire('move', d);
-    }
-  }
 
   function begin(key) {
     if (key === 'action') { fire('press', 1); return; }
     if (key === 'left' || key === 'right') {
-      if (scheme === 'lr') { held[key] = true; updateMove(); }
-      else if (scheme === 'dpad' || scheme === 'lobby') fire('dir', key);
+      // 'lr' = sadece sol/sag olan oyunlar (Engelden Kac). Basili tutma degil,
+      // her basis TEK bir adim: bir serit sola / bir serit saga.
+      if (scheme === 'lr' || scheme === 'dpad' || scheme === 'lobby') fire('dir', key);
       return;
     }
     if (key === 'up' || key === 'down') {
@@ -31,11 +25,6 @@
     }
   }
 
-  function end(key) {
-    if (key === 'left' || key === 'right') {
-      if (held[key]) { held[key] = false; updateMove(); }
-    }
-  }
 
   var KEYMAP = {
     Space: 'action', Enter: 'action', KeyZ: 'action', KeyX: 'action', NumpadEnter: 'action',
@@ -63,16 +52,10 @@
       if (e.repeat) return;          // klavye otomatik tekrari sayilmaz
       begin(k);
     });
+    // Tuslar birakilinca yapilacak bir sey yok: her basis tek bir adim.
     window.addEventListener('keyup', function (e) {
       if (isTyping(e)) return;
-      var k = KEYMAP[e.code];
-      if (!k) return;
-      e.preventDefault();
-      end(k);
-    });
-    window.addEventListener('blur', function () {
-      held.left = held.right = false;
-      updateMove();
+      if (KEYMAP[e.code]) e.preventDefault();
     });
   }
 
@@ -90,7 +73,6 @@
       var release = function (e) {
         e.preventDefault();
         btn.classList.remove('down');
-        end(key);
       };
       btn.addEventListener('pointerup', release);
       btn.addEventListener('pointercancel', release);
@@ -101,8 +83,6 @@
   function setScheme(s) {
     if (s === scheme) return;
     scheme = s || 'none';
-    held.left = held.right = false;
-    lastMove = 0;
     var pad = document.getElementById('pad');
     if (pad) pad.setAttribute('data-scheme', scheme);
   }
