@@ -161,7 +161,9 @@ class Room {
     const simdi = Date.now();
     if (simdi - player.sonMesajAn < cfg.CHAT_MIN_ARA_MS) return 'hizli';
     player.sonMesajAn = simdi;
-    const kayit = { id: player.id, ad: player.name, m: temiz };
+    // Slot da yazilir: rengi mesajin kendisi tasisin. Yoksa odaya yeni giren
+    // gecmisi oyuncu listesi gelmeden cizer ve butun adlar notr renkte kalir.
+    const kayit = { id: player.id, slot: player.slot, ad: player.name, m: temiz };
     this.sohbet.push(kayit);
     if (this.sohbet.length > cfg.CHAT_HISTORY) this.sohbet.shift();
     this.broadcast({ t: 'chat', ...kayit });

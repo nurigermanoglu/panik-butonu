@@ -113,11 +113,14 @@
 
     $('chatForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      var kutu = $('chatMsg');
-      var metin = kutu.value.trim();
-      if (!metin) return;
-      PP.net.send({ t: 'chat', m: metin });
-      kutu.value = '';
+      sohbetGonder();
+    });
+    // Enter ile de gonderilsin. Formun kendi davranisi bunu zaten yapar ama
+    // bazi mobil klavyelerde 'Git' tusu formu gondermiyor; garantiye aliyoruz.
+    $('chatMsg').addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      sohbetGonder();
     });
   }
 
@@ -287,6 +290,14 @@
     sesButonuTazele();
   }
 
+  function sohbetGonder() {
+    var kutu = $('chatMsg');
+    var metin = kutu.value.trim();
+    if (!metin) return;
+    PP.net.send({ t: 'chat', m: metin });
+    kutu.value = '';
+  }
+
   // Bir sohbet satirini ekrana basar.
   // DIKKAT: metin HER ZAMAN textContent ile yazilir. innerHTML kullanilirsa
   // baska bir oyuncunun yazdigi metin sayfada kod olarak calisirdi.
@@ -297,7 +308,7 @@
     var ad = document.createElement('span');
     ad.className = 'ad';
     ad.textContent = m.ad + ': ';
-    ad.style.color = sohbetRengi(m.id);
+    ad.style.color = sohbetRengi(m);
     satir.appendChild(ad);
     satir.appendChild(document.createTextNode(m.m));
     kutu.appendChild(satir);
@@ -305,9 +316,11 @@
     if (dipte) kutu.scrollTop = kutu.scrollHeight;   // okurken yukari kaydirdiysa zorlamayalim
   }
 
-  // Yazan kisinin oyundaki rengi; odadan ciktiysa notr renk
-  function sohbetRengi(id) {
-    var p = playerById(id);
+  // Yazan kisinin oyundaki rengi. Slot mesajin icinde geldigi icin gecmis
+  // henuz oyuncu listesi gelmeden cizilse de renkler dogru olur.
+  function sohbetRengi(m) {
+    if (typeof m.slot === 'number') return g.colorForSlot(m.slot);
+    var p = playerById(m.id);
     return p ? g.colorForSlot(p.slot) : '#9fc0dc';
   }
 
