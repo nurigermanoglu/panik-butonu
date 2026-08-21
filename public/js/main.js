@@ -559,12 +559,13 @@
   // Butun konumlar tek yerden gelsin ki cizim ile dokunma alani hep ayni olsun.
   var LOBI = {
     satirY: function (slot) { return 10 + slot * 40; },   // sol sutun satir ustu
-    karakterX: 30,
-    yaziX: 66,                                  // oklar disari kaydi, yazi da onlari birakti
-    sagX: 141, sagW: 180,                       // sag sutun biraz saga yanasti
-    baslik: { x: 147, y: 6, w: 168, h: 42 },   // buyuk "OYUN" kutusu
-    hazir:  { x: 173, y: 54, w: 116, h: 26 },  // iki yaninda turuncu oklar
-    cik:    { x: 173, y: 98, w: 116, h: 22 },  // SES kutusu ust cubuga tasindi
+    karakterX: 40,                              // karakterin ORTASI (34 px genis cizilir)
+    yaziX: 76,
+    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 233
+    sagX: 143, sagW: 180,
+    baslik: { x: 153, y: 6, w: 160, h: 42 },   // buyuk "OYUN" kutusu
+    hazir:  { x: 180, y: 54, w: 106, h: 26 },  // iki yaninda turuncu oklar
+    cik:    { x: 180, y: 98, w: 106, h: 22 },
     kodY: 136,                                  // "KOD : XXXX" + kopyala tusu
     altY: 160                                   // rakip araniyor / uyari
   };
@@ -578,9 +579,9 @@
     return {
       kw: 30,
       cx: LOBI.karakterX,
-      // Karakter 13..47 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
-      sol: { x: 0, y: ust + 8, w: 10, h: 24 },
-      sag: { x: 50, y: ust + 8, w: 10, h: 24 }
+      // Karakter 23..56 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
+      sol: { x: 10, y: ust + 8, w: 10, h: 24 },
+      sag: { x: 60, y: ust + 8, w: 10, h: 24 }
     };
   }
 
@@ -605,22 +606,23 @@
   // ---- KOD SATIRI ----
   // Yazi ile kopyalama simgesi tek satirda, birlikte ortalanir. Cizim de
   // dokunma alani da bu tek hesaptan gelir ki asla kaymasinlar.
-  var SIMGE_W = 11, SIMGE_H = 13, SIMGE_ARA = 7;
+  var SIMGE_W = 11, SIMGE_H = 13, SIMGE_ARA = 5;
 
   var KOPYALANDI = 'KOPYALANDI';
 
   function kodYerlesim() {
     if (!state) return null;
     var yazi = 'KOD : ' + state.code;
-    // Yer iki yazinin genisinden acilir; boylece 'KOPYALANDI' belirince
-    // kopyalama tusu yerinden kipirdamaz.
+    // Yazi, ustundeki kutularla AYNI eksende ortalanir. Tus ise iki yazinin
+    // genisinden hangisi buyukse onun disina sabitlenir; boylece yazi
+    // 'KOPYALANDI' olurken tus yerinden kipirdamaz.
     var kw = Math.max(f.width(yazi, 2), f.width(KOPYALANDI, 2));
-    var toplam = kw + SIMGE_ARA + SIMGE_W;
-    var sol = Math.round(LOBI.sagX + LOBI.sagW / 2 - toplam / 2);
+    var orta = LOBI.sagX + LOBI.sagW / 2;
+    var sx = Math.round(orta + kw / 2 + SIMGE_ARA);
     return {
-      yazi: yazi, x: sol, w: kw,
-      y: LOBI.kodY, sx: sol + kw + SIMGE_ARA,
-      kutu: { x: sol - 5, y: LOBI.kodY - 4, w: toplam + 10, h: SIMGE_H + 5 }
+      yazi: yazi, orta: orta, y: LOBI.kodY, sx: sx,
+      kutu: { x: Math.round(orta - kw / 2) - 5, y: LOBI.kodY - 4,
+              w: sx + SIMGE_W + 3 - (Math.round(orta - kw / 2) - 5), h: SIMGE_H + 5 }
     };
   }
 
@@ -777,12 +779,13 @@
       }
 
       if (!p) {
+        var bsol = LOBI.karakterX - 17, bsag = LOBI.karakterX + 17;
         for (var d = 0; d < 34; d += 5) {
-          g.rect(ctx, 14 + d, ust + 5, 3, 1, 'rgba(4,26,44,0.6)');
-          g.rect(ctx, 14 + d, ust + 33, 3, 1, 'rgba(4,26,44,0.6)');
+          g.rect(ctx, bsol + 1 + d, ust + 5, 3, 1, 'rgba(4,26,44,0.6)');
+          g.rect(ctx, bsol + 1 + d, ust + 33, 3, 1, 'rgba(4,26,44,0.6)');
         }
-        g.rect(ctx, 13, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
-        g.rect(ctx, 47, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
+        g.rect(ctx, bsol, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
+        g.rect(ctx, bsag, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
         f.text(ctx, 'BOS', LOBI.yaziX, ust + 15, {
           color: '#0a1826', scale: 1, shadow: HALE
         });
@@ -808,7 +811,7 @@
 
       // Taslaktaki gibi karakterin yaninda tek satir: isim ve durumu.
       // Serit yok; koyu yazi + beyaz hale mavi damada okunuyor.
-      f.text(ctx, sigdir(p.name, LOBI.sagX - LOBI.yaziX - 6, 1), LOBI.yaziX, ust + 9, {
+      f.text(ctx, sigdir(p.name, LOBI.baslik.x - LOBI.yaziX - 6, 1), LOBI.yaziX, ust + 9, {
         color: '#0a1826', scale: 1, shadow: HALE
       });
       var kopukMu = p.on === false;
@@ -866,7 +869,7 @@
     // 5) KOD - yaninda kopyalama simgesi; satirin tamamina basilabilir
     var ky = kodYerlesim();
     var yeniKopya = time - kopyalandiAn < 1.4;
-    f.text(ctx, yeniKopya ? KOPYALANDI : ky.yazi, ky.x + ky.w / 2, ky.y, {
+    f.text(ctx, yeniKopya ? KOPYALANDI : ky.yazi, ky.orta, ky.y, {
       color: '#0a1826', scale: 2, align: 'center', shadow: HALE
     });
     kopyaSimgesi(ky.sx, ky.y, '#0a1826');            // tus her zaman gorunur
