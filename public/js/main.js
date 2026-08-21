@@ -560,12 +560,13 @@
   var LOBI = {
     satirY: function (slot) { return 10 + slot * 40; },   // sol sutun satir ustu
     karakterX: 30,                              // karakterin ORTASI (34 px genis cizilir)
-    yaziX: 64,                                  // ok 59'da bitiyor, 5 px bosluk
-    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 206
-    sagX: 116, sagW: 180,
-    baslik: { x: 128, y: 6, w: 156, h: 42 },   // buyuk "OYUN" kutusu
-    hazir:  { x: 154, y: 54, w: 104, h: 26 },  // iki yaninda turuncu oklar
-    cik:    { x: 154, y: 98, w: 104, h: 22 },
+    yaziX: 63,                                  // ok 59'da bitiyor, 4 px bosluk
+    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 188
+    // Oklar HAZIR'in 26 px disina cizilir, o yuzden baslik.w = hazir.w + 52
+    sagX: 98, sagW: 180,
+    baslik: { x: 120, y: 6, w: 136, h: 42 },   // buyuk "OYUN" kutusu (yazi 112 px)
+    hazir:  { x: 146, y: 54, w: 84, h: 26 },   // iki yaninda turuncu oklar
+    cik:    { x: 146, y: 98, w: 84, h: 22 },
     kodY: 136,                                  // "KOD : XXXX" + kopyala tusu
     altY: 160                                   // rakip araniyor / uyari
   };
