@@ -115,11 +115,7 @@
       odadanCik();
     });
 
-    $('btnMute').addEventListener('click', function () {
-      var m = !PP.sfx.isMuted();
-      PP.sfx.setMuted(m);
-      $('btnMute').textContent = m ? 'SES: KAPALI' : 'SES: ACIK';
-    });
+    $('btnMute').addEventListener('click', sesiDegistir);
   }
 
   // ---------------------------------------------------------------- dokunma / fare
@@ -176,6 +172,10 @@
         var ho = hedefOklari();
         if (ho && kutuIcinde(p2, ho.sol)) { PP.sfx.tick(); PP.net.send({ t: 'target', d: -1 }); return; }
         if (ho && kutuIcinde(p2, ho.sag)) { PP.sfx.tick(); PP.net.send({ t: 'target', d: 1 }); return; }
+        var sb = sesButonu();
+        if (sb && kutuIcinde(p2, sb)) { sesiDegistir(); return; }
+        var cb = cikButonu();
+        if (cb && kutuIcinde(p2, cb)) { PP.sfx.click(); odadanCik(); return; }
         var hb = hazirButonu();
         if (hb && kutuIcinde(p2, hb)) { PP.input.press(); return; }
         return;
@@ -256,6 +256,16 @@
     menuyeDon(null);
   }
 
+  // Ses acma/kapama tek yerden: hem ust cubuktaki buton hem lobideki kutu
+  // bunu cagirir, boylece ikisi hep ayni seyi gosterir.
+  function sesiDegistir() {
+    PP.sfx.unlock();
+    var kapali = !PP.sfx.isMuted();
+    PP.sfx.setMuted(kapali);
+    if (!kapali) PP.sfx.click();
+    $('btnMute').textContent = kapali ? 'SES: KAPALI' : 'SES: ACIK';
+  }
+
   function menuyeDon(hata) {
     state = null;
     youId = null;
@@ -265,6 +275,10 @@
     PP.muzik.sus();
     // Adresteki #KOD kalmasin: F5 bizi tekrar o odaya baglamaya calismasin
     if (history.replaceState) history.replaceState(null, '', location.pathname);
+    // Lobide gizlenen ust cubuk butonlari geri acilir; yoksa odadan cikinca
+    // gizli kaliyor ve tekrar girildiginde mac baslayana kadar gorunmuyorlar.
+    $('btnMute').classList.remove('hidden');
+    $('btnLeave').classList.remove('hidden');
     $('game').classList.add('hidden');
     $('menu').classList.remove('hidden');
     if (hata) showErr(hata);
@@ -474,12 +488,18 @@
     wasBoom = patlama;
 
     var shareBox = $('share');
-    if (state.phase === 'lobby') {
+    var lobide = state.phase === 'lobby';
+    if (lobide) {
       shareBox.classList.remove('hidden');
       $('shareUrl').textContent = location.origin + '/#' + state.code;
     } else {
       shareBox.classList.add('hidden');
     }
+    // Lobide SES ve CIK ekranin kendisinde (taslaktaki sari kutular) duruyor;
+    // ust cubuktakiler gizlenir ki ayni buton iki kez gorunmesin. Mac sirasinda
+    // ekranda yer olmadigi icin geri gelirler.
+    $('btnMute').classList.toggle('hidden', lobide);
+    $('btnLeave').classList.toggle('hidden', lobide);
 
     if (state.phase !== prevPhase) {
       if (state.phase === 'intro') PP.sfx.click();
@@ -536,14 +556,16 @@
   // Sol sutun: oyuncular alt alta. Sag sutun: baslik, tur secimi, HAZIR, kod.
   // Butun konumlar tek yerden gelsin ki cizim ile dokunma alani hep ayni olsun.
   var LOBI = {
-    satirY: function (slot) { return 14 + slot * 40; },   // sol sutun satir ustu
-    karakterX: 28,
+    satirY: function (slot) { return 10 + slot * 40; },   // sol sutun satir ustu
+    karakterX: 30,
     yaziX: 58,
     sagX: 136, sagW: 180,
-    baslik: { x: 140, y: 8, w: 172, h: 30 },
-    tur:    { y: 46, h: 22 },
-    hazir:  { x: 152, y: 76, w: 148, h: 30 },
-    kod:    { x: 152, y: 116, w: 148, h: 28 }
+    baslik: { x: 142, y: 6, w: 168, h: 42 },   // buyuk "OYUN" kutusu
+    hazir:  { x: 168, y: 54, w: 116, h: 26 },  // iki yaninda turuncu oklar
+    ses:    { x: 168, y: 92, w: 116, h: 20 },
+    cik:    { x: 168, y: 116, w: 116, h: 20 },
+    kodY: 142,                                  // "KOD : XXXX" duz yazi
+    altY: 160                                   // rakip araniyor / uyari
   };
 
   // Kendi karakterini degistiren oklar - kendi satirinin iki yaninda
@@ -564,10 +586,22 @@
   function hedefOklari() {
     if (!state || state.phase !== 'lobby') return null;
     if (state.host !== youId) return null;
+    var h = LOBI.hazir;
     return {
-      sol: { x: LOBI.sagX + 6, y: LOBI.tur.y, w: 20, h: LOBI.tur.h },
-      sag: { x: LOBI.sagX + LOBI.sagW - 26, y: LOBI.tur.y, w: 20, h: LOBI.tur.h }
+      sol: { x: h.x - 26, y: h.y + 2, w: 22, h: h.h - 4 },
+      sag: { x: h.x + h.w + 4, y: h.y + 2, w: 22, h: h.h - 4 }
     };
+  }
+
+  // Taslakta sag sutunda duran SES ve CIK kutulari (ust cubuktakilerle ayni isi
+  // yapar; lobide oradakiler gizlenir ki ekranda iki kez gorunmesinler)
+  function sesButonu() {
+    if (!state || state.phase !== 'lobby') return null;
+    return { x: LOBI.ses.x, y: LOBI.ses.y, w: LOBI.ses.w, h: LOBI.ses.h };
+  }
+  function cikButonu() {
+    if (!state || state.phase !== 'lobby') return null;
+    return { x: LOBI.cik.x, y: LOBI.cik.y, w: LOBI.cik.w, h: LOBI.cik.h };
   }
 
   // Lobideki HAZIR butonu (ekranin baska yerine basmak hazir yapmaz)
@@ -641,6 +675,7 @@
     // Zemin: arkadaki tek parca mavi dama gorunsun (tuval saydam kalir)
     ctx.clearRect(0, 0, W, H);
     var ben = me();
+    var HALE = 'rgba(255,255,255,0.9)';
 
     // ================= SOL SUTUN: oyuncular alt alta =================
     for (var s = 0; s < state.max; s++) {
@@ -652,13 +687,13 @@
 
       if (!p) {
         for (var d = 0; d < 34; d += 5) {
-          g.rect(ctx, 12 + d, ust + 4, 3, 1, 'rgba(4,26,44,0.65)');
-          g.rect(ctx, 12 + d, ust + 34, 3, 1, 'rgba(4,26,44,0.65)');
+          g.rect(ctx, 14 + d, ust + 5, 3, 1, 'rgba(4,26,44,0.6)');
+          g.rect(ctx, 14 + d, ust + 33, 3, 1, 'rgba(4,26,44,0.6)');
         }
-        g.rect(ctx, 11, ust + 4, 1, 31, 'rgba(4,26,44,0.65)');
-        g.rect(ctx, 45, ust + 4, 1, 31, 'rgba(4,26,44,0.65)');
-        f.text(ctx, 'BOS', LOBI.yaziX + 4, ust + 16, {
-          color: '#0a1826', scale: 1, shadow: 'rgba(255,255,255,0.9)'
+        g.rect(ctx, 13, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
+        g.rect(ctx, 47, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
+        f.text(ctx, 'BOS', LOBI.yaziX, ust + 15, {
+          color: '#0a1826', scale: 1, shadow: HALE
         });
         continue;
       }
@@ -666,7 +701,7 @@
       var bob = Math.round(Math.sin(time * 4 + s) * 2);
       PP.chars.ciz(ctx, p.char, LOBI.karakterX, ust + 19 + bob, 34, 32);
 
-      // Kendi satirimda karakter degistirme oklari (taslaktaki turuncu oklar)
+      // Kendi satirimda karakter degistirme oklari
       if (ben && p.id === ben.id) {
         var ok = karakterOklari();
         if (ok) {
@@ -680,82 +715,78 @@
         }
       }
 
-      // Isim / durum / ping: koyu serit uzerinde. Mavi zemin orta tonlu
-      // oldugu icin renkli yazi ancak kontrollu bir zeminde okunuyor.
-      g.rect(ctx, LOBI.yaziX - 2, ust + 3, 74, 34, 'rgba(10,24,38,0.92)');
-      g.rect(ctx, LOBI.yaziX - 2, ust + 3, 74, 1, 'rgba(255,255,255,0.3)');
-      f.text(ctx, p.name, LOBI.yaziX + 2, ust + 6, { color: '#eef4fa', scale: 1 });
-
-      var kopuk = p.on === false;
-      var durum = kopuk ? ('KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3))
-                        : (p.ready ? 'HAZIR!' : 'BEKLIYOR');
-      f.text(ctx, durum, LOBI.yaziX + 2, ust + 17, {
-        color: kopuk ? '#ff9a8f' : (p.ready ? '#7ffcb0' : '#b9c6d4'), scale: 1
+      // Taslaktaki gibi karakterin yaninda tek satir: isim ve durumu.
+      // Serit yok; koyu yazi + beyaz hale mavi damada okunuyor.
+      f.text(ctx, p.name, LOBI.yaziX, ust + 9, {
+        color: '#0a1826', scale: 1, shadow: HALE
       });
-      if (!kopuk && p.ping > 0) {
-        f.text(ctx, p.ping + ' MS', LOBI.yaziX + 2, ust + 28, {
-          color: p.ping < 80 ? '#7ffcb0' : p.ping < 200 ? '#ffd76b' : '#ff9a8f', scale: 1
-        });
-      }
+      var kopukMu = p.on === false;
+      var durum = kopukMu ? ('KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3))
+                          : (p.ready ? 'HAZIR' : 'BEKLIYOR');
+      f.text(ctx, durum, LOBI.yaziX, ust + 21, {
+        color: kopukMu ? '#6b0d00' : (p.ready ? '#063b1c' : '#12304a'),
+        scale: 1, shadow: HALE
+      });
     }
 
-    // ================= SAG SUTUN =================
+    // ================= SAG SUTUN (taslaktaki sira) =================
     var sagOrta = LOBI.sagX + LOBI.sagW / 2;
 
-    // Baslik
+    // 1) Baslik kutusu
     sariKutu(LOBI.baslik, null, 0);
-    f.text(ctx, 'PARTI PANIK', sagOrta, LOBI.baslik.y + 8, {
-      color: '#000000', scale: 2, align: 'center'
+    f.text(ctx, 'OYUN', sagOrta, LOBI.baslik.y + 7, {
+      color: '#000000', scale: 4, align: 'center'
     });
 
-    // Kac tur kazanan sampiyon (oklar sadece odayi kuranda)
-    var turK = { x: LOBI.sagX + 30, y: LOBI.tur.y, w: LOBI.sagW - 60, h: LOBI.tur.h };
-    sariKutu(turK, state.needed + ' TUR KAZANAN', 1);
-    var ho = hedefOklari();
-    if (ho) {
-      [[ho.sol, 'left'], [ho.sag, 'right']].forEach(function (par) {
-        var k = par[0];
-        g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
-        g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, '#ff8a3c');
-        g.arrow(ctx, par[1], k.x + 5, k.y + 6, 1, '#000000');
-      });
-    }
-
-    // HAZIR butonu
+    // 2) HAZIR - iki yaninda turuncu oklar (tur sayisini degistirirler)
     var hb = hazirButonu();
     var yeterli = state.players.length >= state.min;
     if (hb) {
       if (!yeterli) {
         g.rect(ctx, hb.x, hb.y, hb.w, hb.h, '#000000');
         g.rect(ctx, hb.x + 3, hb.y + 3, hb.w - 6, hb.h - 6, '#c9b45a');
-        f.text(ctx, 'EN AZ ' + state.min + ' KISI', hb.x + hb.w / 2, hb.y + 12, {
+        f.text(ctx, 'EN AZ ' + state.min + ' KISI', hb.x + hb.w / 2, hb.y + 10, {
           color: '#3a3200', scale: 1, align: 'center'
         });
       } else if (ben && ben.ready) {
-        sariKutu(hb, 'HAZIRIM! (IPTAL)', 1, true);
+        sariKutu(hb, 'HAZIR (IPTAL)', 1, true);
       } else {
-        sariKutu(hb, 'HAZIRIM', 2, Math.floor(time * 2) % 2 === 0);
+        sariKutu(hb, 'HAZIR', 2, Math.floor(time * 2) % 2 === 0);
       }
     }
-
-    // Oda kodu
-    sariKutu(LOBI.kod, null, 0);
-    f.text(ctx, 'KOD', LOBI.kod.x + 10, LOBI.kod.y + 11, { color: '#000000', scale: 1 });
-    f.text(ctx, state.code, LOBI.kod.x + LOBI.kod.w - 10, LOBI.kod.y + 7, {
-      color: '#000000', scale: 2, align: 'right'
-    });
-
-    // HIZLI OYNA odasi: rakip aranidigini belli et
-    if (state.acik && state.players.length < state.max) {
-      f.text(ctx, 'RAKIP ARANIYOR' + '.'.repeat(1 + Math.floor(time * 2) % 3), sagOrta, 150, {
-        color: '#0a1826', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
+    var ho = hedefOklari();
+    if (ho) {
+      [[ho.sol, 'left'], [ho.sag, 'right']].forEach(function (par) {
+        var k = par[0];
+        g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
+        g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, '#ff8a3c');
+        g.arrow(ctx, par[1], k.x + 6, k.y + 6, 1, '#000000');
       });
     }
+    // Oklarin ne yaptigi belli olsun
+    f.text(ctx, state.needed + ' TUR KAZANAN', sagOrta, LOBI.hazir.y + LOBI.hazir.h + 2, {
+      color: '#0a1826', scale: 1, align: 'center', shadow: HALE
+    });
 
+    // 3) SES  4) CIK
+    sariKutu(LOBI.ses, PP.sfx.isMuted() ? 'SES: KAPALI' : 'SES: ACIK', 1);
+    sariKutu(LOBI.cik, 'CIK', 1);
+
+
+    // 5) KOD - taslaktaki gibi duz yazi
+    f.text(ctx, 'KOD : ' + state.code, sagOrta, LOBI.kodY, {
+      color: '#0a1826', scale: 2, align: 'center', shadow: HALE
+    });
+
+    if (state.acik && state.players.length < state.max) {
+      f.text(ctx, 'RAKIP ARANIYOR' + '.'.repeat(1 + Math.floor(time * 2) % 3), sagOrta, LOBI.altY, {
+        color: '#0a1826', scale: 1, align: 'center', shadow: HALE
+      });
+    }
     if (state.notice) {
       var nw = f.width(state.notice, 1) + 12;
-      g.rect(ctx, Math.round(sagOrta - nw / 2), 162, nw, 11, 'rgba(10,24,38,0.92)');
-      f.text(ctx, state.notice, sagOrta, 164, { color: '#ff9a8f', scale: 1, align: 'center' });
+      g.rect(ctx, Math.round(sagOrta - nw / 2), LOBI.altY - 2, nw, 11, 'rgba(10,24,38,0.92)');
+      f.text(ctx, state.notice, sagOrta, LOBI.altY, { color: '#ff9a8f', scale: 1, align: 'center' });
     }
   }
 
