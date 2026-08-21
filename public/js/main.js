@@ -622,9 +622,8 @@
   }
 
   function drawLobby() {
-    // Tuval SAYDAM birakilir: zemin sayfanin arkasindaki tek parca dama.
-    // Karartmayi da tuval degil #stage yapar - yoksa tuvalin ici cevresinden
-    // koyu kalir ve tam da kacinmak istedigimiz ton farki olusur.
+    // Tuval SAYDAM: zemin sayfanin arkasindaki tek parca dama. Karartma YOK,
+    // turuncu ve beyaz oldugu gibi gorunuyor; yazilar koyu oldugu icin okunuyor.
     ctx.clearRect(0, 0, W, H);
 
     // Baslik: asili ahsap tabela + ipleri
@@ -646,13 +645,13 @@
     var slotW = W / max;
     var full = state.players.length >= max;
     f.text(ctx, state.players.length + ' / ' + max + ' OYUNCU', W / 2, 76, {
-      color: full ? P.green : P.light, scale: 1, align: 'center'
+      color: full ? '#0a4d24' : '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
     });
     // HIZLI OYNA odasi: yabancilar da katilabilir, arandigini belli et
     if (state.acik && !full) {
       var nokta = '.'.repeat(1 + Math.floor(time * 2) % 3);
       f.text(ctx, 'HERKESE ACIK - RAKIP ARANIYOR' + nokta, W / 2, 66, {
-        color: P.yellow, scale: 1, align: 'center'
+        color: '#6b3a00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
       });
     }
     for (var s = 0; s < max; s++) {
@@ -692,17 +691,18 @@
         // harfleri zeminden ayirip her karede okunur tutuyor.
         if (p.on === false) {
           f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 132, {
-            color: '#ffd0c2', scale: 1, align: 'center', shadow: '#3a0c05'
+            color: '#8f1600', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
           });
           continue;
         }
         f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 132, {
-          color: p.ready ? '#b8ffcf' : '#ffe8cc', scale: 1, align: 'center', shadow: '#3a1c05'
+          color: p.ready ? '#0a4d24' : '#3a1c00', scale: 1, align: 'center',
+          shadow: 'rgba(255,248,235,0.7)'
         });
         if (p.ping > 0) {
-          var pc = p.ping < 80 ? '#b8ffcf' : p.ping < 200 ? P.yellow : P.orange;
+          var pc = p.ping < 80 ? '#0a4d24' : p.ping < 200 ? '#6b4a00' : '#8f2b00';
           f.text(ctx, p.ping + ' MS', cx, 142, {
-            color: pc, scale: 1, align: 'center', shadow: '#3a1c05'
+            color: pc, scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
           });
         }
       } else {
@@ -713,7 +713,7 @@
         }
         g.rect(ctx, cx - 14, 90, 1, 23, '#ffdcae');
         g.rect(ctx, cx + 13, 90, 1, 23, '#ffdcae');
-        f.text(ctx, 'BOS', cx, 119, { color: '#ffdcae', scale: 1, align: 'center', shadow: '#3a1c05' });
+        f.text(ctx, 'BOS', cx, 119, { color: '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.6)' });
       }
     }
 
@@ -721,7 +721,7 @@
     var amHost = state.host === youId;
     var ho = hedefOklari();
     f.text(ctx, state.needed + ' TUR KAZANAN SAMPIYON', W / 2, 145, {
-      color: amHost ? P.yellow : '#3a1c05', scale: 1, align: 'center'
+      color: amHost ? '#6b3a00' : '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
     });
     if (ho) {
       [[ho.sol, 'left'], [ho.sag, 'right']].forEach(function (par) {
@@ -747,7 +747,9 @@
     }
 
     if (state.notice) {
-      f.text(ctx, state.notice, W / 2, 24, { color: P.red, scale: 1, align: 'center' });
+      f.text(ctx, state.notice, W / 2, 24, {
+        color: '#8f1600', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
+      });
     }
   }
 
@@ -755,8 +757,8 @@
     var pulse = Math.floor(time * 8) % 2 === 0;
     ctx.clearRect(0, 0, W, H);                            // arkadaki dama gorunsun
     ctx.save();
-    ctx.globalAlpha = pulse ? 0.06 : 0.20;                // sadece nabiz; asil karartma #stage'de
-    g.rect(ctx, 0, 0, W, H, '#180800');
+    ctx.globalAlpha = pulse ? 0.22 : 0.06;                // acik nabiz (karartma degil)
+    g.rect(ctx, 0, 0, W, H, '#fff8eb');
     ctx.restore();
 
     // Oyun adi ve talimati parsomen levhada dursun
@@ -767,19 +769,21 @@
 
     var c = Math.max(0, Math.ceil(state.timer));
     if (c > 0) {
-      f.text(ctx, String(c), W / 2, 92, { color: P.orange, scale: 8, align: 'center', shadow: P.black });
+      f.text(ctx, String(c), W / 2, 92, {
+        color: '#2a1200', scale: 8, align: 'center', shadow: 'rgba(255,248,235,0.85)'
+      });
     }
 
     // Kacinci turdayiz + oyunlar hizlandiysa bunu belli et
     if (state.tur) {
       f.text(ctx, 'TUR ' + state.tur, W / 2, 14, {
-        color: '#ffe0b8', scale: 1, align: 'center', shadow: '#3a1c05'
+        color: '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
       });
     }
     if (state.seviye > 0) {
       var yanip = Math.floor(time * 6) % 2 === 0;
       f.text(ctx, 'HIZ +%' + Math.round(state.seviye * 100), W / 2, 148, {
-        color: yanip ? P.red : P.orange, scale: 2, align: 'center', shadow: P.black
+        color: yanip ? '#8f1600' : '#2a1200', scale: 2, align: 'center', shadow: 'rgba(255,248,235,0.7)'
       });
     }
     drawTopBar();
@@ -833,9 +837,6 @@
 
   function drawGameover() {
     ctx.clearRect(0, 0, W, H);                            // arkadaki dama gorunsun
-    ctx.save(); ctx.globalAlpha = 0.14;                   // sampiyon yazisi one ciksin
-    g.rect(ctx, 0, 0, W, H, '#180800');
-    ctx.restore();
     var champ = playerById(state.winner);
     var col = champ ? g.colorForSlot(champ.slot) : P.white;
 
@@ -848,13 +849,17 @@
       g.rect(ctx, cxp, cyp, 3, 3, cc);
     }
 
-    f.text(ctx, 'SAMPIYON', W / 2, 10, { color: P.yellow, scale: 3, align: 'center', shadow: P.black });
+    f.text(ctx, 'SAMPIYON', W / 2, 10, {
+      color: '#2a1200', scale: 3, align: 'center', shadow: 'rgba(255,248,235,0.85)'
+    });
 
     var bob = Math.round(Math.sin(time * 6) * 3);
     PP.chars.ciz(ctx, champ ? champ.char : 0, W / 2, 70 + bob, 92, 56);
 
     if (champ) {
-      f.text(ctx, champ.name, W / 2, 104, { color: col, scale: 3, align: 'center', shadow: P.black });
+      f.text(ctx, champ.name, W / 2, 104, {
+        color: col, scale: 3, align: 'center', shadow: 'rgba(26,10,0,0.9)'
+      });
     }
 
     var n = state.players.length, slotW = W / n;

@@ -54,10 +54,10 @@ html, body {
   -webkit-overflow-scrolling: touch;
   position: relative;
   z-index: 1;
-  /* Zemin YOK: arkadaki tek parca dama gorunsun. Buradaki yari saydam
-     karartma sadece yazilarin okunmasi icin. */
-  background: radial-gradient(ellipse 78% 70% at 50% 45%,
-              rgba(24,8,0,0.58) 0%, rgba(24,8,0,0.50) 60%, rgba(24,8,0,0.42) 100%);
+  /* Zemin YOK ve karartma da YOK: turuncu ile beyaz oldugu gibi gorunsun.
+     Okunurluk karartmayla degil KOYU yazi ile saglaniyor - koyu yazi hem
+     turuncu hem beyaz karede rahat okunur. */
+  background: transparent;
   text-align: center;
 }
 
@@ -102,11 +102,9 @@ html, body {
    kayma olurdu. */
 #game { position: relative; z-index: 1; }
 #stage, #pad, #topbar { position: relative; }
-/* Hepsi AYNI karartma: boylece desen ekranin her yerinde ayni parlaklikta
-   gorunur. Farkli degerler verilseydi bolgeler arasi ton farki olurdu.
-   Kareler beyaz olunca zemin parladi; yazilarin okunmasi icin 0.50 yetmedi,
-   olcup 0.55'e cikarildi (bu degerde desen ustune cizilen tum yazilar 3x uzeri). */
-#topbar, #pad, #stage { background: rgba(20,9,0,0.55); }
+/* Karartma yok: desen oldugu gibi gorunsun. Bu bolgelerdeki yazi ve
+   butonlarin kendi zemini/rengi okunurlugu sagliyor. */
+#topbar, #pad, #stage { background: transparent; }
 
 #menu h1 {
   margin: 0;
@@ -114,16 +112,17 @@ html, body {
   font-weight: 800;
   letter-spacing: 2px;
   line-height: 1;
-  /* Basligin kendisi renk gecisi; altinda yumusak bir isima */
-  background: linear-gradient(180deg, #fff6c9 0%, #ffd34d 55%, #ff8a3c 100%);
+  /* Parlak turuncu/beyaz zeminde acik yazi kayboluyor: baslik KOYU.
+     Altindaki acik golge harfleri turuncu kareden de ayiriyor. */
+  background: linear-gradient(180deg, #4a2400 0%, #2a1200 60%, #1a0b00 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 3px 0 rgba(0,0,0,0.45)) drop-shadow(0 0 18px rgba(255,211,77,0.35));
+  filter: drop-shadow(0 2px 0 rgba(255,246,225,0.75));
 }
 #menu h1 span {
   display: block;
-  background: linear-gradient(180deg, #d6fff0 0%, #5fe08a 55%, #31c9b7 100%);
+  background: linear-gradient(180deg, #0d4a2c 0%, #06301a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -131,7 +130,10 @@ html, body {
 
 #menu::before, #menu::after { content: ''; margin: auto; }
 
-.tag { margin: 4px 0 12px; color: #ffe7c4; letter-spacing: 2px; font-size: 13px; }
+.tag {
+  margin: 4px 0 12px; letter-spacing: 2px; font-size: 13px;
+  color: #3a1c00; text-shadow: 0 1px 0 rgba(255,248,235,0.6);
+}
 
 #menu input {
   width: min(300px, 80vw);
@@ -142,17 +144,17 @@ html, body {
   letter-spacing: 3px;
   text-align: center;
   text-transform: uppercase;
-  color: #fbfaff;
-  background: rgba(14,13,28,0.55);
-  border: 2px solid rgba(255,214,170,0.40);
+  color: #ffeedb;
+  background: rgba(48,26,2,0.92);
+  border: 3px solid rgba(255,244,228,0.55);
   border-radius: 12px;
   outline: none;
   transition: border-color .15s, box-shadow .15s;
 }
-#menu input::placeholder { color: #b39b7f; letter-spacing: 2px; }
+#menu input::placeholder { color: #b58f63; letter-spacing: 2px; }
 #menu input:focus {
   border-color: #ffd34d;
-  box-shadow: 0 0 0 4px rgba(255,211,77,0.18);
+  box-shadow: 0 0 0 4px rgba(255,211,77,0.35);
 }
 #code { width: 130px; letter-spacing: 8px; }
 
@@ -166,50 +168,55 @@ html, body {
   letter-spacing: 2px;
   /* Turuncu dama zemininde koyu mor buton kayboluyordu (kontrast 1.02x).
      Acik zeminli buton hem okunuyor hem turuncuyla kavga etmiyor. */
-  color: #2a1c3f;
-  background: linear-gradient(180deg, #f2eeff 0%, #d9d2f5 100%);
+  color: #ffeedb;
+  background: linear-gradient(180deg, #4a2a08 0%, #301a02 100%);
   border: none;
   border-radius: 14px;
-  /* Hareketli desende butonun kenari kaybolmasin diye ince koyu hat */
-  box-shadow: 0 0 0 2px rgba(20,9,0,0.55), 0 4px 0 #6d5f9c, 0 6px 14px rgba(0,0,0,0.40);
+  box-shadow: 0 0 0 2px rgba(255,244,228,0.55), 0 4px 0 #1a0d00, 0 6px 14px rgba(0,0,0,0.35);
   cursor: pointer;
   transition: transform .08s, box-shadow .08s, filter .15s;
 }
 .mbtn:hover { filter: brightness(1.12); }
-.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 #6d5f9c; }
+.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 2px rgba(255,244,228,0.55); }
 
 .mbtn.primary {
   width: min(300px, 80vw);
-  color: #2a1c05;
-  background: linear-gradient(180deg, #ffe07a 0%, #ffc22e 100%);
-  box-shadow: 0 0 0 2px rgba(20,9,0,0.55), 0 4px 0 #b5811a, 0 6px 16px rgba(0,0,0,0.35);
+  color: #fff3d6;
+  background: linear-gradient(180deg, #7a3d00 0%, #5a2a00 100%);
+  box-shadow: 0 0 0 2px rgba(255,244,228,0.6), 0 4px 0 #2e1500, 0 6px 16px rgba(0,0,0,0.35);
 }
-.mbtn.primary:active { box-shadow: 0 0 0 #b5811a; }
+.mbtn.primary:active { box-shadow: 0 0 0 2px rgba(255,244,228,0.6); }
 
 .mbtn.quick {
   width: min(300px, 80vw);
   font-size: 21px;
   padding: 18px 24px;
-  color: #06301a;
-  background: linear-gradient(180deg, #7bf0a4 0%, #34c46d 100%);
-  box-shadow: 0 0 0 2px rgba(20,9,0,0.55), 0 5px 0 #1d8a4a, 0 8px 20px rgba(0,0,0,0.35);
+  color: #eafff2;
+  background: linear-gradient(180deg, #17663a 0%, #0d4526 100%);
+  box-shadow: 0 0 0 2px rgba(255,244,228,0.65), 0 5px 0 #062616, 0 8px 20px rgba(0,0,0,0.35);
 }
-.mbtn.quick:active { box-shadow: 0 0 0 #1d8a4a; }
-.quickhint { margin: -6px 0 4px; color: #ffe7c4; font-size: 12px; letter-spacing: 1px; }
+.mbtn.quick:active { box-shadow: 0 0 0 2px rgba(255,244,228,0.65); }
+.quickhint {
+  margin: -6px 0 4px; font-size: 12px; letter-spacing: 1px;
+  color: #3a1c00; text-shadow: 0 1px 0 rgba(255,248,235,0.6);
+}
 
 .sep {
   width: min(300px, 80vw);
-  border-top: 1px solid rgba(255,225,190,0.30);
+  border-top: 2px solid rgba(58,28,0,0.30);
   position: relative;
   margin: 10px 0 6px;
 }
 .sep span {
   position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-  background: rgba(26,12,0,0.72); padding: 2px 12px; border-radius: 8px; color: #f0d9b8;
-  font-size: 12px; font-weight: 600; letter-spacing: 2px;
+  background: rgba(255,250,240,0.92); padding: 2px 12px; border-radius: 8px; color: #3a1c00;
+  font-size: 12px; font-weight: 700; letter-spacing: 2px;
 }
 
-#menuErr { min-height: 20px; margin: 2px 0 0; color: #ff8a3c; letter-spacing: 2px; font-size: 14px; }
+#menuErr {
+  min-height: 20px; margin: 2px 0 0; letter-spacing: 2px; font-size: 14px;
+  color: #8f1600; text-shadow: 0 1px 0 rgba(255,248,235,0.6);
+}
 #menuErr.shake { animation: shake .35s; }
 @keyframes shake {
   0%,100% { transform: translateX(0); }
@@ -218,14 +225,14 @@ html, body {
 }
 
 .help {
-  color: #e6d3bb; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
+  color: #3a1c00; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
   margin-top: 12px; padding: 12px 18px;
-  background: rgba(14,13,28,0.40);
-  border: 1px solid rgba(255,225,190,0.20);
+  background: rgba(255,250,240,0.88);
+  border: 2px solid rgba(58,28,0,0.35);
   border-radius: 12px;
   max-width: min(340px, 86vw);
 }
-.help b { color: #ffd34d; font-weight: 700; }
+.help b { color: #b35c00; font-weight: 700; }
 
 /* ------------------------- OYUN ------------------------- */
 
