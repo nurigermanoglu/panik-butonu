@@ -532,19 +532,31 @@
 
   // Lobide KENDI karakterimin yanindaki ok butonlarinin yerleri.
   // Hem cizim hem dokunma testi ayni yeri kullansin diye tek yerden hesaplanir.
+  // ---- LOBI YERLESIMI ----
+  // Sol sutun: oyuncular alt alta. Sag sutun: baslik, tur secimi, HAZIR, kod.
+  // Butun konumlar tek yerden gelsin ki cizim ile dokunma alani hep ayni olsun.
+  var LOBI = {
+    satirY: function (slot) { return 14 + slot * 40; },   // sol sutun satir ustu
+    karakterX: 28,
+    yaziX: 58,
+    sagX: 136, sagW: 180,
+    baslik: { x: 140, y: 8, w: 172, h: 30 },
+    tur:    { y: 46, h: 22 },
+    hazir:  { x: 152, y: 76, w: 148, h: 30 },
+    kod:    { x: 152, y: 116, w: 148, h: 28 }
+  };
+
+  // Kendi karakterini degistiren oklar - kendi satirinin iki yaninda
   function karakterOklari() {
     if (!state || state.phase !== 'lobby') return null;
     var m = me();
     if (!m) return null;
-    var slotW = W / state.max;
-    var cx = Math.round(slotW * m.slot + slotW / 2);
-    var kw = Math.min(56, Math.max(28, slotW - 46));    // karakter kutusu genisligi
-    var ic = Math.round(kw / 2) + 2;                    // ok kutusunun ic kenari
+    var ust = LOBI.satirY(m.slot);
     return {
-      kw: kw,
-      cx: cx,
-      sol: { x: cx - ic - 20, y: 86, w: 20, h: 26 },
-      sag: { x: cx + ic, y: 86, w: 20, h: 26 }
+      kw: 30,
+      cx: LOBI.karakterX,
+      sol: { x: 2, y: ust + 8, w: 11, h: 24 },
+      sag: { x: 44, y: ust + 8, w: 11, h: 24 }
     };
   }
 
@@ -553,22 +565,26 @@
     if (!state || state.phase !== 'lobby') return null;
     if (state.host !== youId) return null;
     return {
-      sol: { x: 64, y: 141, w: 22, h: 14 },
-      sag: { x: 234, y: 141, w: 22, h: 14 }
+      sol: { x: LOBI.sagX + 6, y: LOBI.tur.y, w: 20, h: LOBI.tur.h },
+      sag: { x: LOBI.sagX + LOBI.sagW - 26, y: LOBI.tur.y, w: 20, h: LOBI.tur.h }
     };
   }
 
-  // Lobideki HAZIR butonu (ekranin baska yerine basmak artik hazir yapmaz)
+  // Lobideki HAZIR butonu (ekranin baska yerine basmak hazir yapmaz)
   function hazirButonu() {
     if (!state || state.phase !== 'lobby') return null;
-    return { x: 100, y: 159, w: 120, h: 18 };
+    return { x: LOBI.hazir.x, y: LOBI.hazir.y, w: LOBI.hazir.w, h: LOBI.hazir.h };
   }
 
-  function butonCiz(k, yazi, renk, yaziRenk, kenar) {
-    g.frame(ctx, k.x, k.y, k.w, k.h, renk, kenar || P.black);
-    f.text(ctx, yazi, k.x + k.w / 2, k.y + Math.round((k.h - 7) / 2), {
-      color: yaziRenk, scale: 1, align: 'center'
-    });
+  // Taslaktaki gibi: kalin siyah hatli sari kutu, icinde siyah yazi
+  function sariKutu(k, yazi, olcek, vurgu) {
+    g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
+    g.rect(ctx, k.x + 3, k.y + 3, k.w - 6, k.h - 6, vurgu ? '#fff45c' : '#ffe100');
+    if (yazi) {
+      f.text(ctx, yazi, k.x + k.w / 2, k.y + Math.round((k.h - 7 * olcek) / 2), {
+        color: '#000000', scale: olcek, align: 'center'
+      });
+    }
   }
 
   function kutuIcinde(p, k) {
@@ -622,137 +638,124 @@
   }
 
   function drawLobby() {
-    // Tuval SAYDAM: zemin sayfanin arkasindaki tek parca dama. Karartma YOK,
-    // turuncu ve beyaz oldugu gibi gorunuyor; yazilar koyu oldugu icin okunuyor.
+    // Zemin: arkadaki tek parca mavi dama gorunsun (tuval saydam kalir)
     ctx.clearRect(0, 0, W, H);
+    var ben = me();
 
-    // Baslik levhasi: 2..26. Yazi 3 olcek = 21 piksel yuksek, icine ortalanir.
-    var tw = f.width('PARTI PANIK', 3) + 22, tx = Math.round((W - tw) / 2);
-    g.rect(ctx, tx + 10, 0, 2, 4, '#0a1826');
-    g.rect(ctx, tx + tw - 12, 0, 2, 4, '#0a1826');
-    g.tabela(ctx, tx, 2, tw, 24);
-    f.text(ctx, 'PARTI PANIK', W / 2, 4, {
-      color: P.yellow, scale: 3, align: 'center', shadow: '#0e0d1c'
-    });
-
-    // Oda kodu: levhanin ALTINDA, kendi paneliyle. Kod 3 olcek = 21 piksel.
-    f.text(ctx, 'ODA KODU', W / 2, 28, {
-      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
-    });
-    var kw = f.width(state.code, 3) + 20, kx = Math.round((W - kw) / 2);
-    g.panel(ctx, kx, 37, kw, 27);
-    f.text(ctx, state.code, W / 2, 40, { color: '#2a1c3f', scale: 3, align: 'center' });
-
-    var max = state.max;
-    var slotW = W / max;
-    var full = state.players.length >= max;
-    f.text(ctx, state.players.length + ' / ' + max + ' OYUNCU', W / 2, 75, {
-      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
-    });
-    // HIZLI OYNA odasi: yabancilar da katilabilir, arandigini belli et
-    if (state.acik && !full) {
-      var nokta = '.'.repeat(1 + Math.floor(time * 2) % 3);
-      f.text(ctx, 'HERKESE ACIK - RAKIP ARANIYOR' + nokta, W / 2, 66, {
-        color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
-      });
-    }
-    for (var s = 0; s < max; s++) {
-      var cx = Math.round(slotW * s + slotW / 2);
+    // ================= SOL SUTUN: oyuncular alt alta =================
+    for (var s = 0; s < state.max; s++) {
+      var ust = LOBI.satirY(s);
       var p = null;
       for (var j = 0; j < state.players.length; j++) {
         if (state.players[j].slot === s) p = state.players[j];
       }
-      if (p) {
-        var col = g.colorForSlot(s);
-        var bob = Math.round(Math.sin(time * 4 + s) * 2);
-        var benimSlot = p.id === youId;
-        var ok = benimSlot ? karakterOklari() : null;
-        var kutuW = ok ? ok.kw : Math.min(56, Math.max(28, slotW - 46));
 
-        // Karakterin altinda golge
-        g.rect(ctx, cx - 13, 110, 26, 2, 'rgba(0,20,40,0.45)');
-        PP.chars.ciz(ctx, p.char, cx, 96 + bob, kutuW, 26);
+      if (!p) {
+        for (var d = 0; d < 34; d += 5) {
+          g.rect(ctx, 12 + d, ust + 4, 3, 1, 'rgba(4,26,44,0.65)');
+          g.rect(ctx, 12 + d, ust + 34, 3, 1, 'rgba(4,26,44,0.65)');
+        }
+        g.rect(ctx, 11, ust + 4, 1, 31, 'rgba(4,26,44,0.65)');
+        g.rect(ctx, 45, ust + 4, 1, 31, 'rgba(4,26,44,0.65)');
+        f.text(ctx, 'BOS', LOBI.yaziX + 4, ust + 16, {
+          color: '#0a1826', scale: 1, shadow: 'rgba(255,255,255,0.9)'
+        });
+        continue;
+      }
 
-        // Kendi karakterimin yaninda degistirme oklari
+      var bob = Math.round(Math.sin(time * 4 + s) * 2);
+      PP.chars.ciz(ctx, p.char, LOBI.karakterX, ust + 19 + bob, 34, 32);
+
+      // Kendi satirimda karakter degistirme oklari (taslaktaki turuncu oklar)
+      if (ben && p.id === ben.id) {
+        var ok = karakterOklari();
         if (ok) {
           var parla = Math.floor(time * 3) % 2 === 0;
           [[ok.sol, 'left'], [ok.sag, 'right']].forEach(function (par) {
             var k = par[0];
-            g.frame(ctx, k.x + 1, k.y + 3, k.w - 2, k.h - 6, P.dark, parla ? P.white : P.gray);
-            g.arrow(ctx, par[1], k.x + 1, k.y + 4, 2, P.yellow);
+            g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
+            g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, parla ? '#ffb066' : '#ff8a3c');
+            g.arrow(ctx, par[1], k.x + 1, k.y + 8, 1, '#000000');
           });
         }
+      }
 
-        // Isim/durum/ping tek bir ACIK levhanin uzerinde: zemin iki tonlu
-        // oldugu icin renkli yazilar ancak kontrollu bir zeminde okunur.
-        var lw = Math.max(f.width(p.name, 1) + 14, 52);
-        var lx = Math.round(cx - lw / 2);
-        g.rect(ctx, lx, 112, lw, p.ping > 0 ? 29 : 20, 'rgba(10,24,38,0.92)');
-        g.rect(ctx, lx, 112, lw, 1, 'rgba(255,255,255,0.35)');
-        g.rect(ctx, lx, 112 + (p.ping > 0 ? 28 : 19), lw, 1, 'rgba(0,0,0,0.5)');
-        f.text(ctx, p.name, cx, 114, { color: '#eef4fa', scale: 1, align: 'center' });
+      // Isim / durum / ping: koyu serit uzerinde. Mavi zemin orta tonlu
+      // oldugu icin renkli yazi ancak kontrollu bir zeminde okunuyor.
+      g.rect(ctx, LOBI.yaziX - 2, ust + 3, 74, 34, 'rgba(10,24,38,0.92)');
+      g.rect(ctx, LOBI.yaziX - 2, ust + 3, 74, 1, 'rgba(255,255,255,0.3)');
+      f.text(ctx, p.name, LOBI.yaziX + 2, ust + 6, { color: '#eef4fa', scale: 1 });
 
-        // Durum yazisi levhanin ALTINDA, akan dama uzerinde duruyor.
-        // Hareketli desende duz renk yetmez; koyu bir govde golgesi
-        // harfleri zeminden ayirip her karede okunur tutuyor.
-        if (p.on === false) {
-          f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 123, {
-            color: '#ff9a8f', scale: 1, align: 'center'
-          });
-          continue;
-        }
-        f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 123, {
-          color: p.ready ? '#7ffcb0' : '#b9c6d4', scale: 1, align: 'center'
+      var kopuk = p.on === false;
+      var durum = kopuk ? ('KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3))
+                        : (p.ready ? 'HAZIR!' : 'BEKLIYOR');
+      f.text(ctx, durum, LOBI.yaziX + 2, ust + 17, {
+        color: kopuk ? '#ff9a8f' : (p.ready ? '#7ffcb0' : '#b9c6d4'), scale: 1
+      });
+      if (!kopuk && p.ping > 0) {
+        f.text(ctx, p.ping + ' MS', LOBI.yaziX + 2, ust + 28, {
+          color: p.ping < 80 ? '#7ffcb0' : p.ping < 200 ? '#ffd76b' : '#ff9a8f', scale: 1
         });
-        if (p.ping > 0) {
-          var pc = p.ping < 80 ? '#7ffcb0' : p.ping < 200 ? '#ffd76b' : '#ff9a8f';
-          f.text(ctx, p.ping + ' MS', cx, 132, { color: pc, scale: 1, align: 'center' });
-        }
-      } else {
-        // Bos yer: kesikli cerceve
-        for (var d = 0; d < 26; d += 4) {
-          g.rect(ctx, cx - 13 + d, 86, 2, 1, 'rgba(4,26,44,0.6)');
-          g.rect(ctx, cx - 13 + d, 110, 2, 1, 'rgba(4,26,44,0.6)');
-        }
-        g.rect(ctx, cx - 14, 86, 1, 25, 'rgba(4,26,44,0.6)');
-        g.rect(ctx, cx + 13, 86, 1, 25, 'rgba(4,26,44,0.6)');
-        f.text(ctx, 'BOS', cx, 114, { color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)' });
       }
     }
 
-    // ---- hedef tur sayisi (oklar SADECE odayi kuranda calisir) ----
-    var amHost = state.host === youId;
-    var ho = hedefOklari();
-    f.text(ctx, state.needed + ' TUR KAZANAN SAMPIYON', W / 2, 145, {
-      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
+    // ================= SAG SUTUN =================
+    var sagOrta = LOBI.sagX + LOBI.sagW / 2;
+
+    // Baslik
+    sariKutu(LOBI.baslik, null, 0);
+    f.text(ctx, 'PARTI PANIK', sagOrta, LOBI.baslik.y + 8, {
+      color: '#000000', scale: 2, align: 'center'
     });
+
+    // Kac tur kazanan sampiyon (oklar sadece odayi kuranda)
+    var turK = { x: LOBI.sagX + 30, y: LOBI.tur.y, w: LOBI.sagW - 60, h: LOBI.tur.h };
+    sariKutu(turK, state.needed + ' TUR KAZANAN', 1);
+    var ho = hedefOklari();
     if (ho) {
       [[ho.sol, 'left'], [ho.sag, 'right']].forEach(function (par) {
         var k = par[0];
-        g.frame(ctx, k.x, k.y, k.w, k.h, P.dark, P.gray);
-        g.arrow(ctx, par[1], k.x + 7, k.y + 3, 1, P.yellow);
+        g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
+        g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, '#ff8a3c');
+        g.arrow(ctx, par[1], k.x + 5, k.y + 6, 1, '#000000');
       });
     }
 
-    // ---- HAZIR butonu (baska yere basmak hazir yapmaz) ----
+    // HAZIR butonu
     var hb = hazirButonu();
-    var ben = me();
     var yeterli = state.players.length >= state.min;
     if (hb) {
       if (!yeterli) {
-        butonCiz(hb, 'EN AZ ' + state.min + ' KISI GEREK', P.dark, P.gray, P.dark);
+        g.rect(ctx, hb.x, hb.y, hb.w, hb.h, '#000000');
+        g.rect(ctx, hb.x + 3, hb.y + 3, hb.w - 6, hb.h - 6, '#c9b45a');
+        f.text(ctx, 'EN AZ ' + state.min + ' KISI', hb.x + hb.w / 2, hb.y + 12, {
+          color: '#3a3200', scale: 1, align: 'center'
+        });
       } else if (ben && ben.ready) {
-        butonCiz(hb, 'HAZIRIM! (IPTAL)', P.green, P.black, P.white);
+        sariKutu(hb, 'HAZIRIM! (IPTAL)', 1, true);
       } else {
-        var yanip = Math.floor(time * 2) % 2 === 0;
-        butonCiz(hb, 'HAZIRIM', P.yellow, P.black, yanip ? P.white : P.orange);
+        sariKutu(hb, 'HAZIRIM', 2, Math.floor(time * 2) % 2 === 0);
       }
+    }
+
+    // Oda kodu
+    sariKutu(LOBI.kod, null, 0);
+    f.text(ctx, 'KOD', LOBI.kod.x + 10, LOBI.kod.y + 11, { color: '#000000', scale: 1 });
+    f.text(ctx, state.code, LOBI.kod.x + LOBI.kod.w - 10, LOBI.kod.y + 7, {
+      color: '#000000', scale: 2, align: 'right'
+    });
+
+    // HIZLI OYNA odasi: rakip aranidigini belli et
+    if (state.acik && state.players.length < state.max) {
+      f.text(ctx, 'RAKIP ARANIYOR' + '.'.repeat(1 + Math.floor(time * 2) % 3), sagOrta, 150, {
+        color: '#0a1826', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
+      });
     }
 
     if (state.notice) {
       var nw = f.width(state.notice, 1) + 12;
-      g.rect(ctx, Math.round((W - nw) / 2), 22, nw, 11, 'rgba(10,24,38,0.92)');
-      f.text(ctx, state.notice, W / 2, 24, { color: '#ff9a8f', scale: 1, align: 'center' });
+      g.rect(ctx, Math.round(sagOrta - nw / 2), 162, nw, 11, 'rgba(10,24,38,0.92)');
+      f.text(ctx, state.notice, sagOrta, 164, { color: '#ff9a8f', scale: 1, align: 'center' });
     }
   }
 
