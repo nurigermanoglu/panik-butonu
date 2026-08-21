@@ -53,14 +53,20 @@ html, body {
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   position: relative;
-  background: #e8761f;              /* dama altinda kalan taban */
+  z-index: 1;
+  /* Zemin YOK: arkadaki tek parca dama gorunsun. Buradaki yari saydam
+     karartma sadece yazilarin okunmasi icin. */
+  background: radial-gradient(ellipse 70% 62% at 50% 45%,
+              rgba(24,8,0,0.56) 0%, rgba(24,8,0,0.34) 55%, rgba(24,8,0,0.14) 100%);
   text-align: center;
 }
 
 /* ---- Hareketli turuncu dama zemini ----
-   Kareler sagdan sola akiyor. Hareket icin background-position yerine
-   transform kullaniliyor: transform ekran kartinda islenir, her karede
-   yeniden boyama yapmaz - yani oyunu yavaslatmaz.
+   TEK parca ve TAM EKRAN: menu, oyun alani, ust cubuk, kontrol paneli -
+   hepsi bu ayni katmanin uzerinde durur. Boylece bolge sinirlarinda desen
+   kaymaz, koseler birbirini tutar.
+   Hareket icin background-position yerine transform kullaniliyor: transform
+   ekran kartinda islenir, her karede yeniden boyama yapmaz.
    Tam BIR karo kadar kaydirilip basa donuldugu icin ek yerinde ziplama olmaz. */
 .dama {
   position: fixed;
@@ -68,23 +74,15 @@ html, body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #e8761f;
+  background: #f5700f;
 }
 .dama::before {
   content: '';
   position: absolute;
   top: -10%; bottom: -10%;
   left: -80px; right: -80px;        /* kayarken kenarda bosluk kalmasin */
-  background: repeating-conic-gradient(#ff9542 0% 25%, #e8761f 0% 50%) 0 0 / 72px 72px;
+  background: repeating-conic-gradient(#ffa833 0% 25%, #f5700f 0% 50%) 0 0 / 72px 72px;
   animation: damaKay 2.6s linear infinite;
-}
-/* Ortada hafif karartma: butonlar ve baslik desenin uzerinde okunakli kalsin */
-.dama::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 65% 60% at 50% 45%,
-              rgba(26,12,0,0.52) 0%, rgba(26,12,0,0.30) 55%, rgba(26,12,0,0.10) 100%);
 }
 @keyframes damaKay {
   from { transform: translateX(0); }
@@ -98,28 +96,15 @@ html, body {
 /* Menudeki her sey damanin uzerinde kalsin */
 #menu > *:not(.dama) { position: relative; z-index: 1; }
 
-/* Oyun ekraninin cevresi ve kontrol paneli de ayni akan dama.
-   Burada .dama katmani yok; deseni dogrudan elemanin arkasina koyup
-   background-position yerine yine transform ile akitmak icin ::before kullaniliyor. */
-#stage, #pad, #topbar { position: relative; overflow: hidden; }
-#stage::before, #pad::before, #topbar::before {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0; left: -80px; right: -80px;
-  background: repeating-conic-gradient(#ff9542 0% 25%, #e8761f 0% 50%) 0 0 / 72px 72px;
-  animation: damaKay 2.6s linear infinite;
-  z-index: 0;
-}
-/* Desenin uzerine karartma: oyun alani ve butonlar one ciksin */
-#stage::after, #pad::after, #topbar::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 0;
-  background: rgba(20,9,0,0.62);
-}
-#stage > *, #pad > *, #topbar > * { position: relative; z-index: 1; }
-@media (prefers-reduced-motion: reduce) {
-  #stage::before, #pad::before, #topbar::before { animation: none; }
-}
+/* Oyun ekrani da ayni damanin uzerinde durur. Bu bolgelerin kendi deseni
+   YOKTUR - sadece yari saydam bir karartma koyarlar, desen arkadan gorunur.
+   Ayri ayri desen cizilseydi her biri kendi kokeninden baslar ve sinirlarda
+   kayma olurdu. */
+#game { position: relative; z-index: 1; }
+#stage, #pad, #topbar { position: relative; }
+/* Hepsi AYNI karartma: boylece desen ekranin her yerinde ayni parlaklikta
+   gorunur. Farkli degerler verilseydi bolgeler arasi ton farki olurdu. */
+#topbar, #pad, #stage { background: rgba(20,9,0,0.50); }
 
 #menu h1 {
   margin: 0;
@@ -275,9 +260,9 @@ canvas {
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background: #232145;
-  border: 3px solid #171630;
-  box-shadow: 0 0 0 2px #4a4590;
+  background: transparent;          /* arkadaki dama tuvalin altindan da gecsin */
+  border: 3px solid rgba(10,4,0,0.75);
+  box-shadow: 0 0 0 2px rgba(255,168,51,0.55);
   touch-action: none;
 }
 

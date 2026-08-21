@@ -622,12 +622,10 @@
   }
 
   function drawLobby() {
-    // Zemin: akan turuncu dama. Uzerine hafif karartma biniyor ki isimler,
-    // oda kodu ve karakterler desenin uzerinde okunakli kalsin.
-    g.damaZemin(ctx, 0, 0, W, H, time);
-    ctx.save(); ctx.globalAlpha = 0.42;
-    g.rect(ctx, 0, 0, W, H, '#1a0c00');
-    ctx.restore();
+    // Tuval SAYDAM birakilir: zemin sayfanin arkasindaki tek parca dama.
+    // Karartmayi da tuval degil #stage yapar - yoksa tuvalin ici cevresinden
+    // koyu kalir ve tam da kacinmak istedigimiz ton farki olusur.
+    ctx.clearRect(0, 0, W, H);
 
     // Baslik: asili ahsap tabela + ipleri
     var tw = f.width('PARTI PANIK', 3) + 22, tx = Math.round((W - tw) / 2);
@@ -755,10 +753,10 @@
 
   function drawIntro() {
     var pulse = Math.floor(time * 8) % 2 === 0;
-    g.damaZemin(ctx, 0, 0, W, H, time);
+    ctx.clearRect(0, 0, W, H);                            // arkadaki dama gorunsun
     ctx.save();
-    ctx.globalAlpha = pulse ? 0.34 : 0.46;                // nabiz gibi karartma
-    g.rect(ctx, 0, 0, W, H, '#1a0c00');
+    ctx.globalAlpha = pulse ? 0.06 : 0.20;                // sadece nabiz; asil karartma #stage'de
+    g.rect(ctx, 0, 0, W, H, '#180800');
     ctx.restore();
 
     // Oyun adi ve talimati parsomen levhada dursun
@@ -834,9 +832,9 @@
   }
 
   function drawGameover() {
-    g.damaZemin(ctx, 0, 0, W, H, time);
-    ctx.save(); ctx.globalAlpha = 0.46;
-    g.rect(ctx, 0, 0, W, H, '#1a0c00');
+    ctx.clearRect(0, 0, W, H);                            // arkadaki dama gorunsun
+    ctx.save(); ctx.globalAlpha = 0.14;                   // sampiyon yazisi one ciksin
+    g.rect(ctx, 0, 0, W, H, '#180800');
     ctx.restore();
     var champ = playerById(state.winner);
     var col = champ ? g.colorForSlot(champ.slot) : P.white;

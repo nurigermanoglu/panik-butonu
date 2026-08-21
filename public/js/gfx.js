@@ -171,15 +171,6 @@
           else if (r < 0.10) { c.fillStyle = '#3d3a70'; c.fillRect(x, y, 1, 1); }
         }
       }
-    },
-    // Turuncu dama - menudeki hareketli zeminin tuval karsiligi.
-    // 8x8'lik dort kare bir karo eder; kaydirilarak akitilir.
-    dama: function (c) {
-      var A = '#ff9542', B = '#e8761f';
-      c.fillStyle = A; c.fillRect(0, 0, KARO, KARO);
-      c.fillStyle = B;
-      c.fillRect(0, 0, KARO / 2, KARO / 2);
-      c.fillRect(KARO / 2, KARO / 2, KARO / 2, KARO / 2);
     }
   };
 
@@ -198,7 +189,7 @@
   }
 
   /**
-   * Dokulu dolgu. tip: 'metal' | 'zemin' | 'cakil' | 'tas' | 'dama'
+   * Dokulu dolgu. tip: 'metal' | 'zemin' | 'cakil' | 'tas'
    * kaydir: deseni yatayda oteler (akan zemin icin). Bir karoda bir tur atar.
    */
   function doku(ctx, x, y, w, h, tip, kaydir) {
@@ -214,10 +205,6 @@
     ctx.restore();
   }
 
-  /** Akan dama zemini: zamana gore saniyede bir karo sola kayar. */
-  function damaZemin(ctx, x, y, w, h, zaman) {
-    doku(ctx, x, y, w, h, 'dama', -(zaman || 0) * KARO);
-  }
 
   // ================================================================
   //  FOTOGRAF -> PIXEL ART
@@ -416,7 +403,7 @@
     arrowSize: arrowSize,
     bar: bar,
     doku: doku,
-    damaZemin: damaZemin,
+
     pixelArt: pixelArt,
     panel: panel,
     tabela: tabela,
