@@ -25,21 +25,6 @@
   // Oyuncu renkleri slot sirasina gore (4 kisiye kadar hazir)
   var SLOT_COLORS = [PAL.orange, PAL.blue, PAL.green, PAL.purple];
 
-  var BLOB = [
-    '....xxxx....',
-    '..xx####xx..',
-    '.x########x.',
-    'x##########x',
-    'x##oo##oo##x',
-    'x##ox##ox##x',
-    'x##########x',
-    'x##x####x##x',
-    'x###xxxx###x',
-    '.x########x.',
-    '..xx####xx..',
-    '....xxxx....'
-  ];
-
   var ARROW_UP = [
     '....#....',
     '...###...',
@@ -90,16 +75,6 @@
         ctx.fillRect(x + c * s, y + r * s, s, s);
       }
     }
-  }
-
-  /** Oyuncu karakteri. opts: { dead, scale, squash } */
-  function blob(ctx, x, y, color, opts) {
-    opts = opts || {};
-    var s = opts.scale || 1;
-    var colors = opts.dead
-      ? { '#': PAL.gray, 'x': PAL.dark, 'o': PAL.dark }
-      : { '#': color, 'x': PAL.black, 'o': PAL.white };
-    sprite(ctx, BLOB, x, y, s, colors);
   }
 
   function arrow(ctx, dir, x, y, s, color) {
@@ -415,11 +390,9 @@
   PP.gfx = {
     PAL: PAL,
     SLOT_COLORS: SLOT_COLORS,
-    BLOB: BLOB,
     rect: rect,
     frame: frame,
     sprite: sprite,
-    blob: blob,
     arrow: arrow,
     arrowSize: arrowSize,
     bar: bar,
@@ -427,8 +400,6 @@
     pixelArt: pixelArt,
     panel: panel,
     tabela: tabela,
-    colorForSlot: colorForSlot,
-    blobW: 12,
-    blobH: 12
+    colorForSlot: colorForSlot
   };
 })(window.PP = window.PP || {});

@@ -81,10 +81,8 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 Toplam **10 mini oyun**. Her turda "torba" yönteminden biri gelir: hepsi tekrar etmeden birer kez
 oynanır, sonra torba yenilenir.
 
-> Halka Geçirme ve Şişe Vurma oyunları oyundan çıkarıldı. Kodları hâlâ
-> `server/minigames/ringtoss.js`, `shooting.js` ve `public/js/minigames/` altında duruyor;
-> geri eklemek için `server/minigames/index.js` listesine ve `public/index.html`'e
-> satırlarını geri koymak yeterli.
+> Halka Geçirme, Şişe Vurma ve Buton Yağmuru oyunları çıkarıldı ve kodları
+> silindi. Geri isteyen olursa git geçmişinden alınabilir.
 
 ---
 
