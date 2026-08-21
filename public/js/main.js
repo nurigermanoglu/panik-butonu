@@ -558,15 +558,17 @@
   // Sol sutun: oyuncular alt alta. Sag sutun: baslik, tur secimi, HAZIR, kod.
   // Butun konumlar tek yerden gelsin ki cizim ile dokunma alani hep ayni olsun.
   var LOBI = {
-    satirY: function (slot) { return 10 + slot * 40; },   // sol sutun satir ustu
-    karakterX: 30,                              // karakterin ORTASI (34 px genis cizilir)
-    yaziX: 63,                                  // ok 59'da bitiyor, 4 px bosluk
-    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 188
-    // Oklar HAZIR'in 26 px disina cizilir, o yuzden baslik.w = hazir.w + 52
-    sagX: 98, sagW: 180,
-    baslik: { x: 120, y: 6, w: 136, h: 42 },   // buyuk "OYUN" kutusu (yazi 112 px)
-    hazir:  { x: 146, y: 54, w: 84, h: 26 },   // iki yaninda turuncu oklar
-    cik:    { x: 146, y: 98, w: 84, h: 22 },
+    satirY: function (slot) { return 3 + slot * 44; },    // sol sutun satir ustu
+    karakterX: 33,                              // karakterin ORTASI (34 px genis cizilir)
+    isimY: 34,                                  // isim satiri: ust + isimY
+    isimEn: 66,                                 // isim karakterX'te ortalanir: 0..66
+    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 160,
+    // yani ekranin tam ortasi. Oklar HAZIR'in 26 px disina cizildigi icin
+    // baslik.w = hazir.w + 52 olmali.
+    sagX: 92, sagW: 136,
+    baslik: { x: 92, y: 6, w: 136, h: 42 },    // buyuk "OYUN" kutusu (yazi 112 px)
+    hazir:  { x: 118, y: 54, w: 84, h: 26 },   // iki yaninda turuncu oklar
+    cik:    { x: 118, y: 98, w: 84, h: 22 },
     kodY: 136,                                  // "KOD : XXXX" + kopyala tusu
     altY: 160                                   // rakip araniyor / uyari
   };
@@ -580,9 +582,9 @@
     return {
       kw: 30,
       cx: LOBI.karakterX,
-      // Karakter 13..46 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
-      sol: { x: 0, y: ust + 8, w: 10, h: 24 },
-      sag: { x: 50, y: ust + 8, w: 10, h: 24 }
+      // Karakter 16..49 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
+      sol: { x: 3, y: ust + 6, w: 10, h: 22 },
+      sag: { x: 53, y: ust + 6, w: 10, h: 22 }
     };
   }
 
@@ -782,19 +784,19 @@
       if (!p) {
         var bsol = LOBI.karakterX - 17, bsag = LOBI.karakterX + 17;
         for (var d = 0; d < 34; d += 5) {
-          g.rect(ctx, bsol + 1 + d, ust + 5, 3, 1, 'rgba(4,26,44,0.6)');
-          g.rect(ctx, bsol + 1 + d, ust + 33, 3, 1, 'rgba(4,26,44,0.6)');
+          g.rect(ctx, bsol + 1 + d, ust + 2, 3, 1, 'rgba(4,26,44,0.6)');
+          g.rect(ctx, bsol + 1 + d, ust + 30, 3, 1, 'rgba(4,26,44,0.6)');
         }
-        g.rect(ctx, bsol, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
-        g.rect(ctx, bsag, ust + 5, 1, 29, 'rgba(4,26,44,0.6)');
-        f.text(ctx, 'BOS', LOBI.yaziX, ust + 15, {
-          color: '#0a1826', scale: 1, shadow: HALE
+        g.rect(ctx, bsol, ust + 2, 1, 29, 'rgba(4,26,44,0.6)');
+        g.rect(ctx, bsag, ust + 2, 1, 29, 'rgba(4,26,44,0.6)');
+        f.text(ctx, 'BOS', LOBI.karakterX, ust + LOBI.isimY, {
+          color: '#0a1826', scale: 1, align: 'center', shadow: HALE
         });
         continue;
       }
 
       var bob = Math.round(Math.sin(time * 4 + s) * 2);
-      PP.chars.ciz(ctx, p.char, LOBI.karakterX, ust + 19 + bob, 34, 32);
+      PP.chars.ciz(ctx, p.char, LOBI.karakterX, ust + 16 + bob, 34, 32);
 
       // Kendi satirimda karakter degistirme oklari
       if (ben && p.id === ben.id) {
@@ -805,22 +807,25 @@
             var k = par[0];
             g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
             g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, parla ? '#ffb066' : '#ff8a3c');
-            g.arrow(ctx, par[1], k.x + 1, k.y + 8, 1, '#000000');
+            g.arrow(ctx, par[1], k.x + 1, k.y + 6, 1, '#000000');
           });
         }
       }
 
-      // Taslaktaki gibi karakterin yaninda tek satir: isim ve durumu.
-      // Serit yok; koyu yazi + beyaz hale mavi damada okunuyor.
-      f.text(ctx, sigdir(p.name, LOBI.baslik.x - LOBI.yaziX - 3, 1), LOBI.yaziX, ust + 9, {
-        color: '#0a1826', scale: 1, shadow: HALE
-      });
+      // Durum rozeti: karakterin sag ust kosesinde kucuk renkli kare.
+      // Yazi yerine renk kullaniyoruz cunku isim satiri artik alttaki tek satir.
       var kopukMu = p.on === false;
-      var durum = kopukMu ? ('KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3))
-                          : (p.ready ? 'HAZIR' : 'BEKLIYOR');
-      f.text(ctx, durum, LOBI.yaziX, ust + 21, {
-        color: kopukMu ? '#6b0d00' : (p.ready ? '#063b1c' : '#12304a'),
-        scale: 1, shadow: HALE
+      var yanip = Math.floor(time * 2) % 2 === 0;
+      var rozet = kopukMu ? (yanip ? '#ff4d3d' : '#a02316')
+                          : (p.ready ? '#2fbf4f' : '#dfe9f2');
+      g.rect(ctx, LOBI.karakterX + 10, ust + 1, 7, 7, '#000000');
+      g.rect(ctx, LOBI.karakterX + 11, ust + 2, 5, 5, rozet);
+
+      // Isim karakterin ALTINDA, karakterle ayni eksende ortali.
+      // Koyu yazi + beyaz hale mavi damada okunuyor; renk durumu da anlatir.
+      f.text(ctx, sigdir(p.name, LOBI.isimEn, 1), LOBI.karakterX, ust + LOBI.isimY, {
+        color: kopukMu ? '#6b0d00' : (p.ready ? '#063b1c' : '#0a1826'),
+        scale: 1, align: 'center', shadow: HALE
       });
     }
 
