@@ -81,7 +81,7 @@ html, body {
   position: absolute;
   top: -10%; bottom: -10%;
   left: -80px; right: -80px;        /* kayarken kenarda bosluk kalmasin */
-  background: repeating-conic-gradient(#ffa500 0% 25%, #faf3e8 0% 50%) 0 0 / 72px 72px;
+  background: repeating-conic-gradient(#ffa500 0% 25%, #a34f00 0% 50%) 0 0 / 72px 72px;
   animation: damaKay 2.6s linear infinite;
 }
 @keyframes damaKay {
@@ -114,15 +114,15 @@ html, body {
   line-height: 1;
   /* Parlak turuncu/beyaz zeminde acik yazi kayboluyor: baslik KOYU.
      Altindaki acik golge harfleri turuncu kareden de ayiriyor. */
-  background: linear-gradient(180deg, #4a2400 0%, #2a1200 60%, #1a0b00 100%);
+  background: linear-gradient(180deg, #2e1500 0%, #1a0c00 60%, #0d0600 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 0 rgba(255,246,225,0.75));
+  filter: drop-shadow(0 2px 0 #fff3e0) drop-shadow(0 0 6px rgba(255,243,224,0.9));
 }
 #menu h1 span {
   display: block;
-  background: linear-gradient(180deg, #0d4a2c 0%, #06301a 100%);
+  background: linear-gradient(180deg, #0a3d24 0%, #04220f 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -132,7 +132,7 @@ html, body {
 
 .tag {
   margin: 4px 0 12px; letter-spacing: 2px; font-size: 13px;
-  color: #3a1c00; text-shadow: 0 1px 0 rgba(255,248,235,0.6);
+  color: #1a0c00; text-shadow: 0 1px 0 #fff3e0, 0 0 4px rgba(255,243,224,0.9);
 }
 
 #menu input {
@@ -146,7 +146,7 @@ html, body {
   text-transform: uppercase;
   color: #ffeedb;
   background: rgba(48,26,2,0.92);
-  border: 3px solid rgba(255,244,228,0.55);
+  border: 3px solid #fff3e0;
   border-radius: 12px;
   outline: none;
   transition: border-color .15s, box-shadow .15s;
@@ -172,20 +172,20 @@ html, body {
   background: linear-gradient(180deg, #4a2a08 0%, #301a02 100%);
   border: none;
   border-radius: 14px;
-  box-shadow: 0 0 0 2px rgba(255,244,228,0.55), 0 4px 0 #1a0d00, 0 6px 14px rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 3px #fff3e0, 0 5px 0 #1a0d00, 0 7px 16px rgba(0,0,0,0.40);
   cursor: pointer;
   transition: transform .08s, box-shadow .08s, filter .15s;
 }
 .mbtn:hover { filter: brightness(1.12); }
-.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 2px rgba(255,244,228,0.55); }
+.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 3px #fff3e0; }
 
 .mbtn.primary {
   width: min(300px, 80vw);
   color: #fff3d6;
   background: linear-gradient(180deg, #7a3d00 0%, #5a2a00 100%);
-  box-shadow: 0 0 0 2px rgba(255,244,228,0.6), 0 4px 0 #2e1500, 0 6px 16px rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 3px #fff3e0, 0 5px 0 #2e1500, 0 7px 18px rgba(0,0,0,0.40);
 }
-.mbtn.primary:active { box-shadow: 0 0 0 2px rgba(255,244,228,0.6); }
+.mbtn.primary:active { box-shadow: 0 0 0 3px #fff3e0; }
 
 .mbtn.quick {
   width: min(300px, 80vw);
@@ -193,12 +193,12 @@ html, body {
   padding: 18px 24px;
   color: #eafff2;
   background: linear-gradient(180deg, #17663a 0%, #0d4526 100%);
-  box-shadow: 0 0 0 2px rgba(255,244,228,0.65), 0 5px 0 #062616, 0 8px 20px rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 3px #fff3e0, 0 6px 0 #062616, 0 9px 22px rgba(0,0,0,0.40);
 }
-.mbtn.quick:active { box-shadow: 0 0 0 2px rgba(255,244,228,0.65); }
+.mbtn.quick:active { box-shadow: 0 0 0 3px #fff3e0; }
 .quickhint {
   margin: -6px 0 4px; font-size: 12px; letter-spacing: 1px;
-  color: #3a1c00; text-shadow: 0 1px 0 rgba(255,248,235,0.6);
+  color: #1a0c00; text-shadow: 0 1px 0 #fff3e0, 0 0 4px rgba(255,243,224,0.9);
 }
 
 .sep {
@@ -215,7 +215,7 @@ html, body {
 
 #menuErr {
   min-height: 20px; margin: 2px 0 0; letter-spacing: 2px; font-size: 14px;
-  color: #8f1600; text-shadow: 0 1px 0 rgba(255,248,235,0.6);
+  color: #8f1600; background: rgba(255,246,230,0.92); border-radius: 8px; padding: 2px 10px;
 }
 #menuErr.shake { animation: shake .35s; }
 @keyframes shake {
@@ -271,8 +271,8 @@ canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   background: transparent;          /* arkadaki dama tuvalin altindan da gecsin */
-  border: 3px solid rgba(10,4,0,0.75);
-  box-shadow: 0 0 0 2px rgba(255,165,0,0.60);
+  /* Cerceve YOK: tuval dama zemininin uzerinde kesintisiz dursun */
+  border: none;
   touch-action: none;
 }
 

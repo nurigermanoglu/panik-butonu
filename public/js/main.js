@@ -626,32 +626,34 @@
     // turuncu ve beyaz oldugu gibi gorunuyor; yazilar koyu oldugu icin okunuyor.
     ctx.clearRect(0, 0, W, H);
 
-    // Baslik: asili ahsap tabela + ipleri
+    // Baslik levhasi: 2..26. Yazi 3 olcek = 21 piksel yuksek, icine ortalanir.
     var tw = f.width('PARTI PANIK', 3) + 22, tx = Math.round((W - tw) / 2);
-    g.rect(ctx, tx + 10, 0, 2, 6, '#43434f');
-    g.rect(ctx, tx + tw - 12, 0, 2, 6, '#43434f');
-    g.tabela(ctx, tx, 4, tw, 26);
-    f.text(ctx, 'PARTI PANIK', W / 2, 12, {
-      color: P.yellow, scale: 3, align: 'center', shadow: '#141419'
+    g.rect(ctx, tx + 10, 0, 2, 4, '#2a1200');
+    g.rect(ctx, tx + tw - 12, 0, 2, 4, '#2a1200');
+    g.tabela(ctx, tx, 2, tw, 24);
+    f.text(ctx, 'PARTI PANIK', W / 2, 4, {
+      color: P.yellow, scale: 3, align: 'center', shadow: '#0e0d1c'
     });
 
-    // Oda kodu: parsomen levha
-    var kw = f.width(state.code, 4) + 20, kx = Math.round((W - kw) / 2);
-    g.panel(ctx, kx, 34, kw, 30);
-    f.text(ctx, 'ODA KODU', W / 2, 30, { color: P.white, scale: 1, align: 'center', shadow: '#141419' });
-    f.text(ctx, state.code, W / 2, 42, { color: '#43434f', scale: 4, align: 'center' });
+    // Oda kodu: levhanin ALTINDA, kendi paneliyle. Kod 3 olcek = 21 piksel.
+    f.text(ctx, 'ODA KODU', W / 2, 28, {
+      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+    });
+    var kw = f.width(state.code, 3) + 20, kx = Math.round((W - kw) / 2);
+    g.panel(ctx, kx, 37, kw, 27);
+    f.text(ctx, state.code, W / 2, 40, { color: '#2a1c3f', scale: 3, align: 'center' });
 
     var max = state.max;
     var slotW = W / max;
     var full = state.players.length >= max;
-    f.text(ctx, state.players.length + ' / ' + max + ' OYUNCU', W / 2, 76, {
-      color: full ? '#0a4d24' : '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
+    f.text(ctx, state.players.length + ' / ' + max + ' OYUNCU', W / 2, 75, {
+      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
     });
     // HIZLI OYNA odasi: yabancilar da katilabilir, arandigini belli et
     if (state.acik && !full) {
       var nokta = '.'.repeat(1 + Math.floor(time * 2) % 3);
       f.text(ctx, 'HERKESE ACIK - RAKIP ARANIYOR' + nokta, W / 2, 66, {
-        color: '#6b3a00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
+        color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
       });
     }
     for (var s = 0; s < max; s++) {
@@ -668,8 +670,8 @@
         var kutuW = ok ? ok.kw : Math.min(56, Math.max(28, slotW - 46));
 
         // Karakterin altinda golge
-        g.rect(ctx, cx - 13, 112, 26, 2, '#3a1c05');
-        PP.chars.ciz(ctx, p.char, cx, 98 + bob, kutuW, 28);
+        g.rect(ctx, cx - 13, 110, 26, 2, 'rgba(42,18,0,0.45)');
+        PP.chars.ciz(ctx, p.char, cx, 96 + bob, kutuW, 26);
 
         // Kendi karakterimin yaninda degistirme oklari
         if (ok) {
@@ -681,39 +683,40 @@
           });
         }
 
-        // Isim levhasi
-        var lw = Math.max(f.width(p.name, 1) + 12, 40);
-        g.panel(ctx, cx - lw / 2, 114, lw, 15, { civi: false });
-        f.text(ctx, p.name, cx, 119, { color: '#2a1c3f', scale: 1, align: 'center' });
+        // Isim/durum/ping tek bir ACIK levhanin uzerinde: zemin iki tonlu
+        // oldugu icin renkli yazilar ancak kontrollu bir zeminde okunur.
+        var lw = Math.max(f.width(p.name, 1) + 14, 52);
+        var lx = Math.round(cx - lw / 2);
+        g.rect(ctx, lx, 112, lw, p.ping > 0 ? 29 : 20, 'rgba(255,246,230,0.92)');
+        g.rect(ctx, lx, 112, lw, 1, 'rgba(255,255,255,0.9)');
+        g.rect(ctx, lx, 112 + (p.ping > 0 ? 28 : 19), lw, 1, 'rgba(90,40,0,0.35)');
+        f.text(ctx, p.name, cx, 114, { color: '#2a1200', scale: 1, align: 'center' });
 
         // Durum yazisi levhanin ALTINDA, akan dama uzerinde duruyor.
         // Hareketli desende duz renk yetmez; koyu bir govde golgesi
         // harfleri zeminden ayirip her karede okunur tutuyor.
         if (p.on === false) {
-          f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 132, {
-            color: '#8f1600', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
+          f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 123, {
+            color: '#8f1600', scale: 1, align: 'center'
           });
           continue;
         }
-        f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 132, {
-          color: p.ready ? '#0a4d24' : '#3a1c00', scale: 1, align: 'center',
-          shadow: 'rgba(255,248,235,0.7)'
+        f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 123, {
+          color: p.ready ? '#0a6b31' : '#6b4a2a', scale: 1, align: 'center'
         });
         if (p.ping > 0) {
-          var pc = p.ping < 80 ? '#0a4d24' : p.ping < 200 ? '#6b4a00' : '#8f2b00';
-          f.text(ctx, p.ping + ' MS', cx, 142, {
-            color: pc, scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
-          });
+          var pc = p.ping < 80 ? '#0a6b31' : p.ping < 200 ? '#8a6000' : '#8f2b00';
+          f.text(ctx, p.ping + ' MS', cx, 132, { color: pc, scale: 1, align: 'center' });
         }
       } else {
-        // Bos yer: iple cevrili bos tahta alan
+        // Bos yer: kesikli cerceve
         for (var d = 0; d < 26; d += 4) {
-          g.rect(ctx, cx - 13 + d, 90, 2, 1, '#ffdcae');
-          g.rect(ctx, cx - 13 + d, 112, 2, 1, '#ffdcae');
+          g.rect(ctx, cx - 13 + d, 86, 2, 1, 'rgba(42,18,0,0.55)');
+          g.rect(ctx, cx - 13 + d, 110, 2, 1, 'rgba(42,18,0,0.55)');
         }
-        g.rect(ctx, cx - 14, 90, 1, 23, '#ffdcae');
-        g.rect(ctx, cx + 13, 90, 1, 23, '#ffdcae');
-        f.text(ctx, 'BOS', cx, 119, { color: '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.6)' });
+        g.rect(ctx, cx - 14, 86, 1, 25, 'rgba(42,18,0,0.55)');
+        g.rect(ctx, cx + 13, 86, 1, 25, 'rgba(42,18,0,0.55)');
+        f.text(ctx, 'BOS', cx, 114, { color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)' });
       }
     }
 
@@ -721,7 +724,7 @@
     var amHost = state.host === youId;
     var ho = hedefOklari();
     f.text(ctx, state.needed + ' TUR KAZANAN SAMPIYON', W / 2, 145, {
-      color: amHost ? '#6b3a00' : '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
+      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
     });
     if (ho) {
       [[ho.sol, 'left'], [ho.sag, 'right']].forEach(function (par) {
@@ -747,9 +750,9 @@
     }
 
     if (state.notice) {
-      f.text(ctx, state.notice, W / 2, 24, {
-        color: '#8f1600', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
-      });
+      var nw = f.width(state.notice, 1) + 12;
+      g.rect(ctx, Math.round((W - nw) / 2), 22, nw, 11, 'rgba(255,246,230,0.92)');
+      f.text(ctx, state.notice, W / 2, 24, { color: '#8f1600', scale: 1, align: 'center' });
     }
   }
 
@@ -770,20 +773,24 @@
     var c = Math.max(0, Math.ceil(state.timer));
     if (c > 0) {
       f.text(ctx, String(c), W / 2, 92, {
-        color: '#2a1200', scale: 8, align: 'center', shadow: 'rgba(255,248,235,0.85)'
+        color: '#1a0c00', scale: 8, align: 'center', shadow: 'rgba(255,246,230,0.85)'
       });
     }
 
     // Kacinci turdayiz + oyunlar hizlandiysa bunu belli et
     if (state.tur) {
       f.text(ctx, 'TUR ' + state.tur, W / 2, 14, {
-        color: '#3a1c00', scale: 1, align: 'center', shadow: 'rgba(255,248,235,0.7)'
+        color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
       });
     }
     if (state.seviye > 0) {
       var yanip = Math.floor(time * 6) % 2 === 0;
-      f.text(ctx, 'HIZ +%' + Math.round(state.seviye * 100), W / 2, 148, {
-        color: yanip ? '#8f1600' : '#2a1200', scale: 2, align: 'center', shadow: 'rgba(255,248,235,0.7)'
+      // Kirmizi yazi koyu turuncu kareye karisiyordu: kendi acik seridine oturuyor.
+      var hz = 'HIZ +%' + Math.round(state.seviye * 100);
+      var hw = f.width(hz, 2) + 14;
+      g.rect(ctx, Math.round((W - hw) / 2), 146, hw, 18, 'rgba(255,246,230,0.92)');
+      f.text(ctx, hz, W / 2, 148, {
+        color: yanip ? '#8f1600' : '#1a0c00', scale: 2, align: 'center'
       });
     }
     drawTopBar();
@@ -850,7 +857,7 @@
     }
 
     f.text(ctx, 'SAMPIYON', W / 2, 10, {
-      color: '#2a1200', scale: 3, align: 'center', shadow: 'rgba(255,248,235,0.85)'
+      color: '#1a0c00', scale: 3, align: 'center', shadow: 'rgba(255,246,230,0.85)'
     });
 
     var bob = Math.round(Math.sin(time * 6) * 3);
