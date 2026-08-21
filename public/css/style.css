@@ -74,19 +74,19 @@ html, body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #ffa500;
+  background: #187ab3;
 }
 .dama::before {
   content: '';
   position: absolute;
   top: -10%; bottom: -10%;
-  left: -80px; right: -80px;        /* kayarken kenarda bosluk kalmasin */
-  background: repeating-conic-gradient(#ffa500 0% 25%, #a34f00 0% 50%) 0 0 / 72px 72px;
-  animation: damaKay 2.6s linear infinite;
+  left: -220px; right: -220px;      /* kayarken kenarda bosluk kalmasin */
+  background: repeating-conic-gradient(#58addb 0% 25%, #187ab3 0% 50%) 0 0 / 200px 200px;
+  animation: damaKay 5s linear infinite;
 }
 @keyframes damaKay {
   from { transform: translateX(0); }
-  to   { transform: translateX(-72px); }   /* tam bir karo = kusursuz dongu */
+  to   { transform: translateX(-200px); }  /* tam bir karo = kusursuz dongu */
 }
 /* Hareketten rahatsiz olanlar icin (isletim sistemi ayari) desen sabit durur */
 @media (prefers-reduced-motion: reduce) {
@@ -144,8 +144,8 @@ html, body {
   letter-spacing: 3px;
   text-align: center;
   text-transform: uppercase;
-  color: #ffeedb;
-  background: rgba(48,26,2,0.92);
+  color: #eef2f7;
+  background: rgba(20,22,31,0.92);
   border: 3px solid #fff3e0;
   border-radius: 12px;
   outline: none;
@@ -168,8 +168,8 @@ html, body {
   letter-spacing: 2px;
   /* Turuncu dama zemininde koyu mor buton kayboluyordu (kontrast 1.02x).
      Acik zeminli buton hem okunuyor hem turuncuyla kavga etmiyor. */
-  color: #ffeedb;
-  background: linear-gradient(180deg, #4a2a08 0%, #301a02 100%);
+  color: #eef2f7;
+  background: linear-gradient(180deg, #232733 0%, #14161f 100%);
   border: none;
   border-radius: 14px;
   box-shadow: 0 0 0 3px #fff3e0, 0 5px 0 #1a0d00, 0 7px 16px rgba(0,0,0,0.40);
@@ -181,8 +181,8 @@ html, body {
 
 .mbtn.primary {
   width: min(300px, 80vw);
-  color: #fff3d6;
-  background: linear-gradient(180deg, #7a3d00 0%, #5a2a00 100%);
+  color: #ffe9c4;
+  background: linear-gradient(180deg, #5c2c00 0%, #3d1c00 100%);
   box-shadow: 0 0 0 3px #fff3e0, 0 5px 0 #2e1500, 0 7px 18px rgba(0,0,0,0.40);
 }
 .mbtn.primary:active { box-shadow: 0 0 0 3px #fff3e0; }
@@ -191,8 +191,8 @@ html, body {
   width: min(300px, 80vw);
   font-size: 21px;
   padding: 18px 24px;
-  color: #eafff2;
-  background: linear-gradient(180deg, #17663a 0%, #0d4526 100%);
+  color: #dcffe9;
+  background: linear-gradient(180deg, #0c4527 0%, #062a18 100%);
   box-shadow: 0 0 0 3px #fff3e0, 0 6px 0 #062616, 0 9px 22px rgba(0,0,0,0.40);
 }
 .mbtn.quick:active { box-shadow: 0 0 0 3px #fff3e0; }
@@ -203,19 +203,19 @@ html, body {
 
 .sep {
   width: min(300px, 80vw);
-  border-top: 2px solid rgba(58,28,0,0.30);
+  border-top: 2px solid rgba(255,255,255,0.35);
   position: relative;
   margin: 10px 0 6px;
 }
 .sep span {
   position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-  background: rgba(255,250,240,0.92); padding: 2px 12px; border-radius: 8px; color: #3a1c00;
+  background: rgba(10,24,38,0.92); padding: 2px 12px; border-radius: 8px; color: #dfe6ee;
   font-size: 12px; font-weight: 700; letter-spacing: 2px;
 }
 
 #menuErr {
   min-height: 20px; margin: 2px 0 0; letter-spacing: 2px; font-size: 14px;
-  color: #8f1600; background: rgba(255,246,230,0.92); border-radius: 8px; padding: 2px 10px;
+  color: #ff9a8f; background: rgba(10,24,38,0.92); border-radius: 8px; padding: 2px 10px;
 }
 #menuErr.shake { animation: shake .35s; }
 @keyframes shake {
@@ -225,14 +225,14 @@ html, body {
 }
 
 .help {
-  color: #3a1c00; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
+  color: #dfe6ee; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
   margin-top: 12px; padding: 12px 18px;
-  background: rgba(255,250,240,0.88);
-  border: 2px solid rgba(58,28,0,0.35);
+  background: rgba(10,24,38,0.88);
+  border: 2px solid rgba(255,255,255,0.35);
   border-radius: 12px;
   max-width: min(340px, 86vw);
 }
-.help b { color: #b35c00; font-weight: 700; }
+.help b { color: #ffd76b; font-weight: 700; }
 
 /* ------------------------- OYUN ------------------------- */
 

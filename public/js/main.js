@@ -628,8 +628,8 @@
 
     // Baslik levhasi: 2..26. Yazi 3 olcek = 21 piksel yuksek, icine ortalanir.
     var tw = f.width('PARTI PANIK', 3) + 22, tx = Math.round((W - tw) / 2);
-    g.rect(ctx, tx + 10, 0, 2, 4, '#2a1200');
-    g.rect(ctx, tx + tw - 12, 0, 2, 4, '#2a1200');
+    g.rect(ctx, tx + 10, 0, 2, 4, '#0a1826');
+    g.rect(ctx, tx + tw - 12, 0, 2, 4, '#0a1826');
     g.tabela(ctx, tx, 2, tw, 24);
     f.text(ctx, 'PARTI PANIK', W / 2, 4, {
       color: P.yellow, scale: 3, align: 'center', shadow: '#0e0d1c'
@@ -637,7 +637,7 @@
 
     // Oda kodu: levhanin ALTINDA, kendi paneliyle. Kod 3 olcek = 21 piksel.
     f.text(ctx, 'ODA KODU', W / 2, 28, {
-      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
     });
     var kw = f.width(state.code, 3) + 20, kx = Math.round((W - kw) / 2);
     g.panel(ctx, kx, 37, kw, 27);
@@ -647,13 +647,13 @@
     var slotW = W / max;
     var full = state.players.length >= max;
     f.text(ctx, state.players.length + ' / ' + max + ' OYUNCU', W / 2, 75, {
-      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
     });
     // HIZLI OYNA odasi: yabancilar da katilabilir, arandigini belli et
     if (state.acik && !full) {
       var nokta = '.'.repeat(1 + Math.floor(time * 2) % 3);
       f.text(ctx, 'HERKESE ACIK - RAKIP ARANIYOR' + nokta, W / 2, 66, {
-        color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+        color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
       });
     }
     for (var s = 0; s < max; s++) {
@@ -670,7 +670,7 @@
         var kutuW = ok ? ok.kw : Math.min(56, Math.max(28, slotW - 46));
 
         // Karakterin altinda golge
-        g.rect(ctx, cx - 13, 110, 26, 2, 'rgba(42,18,0,0.45)');
+        g.rect(ctx, cx - 13, 110, 26, 2, 'rgba(0,20,40,0.45)');
         PP.chars.ciz(ctx, p.char, cx, 96 + bob, kutuW, 26);
 
         // Kendi karakterimin yaninda degistirme oklari
@@ -687,36 +687,36 @@
         // oldugu icin renkli yazilar ancak kontrollu bir zeminde okunur.
         var lw = Math.max(f.width(p.name, 1) + 14, 52);
         var lx = Math.round(cx - lw / 2);
-        g.rect(ctx, lx, 112, lw, p.ping > 0 ? 29 : 20, 'rgba(255,246,230,0.92)');
-        g.rect(ctx, lx, 112, lw, 1, 'rgba(255,255,255,0.9)');
-        g.rect(ctx, lx, 112 + (p.ping > 0 ? 28 : 19), lw, 1, 'rgba(90,40,0,0.35)');
-        f.text(ctx, p.name, cx, 114, { color: '#2a1200', scale: 1, align: 'center' });
+        g.rect(ctx, lx, 112, lw, p.ping > 0 ? 29 : 20, 'rgba(10,24,38,0.92)');
+        g.rect(ctx, lx, 112, lw, 1, 'rgba(255,255,255,0.35)');
+        g.rect(ctx, lx, 112 + (p.ping > 0 ? 28 : 19), lw, 1, 'rgba(0,0,0,0.5)');
+        f.text(ctx, p.name, cx, 114, { color: '#eef4fa', scale: 1, align: 'center' });
 
         // Durum yazisi levhanin ALTINDA, akan dama uzerinde duruyor.
         // Hareketli desende duz renk yetmez; koyu bir govde golgesi
         // harfleri zeminden ayirip her karede okunur tutuyor.
         if (p.on === false) {
           f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 123, {
-            color: '#8f1600', scale: 1, align: 'center'
+            color: '#ff9a8f', scale: 1, align: 'center'
           });
           continue;
         }
         f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 123, {
-          color: p.ready ? '#0a6b31' : '#6b4a2a', scale: 1, align: 'center'
+          color: p.ready ? '#7ffcb0' : '#b9c6d4', scale: 1, align: 'center'
         });
         if (p.ping > 0) {
-          var pc = p.ping < 80 ? '#0a6b31' : p.ping < 200 ? '#8a6000' : '#8f2b00';
+          var pc = p.ping < 80 ? '#7ffcb0' : p.ping < 200 ? '#ffd76b' : '#ff9a8f';
           f.text(ctx, p.ping + ' MS', cx, 132, { color: pc, scale: 1, align: 'center' });
         }
       } else {
         // Bos yer: kesikli cerceve
         for (var d = 0; d < 26; d += 4) {
-          g.rect(ctx, cx - 13 + d, 86, 2, 1, 'rgba(42,18,0,0.55)');
-          g.rect(ctx, cx - 13 + d, 110, 2, 1, 'rgba(42,18,0,0.55)');
+          g.rect(ctx, cx - 13 + d, 86, 2, 1, 'rgba(4,26,44,0.6)');
+          g.rect(ctx, cx - 13 + d, 110, 2, 1, 'rgba(4,26,44,0.6)');
         }
-        g.rect(ctx, cx - 14, 86, 1, 25, 'rgba(42,18,0,0.55)');
-        g.rect(ctx, cx + 13, 86, 1, 25, 'rgba(42,18,0,0.55)');
-        f.text(ctx, 'BOS', cx, 114, { color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)' });
+        g.rect(ctx, cx - 14, 86, 1, 25, 'rgba(4,26,44,0.6)');
+        g.rect(ctx, cx + 13, 86, 1, 25, 'rgba(4,26,44,0.6)');
+        f.text(ctx, 'BOS', cx, 114, { color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)' });
       }
     }
 
@@ -724,7 +724,7 @@
     var amHost = state.host === youId;
     var ho = hedefOklari();
     f.text(ctx, state.needed + ' TUR KAZANAN SAMPIYON', W / 2, 145, {
-      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+      color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
     });
     if (ho) {
       [[ho.sol, 'left'], [ho.sag, 'right']].forEach(function (par) {
@@ -751,8 +751,8 @@
 
     if (state.notice) {
       var nw = f.width(state.notice, 1) + 12;
-      g.rect(ctx, Math.round((W - nw) / 2), 22, nw, 11, 'rgba(255,246,230,0.92)');
-      f.text(ctx, state.notice, W / 2, 24, { color: '#8f1600', scale: 1, align: 'center' });
+      g.rect(ctx, Math.round((W - nw) / 2), 22, nw, 11, 'rgba(10,24,38,0.92)');
+      f.text(ctx, state.notice, W / 2, 24, { color: '#ff9a8f', scale: 1, align: 'center' });
     }
   }
 
@@ -773,14 +773,14 @@
     var c = Math.max(0, Math.ceil(state.timer));
     if (c > 0) {
       f.text(ctx, String(c), W / 2, 92, {
-        color: '#1a0c00', scale: 8, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+        color: '#1a0c00', scale: 8, align: 'center', shadow: 'rgba(255,255,255,0.9)'
       });
     }
 
     // Kacinci turdayiz + oyunlar hizlandiysa bunu belli et
     if (state.tur) {
       f.text(ctx, 'TUR ' + state.tur, W / 2, 14, {
-        color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+        color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
       });
     }
     if (state.seviye > 0) {
@@ -788,9 +788,9 @@
       // Kirmizi yazi koyu turuncu kareye karisiyordu: kendi acik seridine oturuyor.
       var hz = 'HIZ +%' + Math.round(state.seviye * 100);
       var hw = f.width(hz, 2) + 14;
-      g.rect(ctx, Math.round((W - hw) / 2), 146, hw, 18, 'rgba(255,246,230,0.92)');
+      g.rect(ctx, Math.round((W - hw) / 2), 146, hw, 18, 'rgba(10,24,38,0.92)');
       f.text(ctx, hz, W / 2, 148, {
-        color: yanip ? '#8f1600' : '#1a0c00', scale: 2, align: 'center'
+        color: yanip ? '#ff9a8f' : '#eef4fa', scale: 2, align: 'center'
       });
     }
     drawTopBar();
@@ -857,7 +857,7 @@
     }
 
     f.text(ctx, 'SAMPIYON', W / 2, 10, {
-      color: '#1a0c00', scale: 3, align: 'center', shadow: 'rgba(255,246,230,0.85)'
+      color: '#1a0c00', scale: 3, align: 'center', shadow: 'rgba(255,255,255,0.9)'
     });
 
     var bob = Math.round(Math.sin(time * 6) * 3);
