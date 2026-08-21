@@ -241,7 +241,7 @@ html, body {
 #topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; padding: 5px 8px; min-height: 30px;
-  border-bottom: 3px solid #171630;
+  border-bottom: none;   /* dama zemini kesintisiz aksin */
 }
 #share { display: flex; align-items: center; gap: 6px; min-width: 0; }
 #share .lbl { color: #7b78a8; font-size: 11px; letter-spacing: 1px; }
@@ -283,7 +283,7 @@ canvas {
   display: flex; align-items: center; justify-content: center;
   gap: 40px; padding: 10px;
   min-height: 150px;
-  border-top: 3px solid #171630;
+  border-top: none;      /* dama zemini kesintisiz aksin */
 }
 
 #pad .grp { display: none; }
