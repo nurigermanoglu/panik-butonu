@@ -52,14 +52,51 @@ html, body {
   overflow-y: auto;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
-  /* Canli gece gokyuzu: mor-lacivert gecis + hafif isik lekeleri */
-  background:
-    radial-gradient(ellipse 70% 50% at 20% 0%, rgba(176,108,240,0.28), transparent 60%),
-    radial-gradient(ellipse 60% 45% at 85% 15%, rgba(73,180,255,0.22), transparent 60%),
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(49,201,183,0.16), transparent 60%),
-    linear-gradient(170deg, #2c2960 0%, #232145 45%, #14132c 100%);
+  position: relative;
+  background: #a85618;              /* dama altinda kalan taban */
   text-align: center;
 }
+
+/* ---- Hareketli turuncu dama zemini ----
+   Kareler sagdan sola akiyor. Hareket icin background-position yerine
+   transform kullaniliyor: transform ekran kartinda islenir, her karede
+   yeniden boyama yapmaz - yani oyunu yavaslatmaz.
+   Tam BIR karo kadar kaydirilip basa donuldugu icin ek yerinde ziplama olmaz. */
+.dama {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #a85618;
+}
+.dama::before {
+  content: '';
+  position: absolute;
+  top: -10%; bottom: -10%;
+  left: -80px; right: -80px;        /* kayarken kenarda bosluk kalmasin */
+  background: repeating-conic-gradient(#d9772b 0% 25%, #b6601c 0% 50%) 0 0 / 72px 72px;
+  animation: damaKay 2.6s linear infinite;
+}
+/* Ortada hafif karartma: butonlar ve baslik desenin uzerinde okunakli kalsin */
+.dama::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 65% 60% at 50% 45%,
+              rgba(26,12,0,0.52) 0%, rgba(26,12,0,0.30) 55%, rgba(26,12,0,0.10) 100%);
+}
+@keyframes damaKay {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-72px); }   /* tam bir karo = kusursuz dongu */
+}
+/* Hareketten rahatsiz olanlar icin (isletim sistemi ayari) desen sabit durur */
+@media (prefers-reduced-motion: reduce) {
+  .dama::before { animation: none; }
+}
+
+/* Menudeki her sey damanin uzerinde kalsin */
+#menu > *:not(.dama) { position: relative; z-index: 1; }
 
 #menu h1 {
   margin: 0;
@@ -84,7 +121,7 @@ html, body {
 
 #menu::before, #menu::after { content: ''; margin: auto; }
 
-.tag { margin: 4px 0 12px; color: #d9d6f2; letter-spacing: 2px; font-size: 13px; }
+.tag { margin: 4px 0 12px; color: #ffe7c4; letter-spacing: 2px; font-size: 13px; }
 
 #menu input {
   width: min(300px, 80vw);
@@ -97,12 +134,12 @@ html, body {
   text-transform: uppercase;
   color: #fbfaff;
   background: rgba(14,13,28,0.55);
-  border: 2px solid rgba(139,132,216,0.45);
+  border: 2px solid rgba(255,214,170,0.40);
   border-radius: 12px;
   outline: none;
   transition: border-color .15s, box-shadow .15s;
 }
-#menu input::placeholder { color: #7b78a8; letter-spacing: 2px; }
+#menu input::placeholder { color: #b39b7f; letter-spacing: 2px; }
 #menu input:focus {
   border-color: #ffd34d;
   box-shadow: 0 0 0 4px rgba(255,211,77,0.18);
@@ -117,16 +154,18 @@ html, body {
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: #fbfaff;
-  background: linear-gradient(180deg, #4a4590 0%, #363173 100%);
+  /* Turuncu dama zemininde koyu mor buton kayboluyordu (kontrast 1.02x).
+     Acik zeminli buton hem okunuyor hem turuncuyla kavga etmiyor. */
+  color: #2a1c3f;
+  background: linear-gradient(180deg, #f2eeff 0%, #d9d2f5 100%);
   border: none;
   border-radius: 14px;
-  box-shadow: 0 4px 0 #211e4a, 0 6px 14px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 0 #6d5f9c, 0 6px 14px rgba(0,0,0,0.35);
   cursor: pointer;
   transition: transform .08s, box-shadow .08s, filter .15s;
 }
 .mbtn:hover { filter: brightness(1.12); }
-.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 #211e4a; }
+.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 #6d5f9c; }
 
 .mbtn.primary {
   width: min(300px, 80vw);
@@ -145,17 +184,17 @@ html, body {
   box-shadow: 0 5px 0 #1d8a4a, 0 8px 20px rgba(52,196,109,0.30);
 }
 .mbtn.quick:active { box-shadow: 0 0 0 #1d8a4a; }
-.quickhint { margin: -6px 0 4px; color: #d9d6f2; font-size: 12px; letter-spacing: 1px; }
+.quickhint { margin: -6px 0 4px; color: #ffe7c4; font-size: 12px; letter-spacing: 1px; }
 
 .sep {
   width: min(300px, 80vw);
-  border-top: 1px solid rgba(139,132,216,0.28);
+  border-top: 1px solid rgba(255,225,190,0.30);
   position: relative;
   margin: 10px 0 6px;
 }
 .sep span {
   position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-  background: #232145; padding: 0 12px; color: #8f88d8;
+  background: rgba(26,12,0,0.72); padding: 2px 12px; border-radius: 8px; color: #f0d9b8;
   font-size: 12px; font-weight: 600; letter-spacing: 2px;
 }
 
@@ -168,10 +207,10 @@ html, body {
 }
 
 .help {
-  color: #9d99cc; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
+  color: #e6d3bb; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
   margin-top: 12px; padding: 12px 18px;
   background: rgba(14,13,28,0.40);
-  border: 1px solid rgba(139,132,216,0.22);
+  border: 1px solid rgba(255,225,190,0.20);
   border-radius: 12px;
   max-width: min(340px, 86vw);
 }
