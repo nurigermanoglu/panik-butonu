@@ -53,7 +53,7 @@ html, body {
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   position: relative;
-  background: #a85618;              /* dama altinda kalan taban */
+  background: #e8761f;              /* dama altinda kalan taban */
   text-align: center;
 }
 
@@ -68,14 +68,14 @@ html, body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #a85618;
+  background: #e8761f;
 }
 .dama::before {
   content: '';
   position: absolute;
   top: -10%; bottom: -10%;
   left: -80px; right: -80px;        /* kayarken kenarda bosluk kalmasin */
-  background: repeating-conic-gradient(#d9772b 0% 25%, #b6601c 0% 50%) 0 0 / 72px 72px;
+  background: repeating-conic-gradient(#ff9542 0% 25%, #e8761f 0% 50%) 0 0 / 72px 72px;
   animation: damaKay 2.6s linear infinite;
 }
 /* Ortada hafif karartma: butonlar ve baslik desenin uzerinde okunakli kalsin */
@@ -97,6 +97,29 @@ html, body {
 
 /* Menudeki her sey damanin uzerinde kalsin */
 #menu > *:not(.dama) { position: relative; z-index: 1; }
+
+/* Oyun ekraninin cevresi ve kontrol paneli de ayni akan dama.
+   Burada .dama katmani yok; deseni dogrudan elemanin arkasina koyup
+   background-position yerine yine transform ile akitmak icin ::before kullaniliyor. */
+#stage, #pad, #topbar { position: relative; overflow: hidden; }
+#stage::before, #pad::before, #topbar::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: -80px; right: -80px;
+  background: repeating-conic-gradient(#ff9542 0% 25%, #e8761f 0% 50%) 0 0 / 72px 72px;
+  animation: damaKay 2.6s linear infinite;
+  z-index: 0;
+}
+/* Desenin uzerine karartma: oyun alani ve butonlar one ciksin */
+#stage::after, #pad::after, #topbar::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background: rgba(20,9,0,0.62);
+}
+#stage > *, #pad > *, #topbar > * { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+  #stage::before, #pad::before, #topbar::before { animation: none; }
+}
 
 #menu h1 {
   margin: 0;
@@ -223,7 +246,6 @@ html, body {
 #topbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px; padding: 5px 8px; min-height: 30px;
-  background: linear-gradient(180deg, #33305e 0%, #232145 100%);
   border-bottom: 3px solid #171630;
 }
 #share { display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -246,7 +268,7 @@ html, body {
 #stage {
   flex: 1 1 auto; min-height: 0;
   display: flex; align-items: center; justify-content: center;
-  background: #171630; padding: 6px;
+  padding: 6px;
 }
 
 canvas {
@@ -266,7 +288,6 @@ canvas {
   display: flex; align-items: center; justify-content: center;
   gap: 40px; padding: 10px;
   min-height: 150px;
-  background: linear-gradient(180deg, #232145 0%, #171630 100%);
   border-top: 3px solid #171630;
 }
 

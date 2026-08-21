@@ -622,11 +622,12 @@
   }
 
   function drawLobby() {
-    // Zemin: ustte cim tarla, altta ahsap veranda - Stardew'daki gibi
-    g.doku(ctx, 0, 0, W, 74, 'metal');
-    g.doku(ctx, 0, 74, W, H - 74, 'zemin');
-    g.rect(ctx, 0, 73, W, 1, '#141419');            // cim/ahsap ayrimi
-    g.rect(ctx, 0, 74, W, 1, '#5a5a68');
+    // Zemin: akan turuncu dama. Uzerine hafif karartma biniyor ki isimler,
+    // oda kodu ve karakterler desenin uzerinde okunakli kalsin.
+    g.damaZemin(ctx, 0, 0, W, H, time);
+    ctx.save(); ctx.globalAlpha = 0.42;
+    g.rect(ctx, 0, 0, W, H, '#1a0c00');
+    ctx.restore();
 
     // Baslik: asili ahsap tabela + ipleri
     var tw = f.width('PARTI PANIK', 3) + 22, tx = Math.round((W - tw) / 2);
@@ -669,9 +670,9 @@
         var ok = benimSlot ? karakterOklari() : null;
         var kutuW = ok ? ok.kw : Math.min(56, Math.max(28, slotW - 46));
 
-        // Karakterin altinda golge + ustunde duracagi tahta zemin
-        g.rect(ctx, cx - 13, 114, 26, 2, '#1e1e24');
-        PP.chars.ciz(ctx, p.char, cx, 99 + bob, kutuW, 28);
+        // Karakterin altinda golge
+        g.rect(ctx, cx - 13, 112, 26, 2, '#3a1c05');
+        PP.chars.ciz(ctx, p.char, cx, 98 + bob, kutuW, 28);
 
         // Kendi karakterimin yaninda degistirme oklari
         if (ok) {
@@ -683,33 +684,38 @@
           });
         }
 
-        // Isim levhasi: kucuk parsomen tabela
+        // Isim levhasi
         var lw = Math.max(f.width(p.name, 1) + 12, 40);
-        g.panel(ctx, cx - lw / 2, 112, lw, 14, { civi: false });
-        f.text(ctx, p.name, cx, 116, { color: '#43434f', scale: 1, align: 'center' });
+        g.panel(ctx, cx - lw / 2, 114, lw, 15, { civi: false });
+        f.text(ctx, p.name, cx, 119, { color: '#2a1c3f', scale: 1, align: 'center' });
+
+        // Durum yazisi levhanin ALTINDA, akan dama uzerinde duruyor.
+        // Hareketli desende duz renk yetmez; koyu bir govde golgesi
+        // harfleri zeminden ayirip her karede okunur tutuyor.
         if (p.on === false) {
-          // Kopuk oyuncu: yeri duruyor, geri gelmesi bekleniyor
-          f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 125, {
-            color: P.red, scale: 1, align: 'center'
+          f.text(ctx, 'KOPTU' + '.'.repeat(1 + Math.floor(time * 2) % 3), cx, 132, {
+            color: '#ffd0c2', scale: 1, align: 'center', shadow: '#3a0c05'
           });
           continue;
         }
-        f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 125, {
-          color: p.ready ? P.green : P.gray, scale: 1, align: 'center'
+        f.text(ctx, p.ready ? 'HAZIR!' : 'BEKLIYOR', cx, 132, {
+          color: p.ready ? '#b8ffcf' : '#ffe8cc', scale: 1, align: 'center', shadow: '#3a1c05'
         });
         if (p.ping > 0) {
-          var pc = p.ping < 80 ? P.green : p.ping < 200 ? P.yellow : P.orange;
-          f.text(ctx, p.ping + ' MS', cx, 134, { color: pc, scale: 1, align: 'center' });
+          var pc = p.ping < 80 ? '#b8ffcf' : p.ping < 200 ? P.yellow : P.orange;
+          f.text(ctx, p.ping + ' MS', cx, 142, {
+            color: pc, scale: 1, align: 'center', shadow: '#3a1c05'
+          });
         }
       } else {
         // Bos yer: iple cevrili bos tahta alan
         for (var d = 0; d < 26; d += 4) {
-          g.rect(ctx, cx - 13 + d, 90, 2, 1, '#43434f');
-          g.rect(ctx, cx - 13 + d, 112, 2, 1, '#43434f');
+          g.rect(ctx, cx - 13 + d, 90, 2, 1, '#ffdcae');
+          g.rect(ctx, cx - 13 + d, 112, 2, 1, '#ffdcae');
         }
-        g.rect(ctx, cx - 14, 90, 1, 23, '#43434f');
-        g.rect(ctx, cx + 13, 90, 1, 23, '#43434f');
-        f.text(ctx, 'BOS', cx, 117, { color: '#6b6b78', scale: 1, align: 'center' });
+        g.rect(ctx, cx - 14, 90, 1, 23, '#ffdcae');
+        g.rect(ctx, cx + 13, 90, 1, 23, '#ffdcae');
+        f.text(ctx, 'BOS', cx, 119, { color: '#ffdcae', scale: 1, align: 'center', shadow: '#3a1c05' });
       }
     }
 
@@ -717,7 +723,7 @@
     var amHost = state.host === youId;
     var ho = hedefOklari();
     f.text(ctx, state.needed + ' TUR KAZANAN SAMPIYON', W / 2, 145, {
-      color: amHost ? P.yellow : P.gray, scale: 1, align: 'center'
+      color: amHost ? P.yellow : '#3a1c05', scale: 1, align: 'center'
     });
     if (ho) {
       [[ho.sol, 'left'], [ho.sag, 'right']].forEach(function (par) {
@@ -749,10 +755,10 @@
 
   function drawIntro() {
     var pulse = Math.floor(time * 8) % 2 === 0;
-    g.doku(ctx, 0, 0, W, H, 'metal');
+    g.damaZemin(ctx, 0, 0, W, H, time);
     ctx.save();
-    ctx.globalAlpha = pulse ? 0.30 : 0.42;                // nabiz gibi karartma
-    g.rect(ctx, 0, 0, W, H, '#141419');
+    ctx.globalAlpha = pulse ? 0.34 : 0.46;                // nabiz gibi karartma
+    g.rect(ctx, 0, 0, W, H, '#1a0c00');
     ctx.restore();
 
     // Oyun adi ve talimati parsomen levhada dursun
@@ -769,7 +775,7 @@
     // Kacinci turdayiz + oyunlar hizlandiysa bunu belli et
     if (state.tur) {
       f.text(ctx, 'TUR ' + state.tur, W / 2, 14, {
-        color: P.gray, scale: 1, align: 'center', shadow: P.black
+        color: '#ffe0b8', scale: 1, align: 'center', shadow: '#3a1c05'
       });
     }
     if (state.seviye > 0) {
@@ -828,7 +834,10 @@
   }
 
   function drawGameover() {
-    g.rect(ctx, 0, 0, W, H, P.bg);
+    g.damaZemin(ctx, 0, 0, W, H, time);
+    ctx.save(); ctx.globalAlpha = 0.46;
+    g.rect(ctx, 0, 0, W, H, '#1a0c00');
+    ctx.restore();
     var champ = playerById(state.winner);
     var col = champ ? g.colorForSlot(champ.slot) : P.white;
 

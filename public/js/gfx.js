@@ -171,6 +171,15 @@
           else if (r < 0.10) { c.fillStyle = '#3d3a70'; c.fillRect(x, y, 1, 1); }
         }
       }
+    },
+    // Turuncu dama - menudeki hareketli zeminin tuval karsiligi.
+    // 8x8'lik dort kare bir karo eder; kaydirilarak akitilir.
+    dama: function (c) {
+      var A = '#ff9542', B = '#e8761f';
+      c.fillStyle = A; c.fillRect(0, 0, KARO, KARO);
+      c.fillStyle = B;
+      c.fillRect(0, 0, KARO / 2, KARO / 2);
+      c.fillRect(KARO / 2, KARO / 2, KARO / 2, KARO / 2);
     }
   };
 
@@ -188,16 +197,26 @@
     return p;
   }
 
-  /** Dokulu dolgu. tip: 'metal' | 'zemin' | 'cakil' | 'tas' */
-  function doku(ctx, x, y, w, h, tip) {
+  /**
+   * Dokulu dolgu. tip: 'metal' | 'zemin' | 'cakil' | 'tas' | 'dama'
+   * kaydir: deseni yatayda oteler (akan zemin icin). Bir karoda bir tur atar.
+   */
+  function doku(ctx, x, y, w, h, tip, kaydir) {
     var p = desen(ctx, tip);
     if (!p) return rect(ctx, x, y, w, h, PAL.bg);
+    var k = kaydir ? ((kaydir % KARO) + KARO) % KARO : 0;
     ctx.save();
     ctx.fillStyle = p;
-    // Desen sayfa kokenine gore dosendigi icin karoyu hedefe kaydiriyoruz
-    ctx.translate(Math.round(x), Math.round(y));
-    ctx.fillRect(0, 0, Math.round(w), Math.round(h));
+    // Desen sayfa kokenine gore dosendigi icin karoyu hedefe kaydiriyoruz.
+    // Kaydirma da buradan verilir; dikdortgen yerinde kalsin diye geri alinir.
+    ctx.translate(Math.round(x) - k, Math.round(y));
+    ctx.fillRect(k, 0, Math.round(w), Math.round(h));
     ctx.restore();
+  }
+
+  /** Akan dama zemini: zamana gore saniyede bir karo sola kayar. */
+  function damaZemin(ctx, x, y, w, h, zaman) {
+    doku(ctx, x, y, w, h, 'dama', -(zaman || 0) * KARO);
   }
 
   // ================================================================
@@ -397,6 +416,7 @@
     arrowSize: arrowSize,
     bar: bar,
     doku: doku,
+    damaZemin: damaZemin,
     pixelArt: pixelArt,
     panel: panel,
     tabela: tabela,
