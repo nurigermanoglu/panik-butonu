@@ -18,6 +18,10 @@ module.exports = {
   // Baglanti kopunca oyuncunun yeri ne kadar tutulur (saniye).
   // Mac ortasinda uzun tutulur - telefon kilitlenmesi/tunel/wifi takilmasi
   // yuzunden mac bozulmasin. Lobide beklemenin anlami yok, kisa tutulur.
+  // Sohbet: mesaj uzunlugu, odada saklanan gecmis, ard arda yazma araligi
+  CHAT_MAX_LEN: 120,
+  CHAT_HISTORY: 30,
+  CHAT_MIN_ARA_MS: 600,
   RECONNECT_GRACE: 15,
   LOBBY_GRACE: 8,
 

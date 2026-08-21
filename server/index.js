@@ -59,6 +59,7 @@ ws.attach(server, (conn) => {
     room = r;
     player = p;
     conn.sendJSON({ t: 'joined', code: r.code, id: p.id, slot: p.slot, token: p.token });
+    if (r.sohbet.length) conn.sendJSON({ t: 'chatlog', list: r.sohbet });
     r.game.dirty = true;
     r.broadcast(r.game.snapshot());
     return true;
@@ -97,6 +98,7 @@ ws.attach(server, (conn) => {
             t: 'joined', code: r.code, id: geri.id, slot: geri.slot,
             token: geri.token, geri: true,
           });
+          if (r.sohbet.length) conn.sendJSON({ t: 'chatlog', list: r.sohbet });
           r.broadcast(r.game.snapshot());
           break;
         }
@@ -122,6 +124,7 @@ ws.attach(server, (conn) => {
         room = r;
         player = p;
         conn.sendJSON({ t: 'joined', code: r.code, id: p.id, slot: p.slot, token: p.token, geri: true });
+        if (r.sohbet.length) conn.sendJSON({ t: 'chatlog', list: r.sohbet });
         r.broadcast(r.game.snapshot());
         break;
       }
@@ -139,6 +142,11 @@ ws.attach(server, (conn) => {
         break;
       case 'again':
         if (room) room.game.requestRematch(player);
+        break;
+      // Sohbet SADECE lobide: mac sirasinda kimse yazi okumaya vakit bulamaz
+      // ve ekranda yer yok.
+      case 'chat':
+        if (room && room.game.phase === 'lobby') room.sohbetEkle(player, msg.m);
         break;
       // Odadan bilerek cikma. Baglantiyi KAPATMIYORUZ: kapatmak "koptu"
       // sayilir, yeri tutulur ve istemci kendi kendine geri baglanirdi.

@@ -259,10 +259,50 @@ html, body {
 /* Mac ortasinda ikinci kez onay beklerken yanip soner */
 .mini.danger.soruyor { background: #ffd34d; color: #0e0d1c; }
 
+/* Oyun alani + sohbet yan yana */
+#arena {
+  flex: 1 1 auto; min-height: 0; min-width: 0;
+  display: flex; gap: 8px; padding: 0 6px 6px;
+}
 #stage {
-  flex: 1 1 auto; min-height: 0;
+  flex: 1 1 auto; min-height: 0; min-width: 0;
   display: flex; align-items: center; justify-content: center;
-  padding: 6px;
+  padding: 6px 0;
+}
+
+/* ------------------------- SOHBET ------------------------- */
+/* Oyunun sari/siyah kutu diliyle ayni; ama burasi GERCEK yazi:
+   kucuk harf ve turkce karakterler rahatca sigsin diye tuvale degil
+   HTML e ciziliyor. */
+#chat {
+  flex: 0 0 clamp(180px, 26vw, 300px);
+  display: flex; flex-direction: column; gap: 6px;
+  min-height: 0; min-width: 0;
+}
+#chatLog {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  background: rgba(6,26,44,0.82);
+  border: 3px solid #000000;
+  padding: 6px 7px; font-size: 12px; line-height: 1.45;
+  color: #eaf4ff; word-break: break-word;
+}
+#chatLog p { margin: 0 0 3px; }
+#chatLog .ad { font-weight: 700; }
+#chatLog .bos { color: #9fc0dc; font-style: italic; }
+#chatForm { display: flex; gap: 5px; }
+#chatMsg {
+  flex: 1 1 auto; min-width: 0;
+  font: inherit; font-size: 12px;
+  padding: 6px 7px; color: #0e0d1c; background: #ffe100;
+  border: 3px solid #000000; border-radius: 0;
+}
+#chatMsg::placeholder { color: #6b5c00; }
+#chatForm .mini { border-width: 3px; background: #ffe100; }
+
+/* Dar ekran: sohbet oyun alaninin ALTINA iner */
+@media (max-width: 760px), (max-aspect-ratio: 1/1) {
+  #arena { flex-direction: column; gap: 6px; }
+  #chat { flex: 0 0 34%; }
 }
 
 canvas {

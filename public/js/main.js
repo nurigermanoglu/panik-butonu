@@ -110,6 +110,15 @@
 
     $('btnMute').addEventListener('click', sesiDegistir);
     sesButonuTazele();
+
+    $('chatForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var kutu = $('chatMsg');
+      var metin = kutu.value.trim();
+      if (!metin) return;
+      PP.net.send({ t: 'chat', m: metin });
+      kutu.value = '';
+    });
   }
 
   // ---------------------------------------------------------------- dokunma / fare
@@ -278,6 +287,30 @@
     sesButonuTazele();
   }
 
+  // Bir sohbet satirini ekrana basar.
+  // DIKKAT: metin HER ZAMAN textContent ile yazilir. innerHTML kullanilirsa
+  // baska bir oyuncunun yazdigi metin sayfada kod olarak calisirdi.
+  function sohbetEkle(m) {
+    var kutu = $('chatLog');
+    var dipte = kutu.scrollHeight - kutu.scrollTop - kutu.clientHeight < 24;
+    var satir = document.createElement('p');
+    var ad = document.createElement('span');
+    ad.className = 'ad';
+    ad.textContent = m.ad + ': ';
+    ad.style.color = sohbetRengi(m.id);
+    satir.appendChild(ad);
+    satir.appendChild(document.createTextNode(m.m));
+    kutu.appendChild(satir);
+    while (kutu.children.length > 60) kutu.removeChild(kutu.firstChild);
+    if (dipte) kutu.scrollTop = kutu.scrollHeight;   // okurken yukari kaydirdiysa zorlamayalim
+  }
+
+  // Yazan kisinin oyundaki rengi; odadan ciktiysa notr renk
+  function sohbetRengi(id) {
+    var p = playerById(id);
+    return p ? g.colorForSlot(p.slot) : '#9fc0dc';
+  }
+
   function menuyeDon(hata) {
     state = null;
     youId = null;
@@ -290,6 +323,9 @@
     // Lobide gizlenen ust cubuk butonlari geri acilir; yoksa odadan cikinca
     // gizli kaliyor ve tekrar girildiginde mac baslayana kadar gorunmuyorlar.
     $('btnLeave').classList.remove('hidden');
+    $('chat').classList.add('hidden');
+    $('chatLog').innerHTML = '';
+    $('chatMsg').value = '';
     $('game').classList.add('hidden');
     $('menu').classList.remove('hidden');
     if (hata) showErr(hata);
@@ -322,6 +358,13 @@
       state = m;
       onSync();
     });
+
+    // Sohbet: odaya girince gecmis toplu gelir, sonra tek tek.
+    PP.net.on('chatlog', function (m) {
+      $('chatLog').innerHTML = '';
+      (m.list || []).forEach(sohbetEkle);
+    });
+    PP.net.on('chat', sohbetEkle);
 
     PP.net.on('left', function () { menuyeDon(null); });
 
@@ -502,6 +545,14 @@
     // Lobide CIK ekranin kendisinde (sari kutu) duruyor; ust cubuktaki gizlenir
     // ki ayni buton iki kez gorunmesin. SES simgesi her zaman ust cubukta kalir.
     $('btnLeave').classList.toggle('hidden', lobide);
+
+    // Sohbet sadece lobide. Panel acilip kapaninca oyun alaninin genisligi
+    // degisir, o yuzden resize() sart.
+    var sohbet = $('chat');
+    if (sohbet.classList.contains('hidden') === lobide) {
+      sohbet.classList.toggle('hidden', !lobide);
+      resize();
+    }
 
     if (state.phase !== prevPhase) {
       if (state.phase === 'intro') PP.sfx.click();

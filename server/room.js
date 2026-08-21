@@ -7,6 +7,23 @@ const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // karistirilabilir ha
 
 // Isim tek bir kuralla duzenlenir; hem oyuncu olusturulurken hem de
 // "ayni isimle geri donen var mi" aranirken ayni sonucu vermeli.
+// Sohbet metnini guvenli hale getirir: kontrol karakterleri (satir sonu,
+// terminal kodlari) atilir, arka arkaya bosluklar tekillestirilir, boy kesilir.
+// Istemci metni HER ZAMAN textContent ile basar; burasi ikinci savunma hatti.
+function sohbetTemizle(metin) {
+  if (typeof metin !== 'string') return '';
+  let t = '';
+  for (const ch of metin) {
+    const k = ch.codePointAt(0);
+    // Satir sonu/sekme BOSLUGA cevrilir; atilsa kelimeler birbirine yapisirdi
+    if (k < 0x20 || k === 0x7f) { t += ' '; continue; }
+    if (k >= 0x200b && k <= 0x200f) continue;          // gorunmez yon/genislik
+    if (k >= 0x202a && k <= 0x202e) continue;          // yon degistirme
+    t += ch;
+  }
+  return t.replace(/\s+/g, ' ').trim().slice(0, cfg.CHAT_MAX_LEN);
+}
+
 function adDuzenle(name) {
   return (name || '').toString().trim().slice(0, 10).toUpperCase() || 'OYUNCU';
 }
@@ -18,6 +35,7 @@ class Player {
     this.slot = slot;          // 0..MAX_PLAYERS-1  -> renk ve konum bu slota gore
     this.id = 'p' + slot;
     this.char = slot % cfg.CHAR_COUNT;   // baslangicta herkes farkli karakter
+    this.sonMesajAn = 0;                 // sohbette ard arda yazmayi sinirlar
     this.ready = false;
     this.wins = 0;
     this.connected = true;
@@ -41,6 +59,7 @@ class Room {
   constructor(code) {
     this.code = code;
     this.players = [];         // hicbir yerde "oyuncu1/oyuncu2" sabiti yok - hep bu liste
+    this.sohbet = [];          // son mesajlar; odaya girene toplu gonderilir
     this.winsNeeded = cfg.WINS_NEEDED;   // odayi kuran lobide degistirebilir
     this.acik = false;                   // true = HIZLI OYNA havuzunda, yabancilar eslesebilir
     this.game = new Game(this);
@@ -131,6 +150,22 @@ class Room {
       en = Math.max(en, Math.ceil((pay - (Date.now() - p.offAt)) / 1000));
     }
     return Math.max(0, en);
+  }
+
+  // Sohbet mesajini temizler ve odaya dagitir.
+  // Geriye neden reddedildigi doner (null = kabul edildi).
+  sohbetEkle(player, metin) {
+    if (!player || !this.players.includes(player)) return 'yok';
+    const temiz = sohbetTemizle(metin);
+    if (!temiz) return 'bos';
+    const simdi = Date.now();
+    if (simdi - player.sonMesajAn < cfg.CHAT_MIN_ARA_MS) return 'hizli';
+    player.sonMesajAn = simdi;
+    const kayit = { id: player.id, ad: player.name, m: temiz };
+    this.sohbet.push(kayit);
+    if (this.sohbet.length > cfg.CHAT_HISTORY) this.sohbet.shift();
+    this.broadcast({ t: 'chat', ...kayit });
+    return null;
   }
 
   broadcast(obj) {
