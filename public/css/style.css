@@ -56,8 +56,8 @@ html, body {
   z-index: 1;
   /* Zemin YOK: arkadaki tek parca dama gorunsun. Buradaki yari saydam
      karartma sadece yazilarin okunmasi icin. */
-  background: radial-gradient(ellipse 70% 62% at 50% 45%,
-              rgba(24,8,0,0.56) 0%, rgba(24,8,0,0.34) 55%, rgba(24,8,0,0.14) 100%);
+  background: radial-gradient(ellipse 78% 70% at 50% 45%,
+              rgba(24,8,0,0.58) 0%, rgba(24,8,0,0.50) 60%, rgba(24,8,0,0.42) 100%);
   text-align: center;
 }
 
@@ -81,7 +81,7 @@ html, body {
   position: absolute;
   top: -10%; bottom: -10%;
   left: -80px; right: -80px;        /* kayarken kenarda bosluk kalmasin */
-  background: repeating-conic-gradient(#ffa500 0% 25%, #d98c00 0% 50%) 0 0 / 72px 72px;
+  background: repeating-conic-gradient(#ffa500 0% 25%, #faf3e8 0% 50%) 0 0 / 72px 72px;
   animation: damaKay 2.6s linear infinite;
 }
 @keyframes damaKay {
@@ -103,8 +103,10 @@ html, body {
 #game { position: relative; z-index: 1; }
 #stage, #pad, #topbar { position: relative; }
 /* Hepsi AYNI karartma: boylece desen ekranin her yerinde ayni parlaklikta
-   gorunur. Farkli degerler verilseydi bolgeler arasi ton farki olurdu. */
-#topbar, #pad, #stage { background: rgba(20,9,0,0.50); }
+   gorunur. Farkli degerler verilseydi bolgeler arasi ton farki olurdu.
+   Kareler beyaz olunca zemin parladi; yazilarin okunmasi icin 0.50 yetmedi,
+   olcup 0.55'e cikarildi (bu degerde desen ustune cizilen tum yazilar 3x uzeri). */
+#topbar, #pad, #stage { background: rgba(20,9,0,0.55); }
 
 #menu h1 {
   margin: 0;
@@ -168,7 +170,8 @@ html, body {
   background: linear-gradient(180deg, #f2eeff 0%, #d9d2f5 100%);
   border: none;
   border-radius: 14px;
-  box-shadow: 0 4px 0 #6d5f9c, 0 6px 14px rgba(0,0,0,0.35);
+  /* Hareketli desende butonun kenari kaybolmasin diye ince koyu hat */
+  box-shadow: 0 0 0 2px rgba(20,9,0,0.55), 0 4px 0 #6d5f9c, 0 6px 14px rgba(0,0,0,0.40);
   cursor: pointer;
   transition: transform .08s, box-shadow .08s, filter .15s;
 }
@@ -179,7 +182,7 @@ html, body {
   width: min(300px, 80vw);
   color: #2a1c05;
   background: linear-gradient(180deg, #ffe07a 0%, #ffc22e 100%);
-  box-shadow: 0 4px 0 #b5811a, 0 6px 16px rgba(255,194,46,0.28);
+  box-shadow: 0 0 0 2px rgba(20,9,0,0.55), 0 4px 0 #b5811a, 0 6px 16px rgba(0,0,0,0.35);
 }
 .mbtn.primary:active { box-shadow: 0 0 0 #b5811a; }
 
@@ -189,7 +192,7 @@ html, body {
   padding: 18px 24px;
   color: #06301a;
   background: linear-gradient(180deg, #7bf0a4 0%, #34c46d 100%);
-  box-shadow: 0 5px 0 #1d8a4a, 0 8px 20px rgba(52,196,109,0.30);
+  box-shadow: 0 0 0 2px rgba(20,9,0,0.55), 0 5px 0 #1d8a4a, 0 8px 20px rgba(0,0,0,0.35);
 }
 .mbtn.quick:active { box-shadow: 0 0 0 #1d8a4a; }
 .quickhint { margin: -6px 0 4px; color: #ffe7c4; font-size: 12px; letter-spacing: 1px; }
