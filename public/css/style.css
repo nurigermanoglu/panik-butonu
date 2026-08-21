@@ -243,12 +243,6 @@ html, body {
   gap: 8px; padding: 5px 8px; min-height: 30px;
   border-bottom: none;   /* dama zemini kesintisiz aksin */
 }
-#share { display: flex; align-items: center; gap: 6px; min-width: 0; }
-#share .lbl { color: #7b78a8; font-size: 11px; letter-spacing: 1px; }
-#shareUrl {
-  color: #ffd34d; font-size: 12px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45vw;
-}
 .mini {
   padding: 5px 9px; font: inherit; font-size: 11px; letter-spacing: 1px;
   color: #0e0d1c; background: #d9d6f2;

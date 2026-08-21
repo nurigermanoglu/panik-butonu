@@ -18,6 +18,7 @@
   var cizimHatasi = false;  // ayni hatayi tekrar tekrar yazmamak icin
   var kopuk = false;        // baglanti su an kopuk mu (ekranda perde gosterilir)
   var geriDonuyor = false;  // eski yerimize oturmayi deniyoruz
+  var kopyalandiAn = -9;    // KOD kopyalandi yazisi ne zaman belirdi
 
   function $(id) { return document.getElementById(id); }
 
@@ -70,15 +71,7 @@
     $('name').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') $('btnCreate').click();
     });
-    $('btnCopy').addEventListener('click', function () {
-      var url = $('shareUrl').textContent;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(function () {
-          $('btnCopy').textContent = 'KOPYALANDI';
-          setTimeout(function () { $('btnCopy').textContent = 'KOPYALA'; }, 1500);
-        });
-      }
-    });
+
     // Tam ekran: tarayici cubuklarini gizler, oyun alani buyur.
     // (Cozunurlugu artirmaz - ayni kareler daha buyuk gorunur.)
     $('btnFull').addEventListener('click', function () {
@@ -176,6 +169,8 @@
         if (sb && kutuIcinde(p2, sb)) { sesiDegistir(); return; }
         var cb = cikButonu();
         if (cb && kutuIcinde(p2, cb)) { PP.sfx.click(); odadanCik(); return; }
+        var kb = kodButonu();
+        if (kb && kutuIcinde(p2, kb)) { kodKopyala(); return; }
         var hb = hazirButonu();
         if (hb && kutuIcinde(p2, hb)) { PP.input.press(); return; }
         return;
@@ -487,14 +482,7 @@
     if (patlama && !wasBoom) PP.sfx.patla();
     wasBoom = patlama;
 
-    var shareBox = $('share');
     var lobide = state.phase === 'lobby';
-    if (lobide) {
-      shareBox.classList.remove('hidden');
-      $('shareUrl').textContent = location.origin + '/#' + state.code;
-    } else {
-      shareBox.classList.add('hidden');
-    }
     // Lobide SES ve CIK ekranin kendisinde (taslaktaki sari kutular) duruyor;
     // ust cubuktakiler gizlenir ki ayni buton iki kez gorunmesin. Mac sirasinda
     // ekranda yer olmadigi icin geri gelirler.
@@ -602,6 +590,72 @@
   function cikButonu() {
     if (!state || state.phase !== 'lobby') return null;
     return { x: LOBI.cik.x, y: LOBI.cik.y, w: LOBI.cik.w, h: LOBI.cik.h };
+  }
+
+  // ---- KOD SATIRI ----
+  // Yazi ile kopyalama simgesi tek satirda, birlikte ortalanir. Cizim de
+  // dokunma alani da bu tek hesaptan gelir ki asla kaymasinlar.
+  var SIMGE_W = 11, SIMGE_H = 13, SIMGE_ARA = 7;
+
+  function kodYerlesim() {
+    if (!state) return null;
+    var yazi = 'KOD : ' + state.code;
+    var kw = f.width(yazi, 2);
+    var toplam = kw + SIMGE_ARA + SIMGE_W;
+    var sol = Math.round(LOBI.sagX + LOBI.sagW / 2 - toplam / 2);
+    return {
+      yazi: yazi, x: sol, w: kw,
+      sx: sol + kw + SIMGE_ARA, sy: LOBI.kodY,
+      kutu: { x: sol - 5, y: LOBI.kodY - 4, w: toplam + 10, h: SIMGE_H + 5 }
+    };
+  }
+
+  function kodButonu() {
+    if (!state || state.phase !== 'lobby') return null;
+    var y = kodYerlesim();
+    return y ? y.kutu : null;
+  }
+
+  // Ust uste binmis iki sayfa: kopyala simgesi. Koseler kirpilarak yuvarlatilir.
+  function sayfa(x, y, w, h, hat, ic) {
+    g.rect(ctx, x + 1, y, w - 2, h, hat);
+    g.rect(ctx, x, y + 1, w, h - 2, hat);
+    g.rect(ctx, x + 2, y + 1, w - 4, h - 2, ic);
+    g.rect(ctx, x + 1, y + 2, w - 2, h - 4, ic);
+  }
+  function kopyaSimgesi(x, y, hat) {
+    sayfa(x, y + 3, 8, 10, hat, '#ffffff');       // arkadaki sayfa
+    sayfa(x + 3, y, 8, 10, hat, '#ffffff');       // ondeki sayfa (arkayi kapatir)
+  }
+
+  // Odaya davet baglantisini panoya kopyalar
+  function kodKopyala() {
+    if (!state) return;
+    PP.sfx.click();
+    var url = location.origin + '/#' + state.code;
+    function tamam() { kopyalandiAn = time; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(tamam, function () {
+        if (eskiUsulKopyala(url)) tamam();
+      });
+    } else if (eskiUsulKopyala(url)) {
+      tamam();
+    }
+  }
+
+  // Guvensiz baglantida (http) navigator.clipboard yoktur; gizli kutu ile kopyalanir
+  function eskiUsulKopyala(metin) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = metin;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
   }
 
   // Lobideki HAZIR butonu (ekranin baska yerine basmak hazir yapmaz)
@@ -773,10 +827,19 @@
     sariKutu(LOBI.cik, 'CIK', 1);
 
 
-    // 5) KOD - taslaktaki gibi duz yazi
-    f.text(ctx, 'KOD : ' + state.code, sagOrta, LOBI.kodY, {
-      color: '#0a1826', scale: 2, align: 'center', shadow: HALE
-    });
+    // 5) KOD - yaninda kopyalama simgesi; satirin tamamina basilabilir
+    var ky = kodYerlesim();
+    var yeniKopya = time - kopyalandiAn < 1.4;
+    if (yeniKopya) {
+      f.text(ctx, 'KOPYALANDI', sagOrta, LOBI.kodY, {
+        color: '#0a1826', scale: 2, align: 'center', shadow: HALE
+      });
+    } else {
+      f.text(ctx, ky.yazi, ky.x, ky.y, {
+        color: '#0a1826', scale: 2, shadow: HALE
+      });
+      kopyaSimgesi(ky.sx, ky.sy, '#0a1826');
+    }
 
     if (state.acik && state.players.length < state.max) {
       f.text(ctx, 'RAKIP ARANIYOR' + '.'.repeat(1 + Math.floor(time * 2) % 3), sagOrta, LOBI.altY, {
