@@ -597,15 +597,19 @@
   // dokunma alani da bu tek hesaptan gelir ki asla kaymasinlar.
   var SIMGE_W = 11, SIMGE_H = 13, SIMGE_ARA = 7;
 
+  var KOPYALANDI = 'KOPYALANDI';
+
   function kodYerlesim() {
     if (!state) return null;
     var yazi = 'KOD : ' + state.code;
-    var kw = f.width(yazi, 2);
+    // Yer iki yazinin genisinden acilir; boylece 'KOPYALANDI' belirince
+    // kopyalama tusu yerinden kipirdamaz.
+    var kw = Math.max(f.width(yazi, 2), f.width(KOPYALANDI, 2));
     var toplam = kw + SIMGE_ARA + SIMGE_W;
     var sol = Math.round(LOBI.sagX + LOBI.sagW / 2 - toplam / 2);
     return {
       yazi: yazi, x: sol, w: kw,
-      sx: sol + kw + SIMGE_ARA, sy: LOBI.kodY,
+      y: LOBI.kodY, sx: sol + kw + SIMGE_ARA,
       kutu: { x: sol - 5, y: LOBI.kodY - 4, w: toplam + 10, h: SIMGE_H + 5 }
     };
   }
@@ -664,10 +668,25 @@
     return { x: LOBI.hazir.x, y: LOBI.hazir.y, w: LOBI.hazir.w, h: LOBI.hazir.h };
   }
 
+  // Kose kirpmalari: ust satirdan asagi dogru kac piksel iceri alinacagi.
+  // Sivri kose yerine yumusak bir kavis verir.
+  var KOSE_DIS = [3, 1, 1];
+  var KOSE_IC = [2, 1];
+
+  function yumusakKutu(x, y, w, h, renk, kose) {
+    for (var i = 0; i < kose.length; i++) {
+      var k = kose[i];
+      g.rect(ctx, x + k, y + i, w - k * 2, 1, renk);              // ust kose satiri
+      g.rect(ctx, x + k, y + h - 1 - i, w - k * 2, 1, renk);      // alt kose satiri
+    }
+    var n = kose.length;
+    g.rect(ctx, x, y + n, w, h - n * 2, renk);                    // govde
+  }
+
   // Taslaktaki gibi: kalin siyah hatli sari kutu, icinde siyah yazi
   function sariKutu(k, yazi, olcek, vurgu) {
-    g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
-    g.rect(ctx, k.x + 3, k.y + 3, k.w - 6, k.h - 6, vurgu ? '#fff45c' : '#ffe100');
+    yumusakKutu(k.x, k.y, k.w, k.h, '#000000', KOSE_DIS);
+    yumusakKutu(k.x + 3, k.y + 3, k.w - 6, k.h - 6, vurgu ? '#fff45c' : '#ffe100', KOSE_IC);
     if (yazi) {
       f.text(ctx, yazi, k.x + k.w / 2, k.y + Math.round((k.h - 7 * olcek) / 2), {
         color: '#000000', scale: olcek, align: 'center'
@@ -830,16 +849,10 @@
     // 5) KOD - yaninda kopyalama simgesi; satirin tamamina basilabilir
     var ky = kodYerlesim();
     var yeniKopya = time - kopyalandiAn < 1.4;
-    if (yeniKopya) {
-      f.text(ctx, 'KOPYALANDI', sagOrta, LOBI.kodY, {
-        color: '#0a1826', scale: 2, align: 'center', shadow: HALE
-      });
-    } else {
-      f.text(ctx, ky.yazi, ky.x, ky.y, {
-        color: '#0a1826', scale: 2, shadow: HALE
-      });
-      kopyaSimgesi(ky.sx, ky.sy, '#0a1826');
-    }
+    f.text(ctx, yeniKopya ? KOPYALANDI : ky.yazi, ky.x + ky.w / 2, ky.y, {
+      color: '#0a1826', scale: 2, align: 'center', shadow: HALE
+    });
+    kopyaSimgesi(ky.sx, ky.y, '#0a1826');            // tus her zaman gorunur
 
     if (state.acik && state.players.length < state.max) {
       f.text(ctx, 'RAKIP ARANIYOR' + '.'.repeat(1 + Math.floor(time * 2) % 3), sagOrta, LOBI.altY, {
