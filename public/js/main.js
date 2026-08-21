@@ -559,13 +559,13 @@
   // Butun konumlar tek yerden gelsin ki cizim ile dokunma alani hep ayni olsun.
   var LOBI = {
     satirY: function (slot) { return 10 + slot * 40; },   // sol sutun satir ustu
-    karakterX: 32,                              // karakterin ORTASI (34 px genis cizilir)
-    yaziX: 66,                                  // ok 61'de bitiyor, 5 px bosluk
-    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 218
-    sagX: 128, sagW: 180,
-    baslik: { x: 140, y: 6, w: 156, h: 42 },   // buyuk "OYUN" kutusu
-    hazir:  { x: 166, y: 54, w: 104, h: 26 },  // iki yaninda turuncu oklar
-    cik:    { x: 166, y: 98, w: 104, h: 22 },
+    karakterX: 30,                              // karakterin ORTASI (34 px genis cizilir)
+    yaziX: 64,                                  // ok 59'da bitiyor, 5 px bosluk
+    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 206
+    sagX: 116, sagW: 180,
+    baslik: { x: 128, y: 6, w: 156, h: 42 },   // buyuk "OYUN" kutusu
+    hazir:  { x: 154, y: 54, w: 104, h: 26 },  // iki yaninda turuncu oklar
+    cik:    { x: 154, y: 98, w: 104, h: 22 },
     kodY: 136,                                  // "KOD : XXXX" + kopyala tusu
     altY: 160                                   // rakip araniyor / uyari
   };
@@ -579,9 +579,9 @@
     return {
       kw: 30,
       cx: LOBI.karakterX,
-      // Karakter 15..48 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
-      sol: { x: 2, y: ust + 8, w: 10, h: 24 },
-      sag: { x: 52, y: ust + 8, w: 10, h: 24 }
+      // Karakter 13..46 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
+      sol: { x: 0, y: ust + 8, w: 10, h: 24 },
+      sag: { x: 50, y: ust + 8, w: 10, h: 24 }
     };
   }
 
@@ -811,7 +811,7 @@
 
       // Taslaktaki gibi karakterin yaninda tek satir: isim ve durumu.
       // Serit yok; koyu yazi + beyaz hale mavi damada okunuyor.
-      f.text(ctx, sigdir(p.name, LOBI.baslik.x - LOBI.yaziX - 4, 1), LOBI.yaziX, ust + 9, {
+      f.text(ctx, sigdir(p.name, LOBI.baslik.x - LOBI.yaziX - 3, 1), LOBI.yaziX, ust + 9, {
         color: '#0a1826', scale: 1, shadow: HALE
       });
       var kopukMu = p.on === false;
