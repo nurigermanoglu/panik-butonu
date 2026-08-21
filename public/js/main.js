@@ -109,6 +109,7 @@
     });
 
     $('btnMute').addEventListener('click', sesiDegistir);
+    sesButonuTazele();
   }
 
   // ---------------------------------------------------------------- dokunma / fare
@@ -165,8 +166,6 @@
         var ho = hedefOklari();
         if (ho && kutuIcinde(p2, ho.sol)) { PP.sfx.tick(); PP.net.send({ t: 'target', d: -1 }); return; }
         if (ho && kutuIcinde(p2, ho.sag)) { PP.sfx.tick(); PP.net.send({ t: 'target', d: 1 }); return; }
-        var sb = sesButonu();
-        if (sb && kutuIcinde(p2, sb)) { sesiDegistir(); return; }
         var cb = cikButonu();
         if (cb && kutuIcinde(p2, cb)) { PP.sfx.click(); odadanCik(); return; }
         var kb = kodButonu();
@@ -251,14 +250,32 @@
     menuyeDon(null);
   }
 
-  // Ses acma/kapama tek yerden: hem ust cubuktaki buton hem lobideki kutu
-  // bunu cagirir, boylece ikisi hep ayni seyi gosterir.
+  // Ust cubuktaki hoparlor simgesi; ses kapaliyken uzerine egik cizgi gelir.
+  var HOPARLOR = '<path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/>' +
+    '<path d="M15 9.2a4.2 4.2 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+    '<path d="M17.8 6.2a8.4 8.4 0 0 1 0 11.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+  var EGIK_CIZGI = '<path d="M3.5 3.5 20.5 20.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>';
+
+  function sesSimgesi(kapali) {
+    return '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">' +
+      HOPARLOR + (kapali ? EGIK_CIZGI : '') + '</svg>';
+  }
+
+  function sesButonuTazele() {
+    var kapali = PP.sfx.isMuted();
+    var b = $('btnMute');
+    b.innerHTML = sesSimgesi(kapali);
+    b.setAttribute('aria-label', kapali ? 'Sesi ac' : 'Sesi kapat');
+    b.setAttribute('title', kapali ? 'Ses kapali' : 'Ses acik');
+  }
+
+  // Ses acma/kapama tek yerden cagirilir ki buton hep dogru simgeyi gostersin.
   function sesiDegistir() {
     PP.sfx.unlock();
     var kapali = !PP.sfx.isMuted();
     PP.sfx.setMuted(kapali);
     if (!kapali) PP.sfx.click();
-    $('btnMute').textContent = kapali ? 'SES: KAPALI' : 'SES: ACIK';
+    sesButonuTazele();
   }
 
   function menuyeDon(hata) {
@@ -272,7 +289,6 @@
     if (history.replaceState) history.replaceState(null, '', location.pathname);
     // Lobide gizlenen ust cubuk butonlari geri acilir; yoksa odadan cikinca
     // gizli kaliyor ve tekrar girildiginde mac baslayana kadar gorunmuyorlar.
-    $('btnMute').classList.remove('hidden');
     $('btnLeave').classList.remove('hidden');
     $('game').classList.add('hidden');
     $('menu').classList.remove('hidden');
@@ -483,10 +499,8 @@
     wasBoom = patlama;
 
     var lobide = state.phase === 'lobby';
-    // Lobide SES ve CIK ekranin kendisinde (taslaktaki sari kutular) duruyor;
-    // ust cubuktakiler gizlenir ki ayni buton iki kez gorunmesin. Mac sirasinda
-    // ekranda yer olmadigi icin geri gelirler.
-    $('btnMute').classList.toggle('hidden', lobide);
+    // Lobide CIK ekranin kendisinde (sari kutu) duruyor; ust cubuktaki gizlenir
+    // ki ayni buton iki kez gorunmesin. SES simgesi her zaman ust cubukta kalir.
     $('btnLeave').classList.toggle('hidden', lobide);
 
     if (state.phase !== prevPhase) {
@@ -546,13 +560,12 @@
   var LOBI = {
     satirY: function (slot) { return 10 + slot * 40; },   // sol sutun satir ustu
     karakterX: 30,
-    yaziX: 58,
-    sagX: 136, sagW: 180,
-    baslik: { x: 142, y: 6, w: 168, h: 42 },   // buyuk "OYUN" kutusu
-    hazir:  { x: 168, y: 54, w: 116, h: 26 },  // iki yaninda turuncu oklar
-    ses:    { x: 168, y: 92, w: 116, h: 20 },
-    cik:    { x: 168, y: 116, w: 116, h: 20 },
-    kodY: 142,                                  // "KOD : XXXX" duz yazi
+    yaziX: 66,                                  // oklar disari kaydi, yazi da onlari birakti
+    sagX: 141, sagW: 180,                       // sag sutun biraz saga yanasti
+    baslik: { x: 147, y: 6, w: 168, h: 42 },   // buyuk "OYUN" kutusu
+    hazir:  { x: 173, y: 54, w: 116, h: 26 },  // iki yaninda turuncu oklar
+    cik:    { x: 173, y: 98, w: 116, h: 22 },  // SES kutusu ust cubuga tasindi
+    kodY: 136,                                  // "KOD : XXXX" + kopyala tusu
     altY: 160                                   // rakip araniyor / uyari
   };
 
@@ -565,8 +578,9 @@
     return {
       kw: 30,
       cx: LOBI.karakterX,
-      sol: { x: 2, y: ust + 8, w: 11, h: 24 },
-      sag: { x: 44, y: ust + 8, w: 11, h: 24 }
+      // Karakter 13..47 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
+      sol: { x: 0, y: ust + 8, w: 10, h: 24 },
+      sag: { x: 50, y: ust + 8, w: 10, h: 24 }
     };
   }
 
@@ -581,12 +595,8 @@
     };
   }
 
-  // Taslakta sag sutunda duran SES ve CIK kutulari (ust cubuktakilerle ayni isi
-  // yapar; lobide oradakiler gizlenir ki ekranda iki kez gorunmesinler)
-  function sesButonu() {
-    if (!state || state.phase !== 'lobby') return null;
-    return { x: LOBI.ses.x, y: LOBI.ses.y, w: LOBI.ses.w, h: LOBI.ses.h };
-  }
+  // Sag sutundaki CIK kutusu (ust cubuktaki ile ayni isi yapar; lobide oradaki
+  // gizlenir ki ayni buton iki kez gorunmesin). SES artik hep ust cubukta.
   function cikButonu() {
     if (!state || state.phase !== 'lobby') return null;
     return { x: LOBI.cik.x, y: LOBI.cik.y, w: LOBI.cik.w, h: LOBI.cik.h };
@@ -694,6 +704,14 @@
     }
   }
 
+  // Cok uzun bir isim sag sutuna girmesin: sigmayani kisaltip nokta koyar
+  function sigdir(yazi, enFazla, olcek) {
+    if (f.width(yazi, olcek) <= enFazla) return yazi;
+    var k = yazi;
+    while (k.length > 1 && f.width(k + '.', olcek) > enFazla) k = k.slice(0, -1);
+    return k + '.';
+  }
+
   function kutuIcinde(p, k) {
     return p.x >= k.x && p.x <= k.x + k.w && p.y >= k.y && p.y <= k.y + k.h;
   }
@@ -790,7 +808,7 @@
 
       // Taslaktaki gibi karakterin yaninda tek satir: isim ve durumu.
       // Serit yok; koyu yazi + beyaz hale mavi damada okunuyor.
-      f.text(ctx, p.name, LOBI.yaziX, ust + 9, {
+      f.text(ctx, sigdir(p.name, LOBI.sagX - LOBI.yaziX - 6, 1), LOBI.yaziX, ust + 9, {
         color: '#0a1826', scale: 1, shadow: HALE
       });
       var kopukMu = p.on === false;
@@ -841,8 +859,7 @@
       color: '#0a1826', scale: 1, align: 'center', shadow: HALE
     });
 
-    // 3) SES  4) CIK
-    sariKutu(LOBI.ses, PP.sfx.isMuted() ? 'SES: KAPALI' : 'SES: ACIK', 1);
+    // 3) CIK  (SES ust cubuktaki hoparlor simgesinde)
     sariKutu(LOBI.cik, 'CIK', 1);
 
 

@@ -239,7 +239,7 @@ html, body {
 #game { display: flex; flex-direction: column; }
 
 #topbar {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: flex-end;
   gap: 8px; padding: 5px 8px; min-height: 30px;
   border-bottom: none;   /* dama zemini kesintisiz aksin */
 }
@@ -249,6 +249,11 @@ html, body {
   border: 2px solid #0e0d1c; border-radius: 0; cursor: pointer; white-space: nowrap;
 }
 .mini:active { transform: translateY(2px); }
+/* CIK solda tek basina; TAM EKRAN ile ses simgesi sagda yan yana dursun */
+#btnLeave { margin-right: auto; }
+/* Simge butonu: yazi yerine SVG tasir */
+.mini.simge { padding: 4px 6px; line-height: 0; }
+.mini.simge svg { display: block; }
 /* Odadan cikma butonu: yanlislikla basilmasin diye ayri renkte */
 .mini.danger { background: #f45b69; color: #fbfaff; }
 /* Mac ortasinda ikinci kez onay beklerken yanip soner */
