@@ -626,13 +626,13 @@
     karakterX: 33,                              // karakterin ORTASI (34 px genis cizilir)
     isimY: 34,                                  // isim satiri: ust + isimY
     isimEn: 66,                                 // isim karakterX'te ortalanir: 0..66
-    // Sag sutunun butun ogeleri ayni dikey eksende: orta = sagX + sagW/2 = 160,
-    // yani ekranin tam ortasi. Oklar HAZIR'in 26 px disina cizildigi icin
-    // baslik.w = hazir.w + 52 olmali.
-    sagX: 92, sagW: 136,
-    baslik: { x: 92, y: 6, w: 136, h: 42 },    // buyuk "OYUN" kutusu (yazi 112 px)
-    hazir:  { x: 118, y: 54, w: 84, h: 26 },   // iki yaninda turuncu oklar
-    cik:    { x: 118, y: 98, w: 84, h: 22 },
+    // Blok, oyuncu sutunu (0..66) ile sag kenar arasina ortalanir:
+    // orta = sagX + sagW/2 = 194, iki yanda da ~59 px bosluk kalir.
+    // Oklar HAZIR'in 26 px disina cizildigi icin baslik.w = hazir.w + 52 olmali.
+    sagX: 126, sagW: 136,
+    baslik: { x: 126, y: 6, w: 136, h: 42 },   // buyuk "OYUN" kutusu (yazi 112 px)
+    hazir:  { x: 152, y: 54, w: 84, h: 26 },   // iki yaninda turuncu oklar
+    cik:    { x: 152, y: 98, w: 84, h: 22 },
     kodY: 136,                                  // "KOD : XXXX" + kopyala tusu
     altY: 160                                   // rakip araniyor / uyari
   };
