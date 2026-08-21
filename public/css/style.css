@@ -74,14 +74,14 @@ html, body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #f5700f;
+  background: #ffa500;
 }
 .dama::before {
   content: '';
   position: absolute;
   top: -10%; bottom: -10%;
   left: -80px; right: -80px;        /* kayarken kenarda bosluk kalmasin */
-  background: repeating-conic-gradient(#ffa833 0% 25%, #f5700f 0% 50%) 0 0 / 72px 72px;
+  background: repeating-conic-gradient(#ffa500 0% 25%, #d98c00 0% 50%) 0 0 / 72px 72px;
   animation: damaKay 2.6s linear infinite;
 }
 @keyframes damaKay {
@@ -262,7 +262,7 @@ canvas {
   image-rendering: crisp-edges;
   background: transparent;          /* arkadaki dama tuvalin altindan da gecsin */
   border: 3px solid rgba(10,4,0,0.75);
-  box-shadow: 0 0 0 2px rgba(255,168,51,0.55);
+  box-shadow: 0 0 0 2px rgba(255,165,0,0.60);
   touch-action: none;
 }
 
