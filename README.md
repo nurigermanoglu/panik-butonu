@@ -189,6 +189,11 @@ PP.MG.yenioyun = { draw(ctx, st, v) { /* st = snap() sonucu */ } };
 
 Oyunun çekirdeğinde hiçbir değişiklik gerekmez.
 
+Testlere de dokunman gerekmez: [test/minioyunlar.test.js](test/minioyunlar.test.js)
+listeyi olduğu gibi gezdiği için yeni oyunun arayüzü ve dayanıklılığı
+kendiliğinden sınanır. `npm test` çalıştırıp yeni oyunun listede
+geçtiğini görürsün.
+
 ---
 
 ## Dosya yapısı
@@ -201,6 +206,9 @@ server/
   room.js         Oda ve oyuncu yönetimi
   gameLoop.js     Durum makinesi: lobi → geri sayım → oyun → sonuç → şampiyon
   minigames/      Her mini oyunun kuralları
+test/
+  yardimci.js     Ortak kurulum (sahte bağlantı, oda kurma, zaman ilerletme)
+  *.test.js       Testler (npm test)
 public/
   index.html      Menü + oyun ekranı + dokunmatik butonlar
   css/style.css
@@ -236,6 +244,30 @@ Resim, ızgara boyutuna bir kez yumuşak küçültülüp saklanır; kareler sonr
 yani dither deseni bulanıklaşmaz.
 
 Harici kütüphane yok — `npm install` gerekmez.
+
+## Testler
+
+Sunucu tarafının tamamı saf JavaScript olduğu için testler ne tarayıcı ne de
+gerçek bir bağlantı ister: sahte soketlerle gerçek oda kurulur ve zaman elle
+ilerletilir, böylece bir maç saniyeler içinde baştan sona oynanır.
+
+```bash
+npm test
+```
+
+Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
+yani yine `npm install` gerekmiyor. 46 test yarım saniyede biter.
+
+| Dosya | Neyi sınar |
+|---|---|
+| [test/oda.test.js](test/oda.test.js) | Kopan oyuncunun yerini cihaz anahtarıyla geri alması, aynı ismi yazan yabancının yeri kapamaması, sohbet kuralları |
+| [test/minioyunlar.test.js](test/minioyunlar.test.js) | 10 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
+| [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
+| [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
+
+Testlerin kendisi de sınandı: koda bilerek üç hata sokulup (gösterim koruması
+kaldırıldı, yer kapma tekrar isme bağlandı, şampiyon ekranında otomatik hazır
+geri getirildi) üçünün de ilgili testlerce yakalandığı doğrulandı.
 
 ## Turlar ilerledikçe hızlanma
 
