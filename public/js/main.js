@@ -683,7 +683,7 @@
     // 4 satir x 45 = 180: tuvalin tamami. Her satirda karakter (34 px) ve
     // altinda isim (7 px) var; zipla payi +-1 ile birlikte tam oturur.
     satirY: function (slot) { return slot * 45; },        // sol sutun satir ustu
-    karakterX: 35,                              // karakterin ORTASI (44 px genis cizilir)
+    karakterX: 33,                              // karakterin ORTASI (44 px genis cizilir)
     isimY: 37,                                  // isim satiri: ust + isimY
     isimEn: 66,                                 // isim karakterX'te ortalanir: 0..66
     // Blok, oyuncu sutunu (0..66) ile sag kenar arasina ortalanir:
@@ -707,9 +707,10 @@
     return {
       kw: 30,
       cx: LOBI.karakterX,
-      // Karakter 13..57 arasinda cizilir; oklar iki yanda 2'ser piksel bosluk birakir
-      sol: { x: 0, y: ust + 5, w: 11, h: 26 },
-      sag: { x: 60, y: ust + 5, w: 11, h: 26 }
+      // Karakter 11..55 arasinda cizilir. Ok kutusu 10 px: ok sekli (9 px)
+      // son sutununu siyah cerceveye tasir ama ikisi de siyah, fark etmez.
+      sol: { x: 0, y: ust + 5, w: 10, h: 26 },
+      sag: { x: 58, y: ust + 5, w: 10, h: 26 }
     };
   }
 
