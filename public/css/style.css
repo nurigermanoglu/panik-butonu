@@ -269,6 +269,10 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   padding: 6px 0;
 }
+/* Sohbet acikken (lobide) oyun alani sola yaslanir: tuval tam kat
+   olceklendigi icin sahnede artan yer kaliyor ve ortalaninca oyun
+   ekranin ortasina kaciyordu. Mac sirasinda sohbet yok, ortali kalir. */
+#arena.sohbetli #stage { justify-content: flex-start; }
 
 /* ------------------------- SOHBET ------------------------- */
 /* Oyunun sari/siyah kutu diliyle ayni; ama burasi GERCEK yazi:

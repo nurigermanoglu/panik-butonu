@@ -361,6 +361,7 @@
     // gizli kaliyor ve tekrar girildiginde mac baslayana kadar gorunmuyorlar.
     $('btnLeave').classList.remove('hidden');
     $('chat').classList.add('hidden');
+    $('arena').classList.remove('sohbetli');
     $('chatLog').innerHTML = '';
     $('chatMsg').value = '';
     $('game').classList.add('hidden');
@@ -588,6 +589,7 @@
     var sohbet = $('chat');
     if (sohbet.classList.contains('hidden') === lobide) {
       sohbet.classList.toggle('hidden', !lobide);
+      $('arena').classList.toggle('sohbetli', lobide);
       if (lobide) sohbet.classList.add('sessiz');   // gecmis varsa sohbetEkle gosterir
       resize();
     }
