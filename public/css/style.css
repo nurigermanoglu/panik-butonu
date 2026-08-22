@@ -270,6 +270,9 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   padding: 6px 0;
 }
+/* Lobide tuval sola yaslanir ki oyuncu sutunu ekranin sol kenarinda dursun.
+   Mac sirasinda sohbet yok, tuval ortali kalir. */
+#arena.sohbetli #stage { justify-content: flex-start; }
 
 
 /* ------------------------- SOHBET ------------------------- */
@@ -316,6 +319,8 @@ html, body {
 @media (max-width: 760px), (max-aspect-ratio: 1/1) {
   #arena { flex-direction: column; gap: 6px; }
   #chat { position: static; width: auto; flex: 0 0 34%; }
+  /* Alt alta dizilimde sohbet yan tarafta yer kaplamiyor: tuval ortali kalsin */
+  #arena.sohbetli #stage { justify-content: center; }
 }
 
 canvas {

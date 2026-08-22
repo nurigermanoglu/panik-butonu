@@ -361,6 +361,7 @@
     // gizli kaliyor ve tekrar girildiginde mac baslayana kadar gorunmuyorlar.
     $('btnLeave').classList.remove('hidden');
     $('chat').classList.add('hidden');
+    $('arena').classList.remove('sohbetli');
     $('chatLog').innerHTML = '';
     $('chatMsg').value = '';
     $('game').classList.add('hidden');
@@ -588,6 +589,7 @@
     var sohbet = $('chat');
     if (sohbet.classList.contains('hidden') === lobide) {
       sohbet.classList.toggle('hidden', !lobide);
+      $('arena').classList.toggle('sohbetli', lobide);
       if (lobide) sohbet.classList.add('sessiz');   // gecmis varsa sohbetEkle gosterir
       resize();
     }
@@ -624,6 +626,25 @@
   // pay, panelin eskiden CSS'ten aldigi genislige sabitlenmistir.
   function sohbetPayi() {
     return Math.min(300, Math.max(180, window.innerWidth * 0.26));
+  }
+
+  // Tuval lobide sola yaslandigi icin tuvalin ortasi ekranin ortasi DEGIL.
+  // Menu blogunu ekranin ortasina oturtmak icin eksenini her olcumde
+  // yeniden hesapliyoruz. Cizim de dokunma testi de LOBI'den okudugu icin
+  // ikisi otomatik ayni yerde kalir.
+  function menuEkseniGuncelle() {
+    var r = cv.getBoundingClientRect();
+    if (!r.width) return;
+    var olcek = r.width / W;
+    var hedef = (window.innerWidth / 2 - r.left) / olcek;   // ekran ortasi -> tuval koordinati
+    var yari = LOBI.baslik.w / 2;
+    // Sola: oyuncu sutununa girmesin (sutun 67'de bitiyor, 5 px acik biraksin)
+    // Saga: tuvalden tasmasin
+    var orta = Math.round(Math.max(72 + yari, Math.min(W - 2 - yari, hedef)));
+    LOBI.sagX = orta - yari;
+    LOBI.baslik.x = orta - yari;
+    LOBI.hazir.x = orta - LOBI.hazir.w / 2;
+    LOBI.cik.x = orta - LOBI.cik.w / 2;
   }
 
   function resize() {
@@ -671,6 +692,8 @@
     ctx.imageSmoothingEnabled = false;
     ctx.setTransform(ic, 0, 0, ic, 0, 0);   // tum oyun kodu yine 320x180 kullanir
     PP.res.olcek = ic;
+
+    menuEkseniGuncelle();
   }
 
   // ---------------------------------------------------------------- cizim
