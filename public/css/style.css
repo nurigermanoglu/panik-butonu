@@ -276,7 +276,7 @@ html, body {
    HTML e ciziliyor. */
 #chat {
   /* Baslangic degeri; resize() gercek genisligi tuvale gore hesaplar */
-  flex: 0 0 clamp(200px, 30vw, 520px);
+  flex: 0 0 clamp(160px, 20vw, 260px);
   display: flex; flex-direction: column; gap: 6px;
   min-height: 0; min-width: 0;
 }
