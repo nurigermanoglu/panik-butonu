@@ -132,7 +132,9 @@
       for (var m = 0; m < n; m++) {
         var p = v.players[m];
         var pd = st.pl[p.id];
-        f.text(ctx, p.name + ' ' + (pd ? pd.s : 0) + '/' + st.total,
+        var skor = ' ' + (pd ? pd.s : 0) + '/' + st.total;
+        var isim = f.sigdir(p.name, slotW - 4 - f.width(skor, 1), 1);
+        f.text(ctx, isim + skor,
           Math.round(slotW * m + slotW / 2), v.top + 2, {
             color: g.colorForSlot(p.slot), scale: 1, align: 'center', shadow: P.black
           });

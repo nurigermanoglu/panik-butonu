@@ -36,8 +36,9 @@ html, body {
   overscroll-behavior: none;
 }
 
-#app { height: 100%; }
-.screen { height: 100%; width: 100%; }
+/* Ust cubuk sabit yuksekligini alir, altindaki ekran kalan yeri doldurur. */
+#app { height: 100%; display: flex; flex-direction: column; }
+.screen { flex: 1 1 auto; min-height: 0; width: 100%; }
 .hidden { display: none !important; }
 
 /* ------------------------- ANA MENU ------------------------- */
@@ -46,8 +47,8 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 24px 16px;
+  gap: clamp(6px, 1.5vh, 14px);
+  padding: clamp(10px, 2vh, 24px) 16px;
   /* Icerik sigmiyorsa kesilmesin, kaydirilabilsin (kisa/yatay ekranlar) */
   overflow-y: auto;
   touch-action: pan-y;
@@ -101,101 +102,112 @@ html, body {
    Ayri ayri desen cizilseydi her biri kendi kokeninden baslar ve sinirlarda
    kayma olurdu. */
 #game { position: relative; z-index: 1; }
-#stage, #pad, #topbar { position: relative; }
+#stage, #pad { position: relative; }
 /* Karartma yok: desen oldugu gibi gorunsun. Bu bolgelerdeki yazi ve
    butonlarin kendi zemini/rengi okunurlugu sagliyor. */
 #topbar, #pad, #stage { background: transparent; }
 
+/* ---- Lobi paleti: degerler main.js'teki cizim koduyla birebir ayni ---- */
+:root {
+  --sari:        #ffe100;   --sari-isik:    #fff59b;   --sari-golge:    #d8a800;
+  --sari-vurgu:  #fff45c;   --vurgu-isik:   #fffcc4;   --vurgu-golge:   #e6c92e;
+  --turuncu:     #ff8a3c;   --turuncu-isik: #ffab74;   --turuncu-golge: #c9601f;
+  --hat:         #000000;   --koyu-yazi:    #0a1826;
+  --kutu-golge:  rgba(4,32,56,0.32);
+  --serit:       rgba(10,24,38,0.92);   /* lobideki koyu bilgi seridi */
+}
+
+/* Lobideki sariKutu() ile ayni yapi */
 #menu h1 {
   margin: 0;
-  font-size: clamp(34px, 12vw, 68px);
+  padding: 10px 28px 14px;
+  font-size: clamp(26px, min(9vw, 7vh), 52px);
   font-weight: 800;
-  letter-spacing: 2px;
-  line-height: 1;
-  /* Parlak turuncu/beyaz zeminde acik yazi kayboluyor: baslik KOYU.
-     Altindaki acik golge harfleri turuncu kareden de ayiriyor. */
-  background: linear-gradient(180deg, #2e1500 0%, #1a0c00 60%, #0d0600 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 2px 0 #fff3e0) drop-shadow(0 0 6px rgba(255,243,224,0.9));
+  letter-spacing: 1px;
+  line-height: 0.95;
+  color: var(--hat);
+  background: var(--sari);
+  border: 4px solid var(--hat);
+  border-radius: 6px;
+  box-shadow: inset 0 3px 0 var(--sari-isik),
+              inset 0 -3px 0 var(--sari-golge),
+              3px 4px 0 var(--kutu-golge);
 }
-#menu h1 span {
-  display: block;
-  background: linear-gradient(180deg, #0a3d24 0%, #04220f 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+#menu h1 span { display: block; }
 
 #menu::before, #menu::after { content: ''; margin: auto; }
 
 .tag {
-  margin: 4px 0 12px; letter-spacing: 2px; font-size: 13px;
+  margin: 2px 0 6px; letter-spacing: 2px; font-size: 13px;
   color: #1a0c00; text-shadow: 0 1px 0 #fff3e0, 0 0 4px rgba(255,243,224,0.9);
 }
 
 #menu input {
   width: min(300px, 80vw);
-  padding: 13px 16px;
+  padding: 12px 16px;
   font: inherit;
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 3px;
   text-align: center;
   text-transform: uppercase;
-  color: #eef2f7;
-  background: rgba(20,22,31,0.92);
-  border: 3px solid #fff3e0;
-  border-radius: 12px;
+  color: var(--koyu-yazi);
+  background: var(--sari);
+  border: 3px solid var(--hat);
+  border-radius: 4px;
   outline: none;
-  transition: border-color .15s, box-shadow .15s;
+  box-shadow: inset 0 2px 0 var(--sari-isik), inset 0 -2px 0 var(--sari-golge);
+  transition: background .15s, box-shadow .15s;
 }
-#menu input::placeholder { color: #b58f63; letter-spacing: 2px; }
+#menu input::placeholder { color: #6b5c00; letter-spacing: 2px; }
 #menu input:focus {
-  border-color: #ffd34d;
-  box-shadow: 0 0 0 4px rgba(255,211,77,0.35);
+  background: var(--sari-vurgu);
+  box-shadow: inset 0 2px 0 var(--vurgu-isik), inset 0 -2px 0 var(--vurgu-golge),
+              0 0 0 3px rgba(255,225,0,0.45);
 }
-#code { width: 130px; letter-spacing: 8px; }
+#menu #code { width: auto; flex: 1 1 auto; min-width: 0; letter-spacing: 6px; }
 
-.joinrow { display: flex; gap: 10px; align-items: stretch; }
+.joinrow { display: flex; gap: 10px; align-items: stretch; width: min(300px, 80vw); }
+.joinrow .mbtn { flex: 0 0 auto; }
 
 .mbtn {
-  padding: 14px 24px;
+  padding: 12px 22px;
   font: inherit;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 2px;
-  /* Turuncu dama zemininde koyu mor buton kayboluyordu (kontrast 1.02x).
-     Acik zeminli buton hem okunuyor hem turuncuyla kavga etmiyor. */
-  color: #eef2f7;
-  background: linear-gradient(180deg, #232733 0%, #14161f 100%);
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 0 0 3px #fff3e0, 0 5px 0 #1a0d00, 0 7px 16px rgba(0,0,0,0.40);
+  color: var(--hat);
+  background: var(--turuncu);
+  border: 3px solid var(--hat);
+  border-radius: 4px;
+  box-shadow: inset 0 2px 0 var(--turuncu-isik),
+              inset 0 -2px 0 var(--turuncu-golge),
+              2px 3px 0 var(--kutu-golge);
   cursor: pointer;
   transition: transform .08s, box-shadow .08s, filter .15s;
 }
-.mbtn:hover { filter: brightness(1.12); }
-.mbtn:active { transform: translateY(4px); box-shadow: 0 0 0 3px #fff3e0; }
-
-.mbtn.primary {
-  width: min(300px, 80vw);
-  color: #ffe9c4;
-  background: linear-gradient(180deg, #5c2c00 0%, #3d1c00 100%);
-  box-shadow: 0 0 0 3px #fff3e0, 0 5px 0 #2e1500, 0 7px 18px rgba(0,0,0,0.40);
+.mbtn:hover { filter: brightness(1.08); }
+/* Basilinca kutu kendi golgesinin uzerine oturur */
+.mbtn:active {
+  transform: translate(2px, 3px);
+  box-shadow: inset 0 2px 0 var(--turuncu-isik), inset 0 -2px 0 var(--turuncu-golge);
 }
-.mbtn.primary:active { box-shadow: 0 0 0 3px #fff3e0; }
 
+.mbtn.primary { width: min(300px, 80vw); }
+
+/* Ana eylem: lobideki HAZIR butonuyla ayni parlak sari */
 .mbtn.quick {
   width: min(300px, 80vw);
-  font-size: 21px;
-  padding: 18px 24px;
-  color: #dcffe9;
-  background: linear-gradient(180deg, #0c4527 0%, #062a18 100%);
-  box-shadow: 0 0 0 3px #fff3e0, 0 6px 0 #062616, 0 9px 22px rgba(0,0,0,0.40);
+  font-size: 22px;
+  padding: 16px 24px;
+  background: var(--sari-vurgu);
+  box-shadow: inset 0 3px 0 var(--vurgu-isik),
+              inset 0 -3px 0 var(--vurgu-golge),
+              2px 3px 0 var(--kutu-golge);
 }
-.mbtn.quick:active { box-shadow: 0 0 0 3px #fff3e0; }
+.mbtn.quick:active {
+  box-shadow: inset 0 3px 0 var(--vurgu-isik), inset 0 -3px 0 var(--vurgu-golge);
+}
 .quickhint {
   margin: -6px 0 4px; font-size: 12px; letter-spacing: 1px;
   color: #1a0c00; text-shadow: 0 1px 0 #fff3e0, 0 0 4px rgba(255,243,224,0.9);
@@ -203,19 +215,19 @@ html, body {
 
 .sep {
   width: min(300px, 80vw);
-  border-top: 2px solid rgba(255,255,255,0.35);
+  border-top: 3px solid var(--hat);
   position: relative;
   margin: 10px 0 6px;
 }
 .sep span {
-  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-  background: rgba(10,24,38,0.92); padding: 2px 12px; border-radius: 8px; color: #dfe6ee;
+  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  background: var(--serit); padding: 3px 12px; color: #eef4fa;
   font-size: 12px; font-weight: 700; letter-spacing: 2px;
 }
 
 #menuErr {
   min-height: 20px; margin: 2px 0 0; letter-spacing: 2px; font-size: 14px;
-  color: #ff9a8f; background: rgba(10,24,38,0.92); border-radius: 8px; padding: 2px 10px;
+  color: #ff9a8f; background: var(--serit); padding: 3px 10px;
 }
 #menuErr.shake { animation: shake .35s; }
 @keyframes shake {
@@ -225,20 +237,21 @@ html, body {
 }
 
 .help {
-  color: #dfe6ee; font-size: 12px; letter-spacing: .5px; line-height: 1.8;
-  margin-top: 12px; padding: 12px 18px;
-  background: rgba(10,24,38,0.88);
-  border: 2px solid rgba(255,255,255,0.35);
-  border-radius: 12px;
+  color: #eef4fa; font-size: 12px; letter-spacing: .5px; line-height: 1.6;
+  margin-top: 6px; padding: 8px 14px;
+  background: var(--serit);
+  border: 3px solid var(--hat);
   max-width: min(340px, 86vw);
 }
-.help b { color: #ffd76b; font-weight: 700; }
+.help b { color: var(--sari); font-weight: 700; }
 
 /* ------------------------- OYUN ------------------------- */
 
 #game { display: flex; flex-direction: column; }
 
 #topbar {
+  flex: 0 0 auto;
+  position: relative; z-index: 1;    /* dama zemininin ustunde kalsin */
   display: flex; align-items: center; justify-content: flex-end;
   gap: 8px; padding: 5px 8px; min-height: 30px;
   border-bottom: none;   /* dama zemini kesintisiz aksin */
@@ -389,12 +402,22 @@ canvas {
 
 /* Kisa ekranlar (yatay telefon, kucuk cihazlar): menuyu sikistir ki her sey sigsin */
 @media (max-height: 620px) {
-  #menu { gap: 8px; padding: 12px 16px; }
-  #menu h1 { font-size: clamp(24px, 7vh, 40px); }
-  .tag { margin: 0 0 4px; font-size: 11px; }
-  #menu input { padding: 9px; font-size: 16px; }
-  .mbtn { padding: 10px 18px; font-size: 15px; }
-  .mbtn.quick { padding: 12px 18px; font-size: 17px; }
+  #topbar { min-height: 0; padding: 3px 8px; gap: 6px; }
+  #topbar .mini { padding: 3px 7px; font-size: 10px; }
+  #topbar .mini.simge { padding: 3px 5px; }
+  #menu { gap: 5px; padding: 8px 16px; }
+  #menu h1 {
+    font-size: clamp(20px, 6vh, 34px);
+    padding: 5px 18px 7px;
+    border-width: 3px;
+    box-shadow: inset 0 2px 0 var(--sari-isik),
+                inset 0 -2px 0 var(--sari-golge),
+                2px 3px 0 var(--kutu-golge);
+  }
+  .tag { margin: 0 0 2px; font-size: 11px; }
+  #menu input { padding: 7px; font-size: 16px; }
+  .mbtn { padding: 8px 16px; font-size: 15px; }
+  .mbtn.quick { padding: 10px 18px; font-size: 17px; }
   .quickhint { margin: -4px 0 2px; font-size: 11px; }
   .sep { margin: 2px 0; }
   #menuErr { min-height: 0; }

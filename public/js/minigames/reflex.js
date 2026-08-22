@@ -61,7 +61,7 @@
         var label, lc;
         if (yandi) { label = 'YANDI!'; lc = P.red; }
         else if (ms !== null && ms !== undefined) { label = ms + ' MS'; lc = koyuZemin ? P.green : P.black; }
-        else { label = p.name; lc = koyuZemin ? P.light : P.black; }
+        else { label = f.sigdir(p.name, slotW - 4, 1); lc = koyuZemin ? P.light : P.black; }
 
         f.text(ctx, label, cx, v.H - 14, {
           color: lc, scale: 1, align: 'center',

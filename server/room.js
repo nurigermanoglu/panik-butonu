@@ -5,8 +5,6 @@ const Game = require('./gameLoop');
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // karistirilabilir harfler (I,O,0,1) yok
 
-// Isim tek bir kuralla duzenlenir; hem oyuncu olusturulurken hem de
-// "ayni isimle geri donen var mi" aranirken ayni sonucu vermeli.
 // Sohbet metnini guvenli hale getirir: kontrol karakterleri (satir sonu,
 // terminal kodlari) atilir, arka arkaya bosluklar tekillestirilir, boy kesilir.
 // Istemci metni HER ZAMAN textContent ile basar; burasi ikinci savunma hatti.
@@ -29,9 +27,12 @@ function adDuzenle(name) {
 }
 
 class Player {
-  constructor(conn, name, slot) {
+  constructor(conn, name, slot, cihaz) {
     this.conn = conn;
     this.name = adDuzenle(name);
+    // Tarayiciya ozel gizli anahtar (localStorage'da durur). Sekmeyi kapatip
+    // geri gelen kisiyi tanimak icin. toJSON'a KOYULMAZ - kimse gormemeli.
+    this.cihaz = typeof cihaz === 'string' ? cihaz.slice(0, 64) : '';
     this.slot = slot;          // 0..MAX_PLAYERS-1  -> renk ve konum bu slota gore
     this.id = 'p' + slot;
     this.char = slot % cfg.CHAR_COUNT;   // baslangicta herkes farkli karakter
@@ -81,10 +82,10 @@ class Room {
     return -1;
   }
 
-  add(conn, name) {
+  add(conn, name, cihaz) {
     const slot = this.freeSlot();
     if (slot < 0) return null;
-    const player = new Player(conn, name, slot);
+    const player = new Player(conn, name, slot, cihaz);
 
     // Odadakilerin almadigi ilk karakteri ver - kimse ayni karakterle baslamasin
     const alinan = new Set(this.players.map((p) => p.char));
@@ -133,12 +134,16 @@ class Room {
     return this.players.find((p) => p.token === token) || null;
   }
 
-  // Ayni isimle kopmus ve yeri hala tutulan biri var mi?
+  // Bu cihazdan kopmus ve yeri hala tutulan biri var mi?
   // Sekmesini kapatip geri gelen kisi, oda "mac suruyor" diye disarida
   // kalmasin: eski yerine otursun.
-  kopukIsimle(name) {
-    const ad = adDuzenle(name);
-    return this.players.find((p) => !p.connected && p.name === ad) || null;
+  //
+  // Eslesme ISIMLE YAPILMAZ. Isim herkesin ekraninda yaziyor; oda kodunu bilen
+  // biri kopan oyuncuyla ayni ismi yazip onun slotuna, skoruna ve karakterine
+  // oturabilirdi. Cihaz anahtari ise sadece sahibinin tarayicisinda durur.
+  kopukCihazla(cihaz) {
+    if (!cihaz || typeof cihaz !== 'string') return null;
+    return this.players.find((p) => !p.connected && p.cihaz && p.cihaz === cihaz) || null;
   }
 
   // Kopuk oyuncunun yerinin tutulmasina kac saniye kaldi (0 = kopuk yok)

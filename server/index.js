@@ -53,8 +53,8 @@ ws.attach(server, (conn) => {
 
   const fail = (m) => conn.sendJSON({ t: 'err', m });
 
-  const enter = (r, name) => {
-    const p = r.add(conn, name);
+  const enter = (r, name, cihaz) => {
+    const p = r.add(conn, name, cihaz);
     if (!p) { fail('ODA DOLU'); return false; }
     room = r;
     player = p;
@@ -73,12 +73,12 @@ ws.attach(server, (conn) => {
     switch (msg.t) {
       case 'create': {
         if (room) return;
-        enter(rooms.create(), msg.name);
+        enter(rooms.create(), msg.name, msg.cihaz);
         break;
       }
       case 'quick': {                       // HIZLI OYNA - rastgele eslesme
         if (room) return;
-        enter(rooms.hizliOda(), msg.name);
+        enter(rooms.hizliOda(), msg.name, msg.cihaz);
         break;
       }
       case 'join': {
@@ -88,8 +88,8 @@ ws.attach(server, (conn) => {
 
         // Sekmesini kapatip geri gelen kisi burada takiliyordu: yeri hala
         // tutuluyor, oda onu bekliyor, ama "OYUN BASLAMIS" deyip iceri
-        // almiyorduk. Ayni isimle kopuk bekleyen varsa eski yerine otur.
-        const geri = r.kopukIsimle(msg.name);
+        // almiyorduk. Bu cihazdan kopuk bekleyen varsa eski yerine otur.
+        const geri = r.kopukCihazla(msg.cihaz);
         if (geri) {
           r.reattach(geri, conn);
           room = r;
@@ -105,7 +105,7 @@ ws.attach(server, (conn) => {
 
         if (r.isFull) return fail('ODA DOLU');
         if (r.game.phase !== 'lobby') return fail('OYUN BASLAMIS');
-        enter(r, msg.name);
+        enter(r, msg.name, msg.cihaz);
         break;
       }
       // Baglanti koptu ve geri geldi: eski yerine otur.
@@ -141,13 +141,18 @@ ws.attach(server, (conn) => {
         if (room) room.game.setChar(player, msg.d);
         break;
       case 'again':
-        if (room) room.game.requestRematch(player);
+        if (room) room.game.requestRematch();
         break;
       // Sohbet SADECE lobide: mac sirasinda kimse yazi okumaya vakit bulamaz
       // ve ekranda yer yok.
-      case 'chat':
-        if (room && room.game.phase === 'lobby') room.sohbetEkle(player, msg.m);
+      case 'chat': {
+        if (!room || room.game.phase !== 'lobby') break;
+        // sohbetEkle neden reddettigini donuyor; bunu yutarsak mesaj
+        // hicbir aciklama olmadan kayboluyor.
+        const red = room.sohbetEkle(player, msg.m);
+        if (red) conn.sendJSON({ t: 'chatred', k: red });
         break;
+      }
       // Odadan bilerek cikma. Baglantiyi KAPATMIYORUZ: kapatmak "koptu"
       // sayilir, yeri tutulur ve istemci kendi kendine geri baglanirdi.
       // Burada oyuncu gercekten cikarilir, soket menude tekrar kullanilir.

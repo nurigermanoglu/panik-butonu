@@ -74,7 +74,7 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 | **Sıcak Patates** | ~30 sn | Bomba rastgele birinde başlar, tuşa basınca rastgele başkasına geçer. Fitil el değiştirse de yanmaya devam eder; patladığında elinde tutan elenir. Tek kişi kalana kadar sürer |
 | **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim. Köstebeğe vurunca kısa süre sersemlemiş hâli (`img/kostebek_vur.png`) görünüp kaybolur |
 | **Dosya Silme** | 12 sn | Eski bir bilgisayar masaüstünde 7 klasörü çöp kutusuna sürükle. Hepsini en hızlı silen kazanır |
-| **Kablo Kesme** | 14 sn | Üstte gösterilen sırayla kabloları kes. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır. Sırayı ilk bitiren kazanır |
+| **Kablo Kesme** | ~13.6 sn | İki aşamalı: önce renkler tek tek gösterilir (kablolar henüz yok), sonra kablolar açılır ve sırayı **ezberden** kesmen gerekir — sıra bir daha gösterilmez. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır **ve sıra başa sarar**: kesilen kablolar onarılır, baştan başlarsın. Sırayı ilk bitiren kazanır; kimse bitiremezse **en çok ilerleyebilen** kazanır |
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
 | **Puzzle** | 14 sn | Elma resminin 4x4 ızgarasındaki eksik 3 karesini sağdaki parçalardan bulup doğru yuvaya sürükle. İki resim **sırayla** gelir (torba yöntemi), yani her ikisi de düzenli olarak çıkar |
 
@@ -158,7 +158,9 @@ module.exports = {
   instruction: 'NE YAPILACAK!',
   controls: 'action',   // 'action' | 'lr' | 'dpad' | 'pointer'
   duration: 10,
-  create(playerIds) {
+  // seviye: 0 (ilk tur) .. 1 (en hizli). hafiza: ODAYA ait kalici not defteri -
+  // turlar arasi hatirlanmasi gereken sey varsa (torba vb.) buraya yazilir.
+  create(playerIds, seviye, hafiza) {
     return {
       // Girdi. controls'a göre gelen action'lar:
       //   'action' -> ('press')
@@ -247,7 +249,7 @@ ve orada kalıyor. Geri sayım ekranında `TUR 7` ve `HIZ +%67` yazar.
 | Dosya Silme | 7 dosya, 12 sn | **10 dosya**, 10.2 sn |
 | Engelden Kaç | 16 engel sırası | **20 engel sırası**, %25 daha hızlı |
 | Sıcak Patates | normal fitil | **%35 daha kısa fitil** |
-| Kablo Kesme | 14 sn, 1.2 sn ceza | 10.5 sn, **1.68 sn ceza** |
+| Kablo Kesme | 4.6 sn ezberleme + 9 sn kesme | **3.2 sn ezberleme + 6.8 sn kesme**, **1.68 sn ceza** |
 | Şekil Yerleştir / Puzzle | 14 sn | **10.1 sn** |
 | At Yarışı | 8 sn | **6 sn** (aynı mesafe) |
 | Refleks Düellosu | 10 sn | 7.5 sn — *zorlaşmaz, sadece tempo artar* |
@@ -274,8 +276,11 @@ oyuncu **odadan atılmaz**:
   bağlanmayı dener (önce yarım saniyede bir, sonra aralığı açarak, en fazla 6 sn).
 - Süre dolarsa (maçta 15 sn, lobide 8 sn) oyuncu gerçekten çıkarılır, oda lobiye döner.
 
-Yer tutma, sekmeye özel gizli bir anahtarla çalışır: oda kodunu bilen biri bile
-kopan oyuncunun yerine geçemez. Sekmeyi kapatırsan anahtar da silinir.
+Yer tutma iki gizli anahtarla çalışır: **sekmeye özel** olan (aynı sekme geri
+bağlanınca devreye girer, sekme kapanınca silinir) ve **tarayıcıya özel** olan
+(sekmeyi kapatıp koddan tekrar girersen seni tanır). İkisi de yalnızca senin
+tarayıcında durur, hiçbir oyuncu listesinde görünmez: oda kodunu bilen biri —
+hatta kopan oyuncuyla aynı ismi yazan biri — onun yerine geçemez.
 
 ## Farklı şehirdeki arkadaşlarla oynamak
 

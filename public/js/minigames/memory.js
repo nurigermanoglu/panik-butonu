@@ -29,7 +29,8 @@
           var prog = st.prog[p.id] || 0;
 
           PP.chars.ciz(ctx, p.char, px, v.top + 36, 24, 18, { dead: out });
-          f.text(ctx, p.name, px, v.top + 46, { color: out ? P.gray : col, scale: 1, align: 'center' });
+          f.text(ctx, f.sigdir(p.name, colW - 4, 1), px, v.top + 46,
+            { color: out ? P.gray : col, scale: 1, align: 'center' });
 
           // ilerleme kutulari
           var boxW = 12, gap = 3;

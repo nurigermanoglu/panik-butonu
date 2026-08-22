@@ -27,6 +27,23 @@
     return bombaOnbellek;
   }
 
+  // Patlama yildizi (13x11, 2 kat olcekle 26x22 cizilir).
+  // Bu dizi eksikti: bomba patladigi an cizim ReferenceError firlatiyor,
+  // main.js kareyi atliyor ve patlama boyunca ekran tamamen doniyordu.
+  var PATLAMA = [
+    '.....#.#.....',
+    '..#..#.#..#..',
+    '...#.###.#...',
+    '#...#####...#',
+    '.#.#######.#.',
+    '..#########..',
+    '#############',
+    '..#########..',
+    '.#.#######.#.',
+    '#...#####...#',
+    '...#.###.#...'
+  ];
+
   PP.MG = PP.MG || {};
   PP.MG.hotpotato = {
     draw: function (ctx, st, v) {
@@ -99,7 +116,7 @@
           g.arrow(ctx, 'down', cx - 4, v.H - 92 + zip, 1, P.yellow);
         }
 
-        f.text(ctx, p.name, cx, v.H - 10, {
+        f.text(ctx, f.sigdir(p.name, slotW - 4, 1), cx, v.H - 10, {
           color: yasiyor ? col : P.gray, scale: 1, align: 'center', shadow: P.black
         });
         if (!yasiyor) {

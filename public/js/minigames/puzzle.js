@@ -142,13 +142,17 @@
         color: P.light, scale: 1, align: 'center', shadow: P.black
       });
 
-      var n = v.players.length;
+      // Diger oyunlarla ayni yerlesim: sabit adim (6 + j*108) 4. oyuncuyu
+      // x=330'a atiyordu, tuval ise 320 genis - isim ekrandan tasiyordu.
+      var n = v.players.length, slotW = v.W / n;
       for (var j = 0; j < n; j++) {
         var p = v.players[j];
         var pd = st.pl[p.id];
-        f.text(ctx, p.name + ' ' + (pd ? pd.s : 0) + '/' + st.total,
-          6 + j * 108, v.top + 2, {
-            color: g.colorForSlot(p.slot), scale: 1, shadow: P.black
+        var skor = ' ' + (pd ? pd.s : 0) + '/' + st.total;
+        var ad = f.sigdir(p.name, slotW - 4 - f.width(skor, 1), 1);
+        f.text(ctx, ad + skor,
+          Math.round(slotW * j + slotW / 2), v.top + 2, {
+            color: g.colorForSlot(p.slot), scale: 1, align: 'center', shadow: P.black
           });
       }
     }

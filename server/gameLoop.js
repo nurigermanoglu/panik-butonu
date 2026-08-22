@@ -12,6 +12,10 @@ class Game {
     this.inst = null;      // mini oyun ornegi (mantik)
     this.tur = 0;          // kacinci tur oynaniyor (hiz bunun uzerinden artar)
     this.bag = [];         // karistirilmis torba: her oyun tekrar etmeden bir kez gelir
+    // Mini oyunlarin turlar arasinda hatirlamasi gereken seyler (ornegin
+    // puzzle'in resim torbasi). ODA BASINA: modul seviyesinde tutulsaydi
+    // ayni anda oynayan butun odalar tek torbayi paylasirdi.
+    this.hafiza = {};
     this.lastId = null;
     this.result = null;
     this.winner = null;
@@ -70,12 +74,15 @@ class Game {
     }
   }
 
-  requestRematch(player) {
-    // Iki oyuncu ayni anda basarsa: ikincisi lobiye dusmus olur, onu hazir say.
-    if (this.phase === 'lobby') return this.setReady(player, true);
+  // Sampiyon ekranindan lobiye dondurur. Basan kisi HAZIR SAYILMAZ:
+  // lobide herkes kendi HAZIRIM butonuna basar.
+  //
+  // Lobide gelen 'again' paketleri de yok sayilir. Iki kisi sampiyon ekraninda
+  // neredeyse ayni anda basmis olabilir; ikinci paket oda lobiye dustukten
+  // sonra ulasir ve o kisiyi istem disi hazir yapardi.
+  requestRematch() {
     if (this.phase !== 'gameover') return;
     this.toLobby(null);
-    player.ready = true;
   }
 
   handleInput(player, action, data) {
@@ -132,7 +139,7 @@ class Game {
     this.tur++;
     this.mg = this.pickMinigame();
     // Mini oyun kendi hizini bu seviyeye gore ayarlar.
-    this.inst = this.mg.create(this.room.players.map((p) => p.id), this.seviye());
+    this.inst = this.mg.create(this.room.players.map((p) => p.id), this.seviye(), this.hafiza);
     this.result = null;
     this.phase = 'intro';
     this.timer = cfg.INTRO_TIME;

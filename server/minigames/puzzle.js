@@ -31,16 +31,22 @@ function karistir(a) {
 
 // Resim secimi de "torba" ile: her resim tekrar etmeden birer kez gelir, sonra torba yenilenir.
 // Rastgele secimde ust uste ayni resim gelip "digeri hic cikmiyor" hissi olusabiliyordu.
-let resimTorbasi = [];
-function sonrakiResim() {
-  if (!resimTorbasi.length) {
-    for (let i = 0; i < IMAGE_COUNT; i++) resimTorbasi.push(i);
-    for (let i = resimTorbasi.length - 1; i > 0; i--) {
+//
+// Torba ODA BASINA tutulur: gameLoop her odaya ait 'hafiza' nesnesini geciriyor.
+// Modul seviyesinde tutuldugunda ayni anda oynayan butun odalar tek torbayi
+// paylasiyor ve "sirayla gelsin" garantisi bozuluyordu.
+function sonrakiResim(hafiza) {
+  let torba = hafiza.puzzleResim;
+  if (!torba || !torba.length) {
+    torba = [];
+    for (let i = 0; i < IMAGE_COUNT; i++) torba.push(i);
+    for (let i = torba.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      const t = resimTorbasi[i]; resimTorbasi[i] = resimTorbasi[j]; resimTorbasi[j] = t;
+      const t = torba[i]; torba[i] = torba[j]; torba[j] = t;
     }
+    hafiza.puzzleResim = torba;
   }
-  return resimTorbasi.shift();
+  return torba.shift();
 }
 
 function cellCenter(i) {
@@ -55,12 +61,12 @@ module.exports = {
   controls: 'pointer',
   duration: DURATION,
 
-  create(playerIds, seviye) {
+  create(playerIds, seviye, hafiza) {
     const sv = Math.max(0, Math.min(1, seviye || 0));
     // Parca sayisi ekrandaki 3 yuvaya sabit; hizlanma sureyi kisaltarak olur
     const sure = DURATION * (1 - 0.28 * sv);
 
-    const img = sonrakiResim();
+    const img = sonrakiResim(hafiza || {});
     const eksik = karistir(CANDIDATES).slice(0, MISSING);
     const parcaSirasi = karistir(eksik);
 

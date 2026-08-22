@@ -100,9 +100,24 @@
     return w / ic;                               // oyun pikseli cinsinden genislik
   }
 
+  /**
+   * sigdir(yazi, enFazla, olcek)
+   *   Verilen genislige sigmayan yaziyi kisaltip sonuna nokta koyar.
+   *   Olcum cizimle ayni fontla yapildigi icin sonuc her zaman siger.
+   */
+  function sigdir(yazi, enFazla, olcek) {
+    yazi = String(yazi);
+    olcek = olcek || 1;
+    if (width(yazi, olcek) <= enFazla) return yazi;
+    var k = yazi;
+    while (k.length > 1 && width(k + '.', olcek) > enFazla) k = k.slice(0, -1);
+    return k + '.';
+  }
+
   PP.font = {
     text: text,
     width: width,
+    sigdir: sigdir,
     CH: HEDEF_BASLIK,
     CW: 5,
     GAP: 1,

@@ -53,17 +53,17 @@
   function bindMenu() {
     $('btnQuick').addEventListener('click', function () {
       PP.sfx.unlock(); PP.sfx.click();
-      PP.net.send({ t: 'quick', name: readName() });
+      PP.net.send({ t: 'quick', name: readName(), cihaz: cihazAnahtari() });
     });
     $('btnCreate').addEventListener('click', function () {
       PP.sfx.unlock(); PP.sfx.click();
-      PP.net.send({ t: 'create', name: readName() });
+      PP.net.send({ t: 'create', name: readName(), cihaz: cihazAnahtari() });
     });
     $('btnJoin').addEventListener('click', function () {
       PP.sfx.unlock(); PP.sfx.click();
       var code = $('code').value.trim().toUpperCase();
       if (code.length !== 4) return showErr('4 HARFLI KOD GIR');
-      PP.net.send({ t: 'join', code: code, name: readName() });
+      PP.net.send({ t: 'join', code: code, name: readName(), cihaz: cihazAnahtari() });
     });
     $('code').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') $('btnJoin').click();
@@ -250,6 +250,40 @@
     try { sessionStorage.removeItem('pp_oturum'); } catch (e) { /* yoksay */ }
   }
 
+  // ---- cihaz anahtari ----
+  // Sekmeyi KAPATIP koddan tekrar giren kisiyi tanimak icin. Yukaridaki oturum
+  // anahtari sessionStorage'da durur ve sekmeyle birlikte silinir; bu ise
+  // localStorage'da kalir. Sunucuya sadece odaya girerken yollanir, hicbir
+  // oyuncu listesinde gorunmez - yani baskasi taklit edemez.
+  // (Eskiden bu esleme ISIMLE yapiliyordu: oda kodunu bilen biri kopan
+  //  oyuncuyla ayni ismi yazip onun slotuna ve skoruna oturabiliyordu.)
+  var cihazBellek = null;
+
+  function rastgeleAnahtar() {
+    var d = new Uint8Array(9);
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(d);
+    else for (var i = 0; i < d.length; i++) d[i] = Math.floor(Math.random() * 256);
+    var s = '';
+    for (var j = 0; j < d.length; j++) s += (d[j] + 256).toString(16).slice(1);
+    return s;
+  }
+
+  function cihazAnahtari() {
+    if (cihazBellek) return cihazBellek;
+    try {
+      cihazBellek = localStorage.getItem('pp_cihaz') || '';
+      if (!cihazBellek) {
+        cihazBellek = rastgeleAnahtar();
+        localStorage.setItem('pp_cihaz', cihazBellek);
+      }
+    } catch (e) {
+      // Gizli mod: saklayamiyoruz. En azindan sayfa acik kaldigi surece sabit
+      // kalsin - F5 sonrasi geri oturma yine sessionStorage'daki oturumla olur.
+      cihazBellek = rastgeleAnahtar();
+    }
+    return cihazBellek;
+  }
+
   var cikisSoruldu = 0;      // "EMIN MISIN?" ne zaman soruldu
 
   function cikisSifirla() {
@@ -313,12 +347,27 @@
     $('chat').classList.add('sessiz');
   }
 
+  var sonSohbetMetni = '';     // sunucu reddederse kutuya geri konur
+
   function sohbetGonder() {
     var kutu = $('chatMsg');
     var metin = kutu.value.trim();
     if (!metin) return;
     PP.net.send({ t: 'chat', m: metin });
+    sonSohbetMetni = metin;
     kutu.value = '';
+  }
+
+  // Sohbet kaydina oyuncu mesaji degil, sistem notu ekler (gri ve italik).
+  function sohbetUyari(metin) {
+    var kutu = $('chatLog');
+    var satir = document.createElement('p');
+    satir.className = 'bos';
+    satir.textContent = metin;
+    kutu.appendChild(satir);
+    while (kutu.children.length > 60) kutu.removeChild(kutu.firstChild);
+    kutu.scrollTop = kutu.scrollHeight;
+    sohbetGoster();
   }
 
   // Bir sohbet satirini ekrana basar.
@@ -357,9 +406,9 @@
     PP.muzik.sus();
     // Adresteki #KOD kalmasin: F5 bizi tekrar o odaya baglamaya calismasin
     if (history.replaceState) history.replaceState(null, '', location.pathname);
-    // Lobide gizlenen ust cubuk butonlari geri acilir; yoksa odadan cikinca
-    // gizli kaliyor ve tekrar girildiginde mac baslayana kadar gorunmuyorlar.
-    $('btnLeave').classList.remove('hidden');
+    // Menude cikilacak bir oda yok: CIK gizlenir. TAM EKRAN ve ses dugmesi
+    // ust cubukta kalir - onlar her ekranda ise yarar.
+    $('btnLeave').classList.add('hidden');
     $('chat').classList.add('hidden');
     $('arena').classList.remove('sohbetli');
     $('chatLog').innerHTML = '';
@@ -403,6 +452,19 @@
       (m.list || []).forEach(sohbetEkle);
     });
     PP.net.on('chat', sohbetEkle);
+
+    // Mesaj sunucuda reddedildi. Eskiden bu haber hic gelmiyordu ve mesaj
+    // hicbir aciklama olmadan kayboluyordu: sebebi yazilir, metin de kutuya
+    // geri konur ki yazan kisi bastan yazmak zorunda kalmasin.
+    PP.net.on('chatred', function (m) {
+      var kutu = $('chatMsg');
+      if (!kutu.value.trim() && sonSohbetMetni) kutu.value = sonSohbetMetni;
+      sohbetUyari(
+        m.k === 'hizli' ? 'COK HIZLI YAZIYORSUN, BIR AN BEKLE' :
+        m.k === 'bos' ? 'BOS MESAJ GONDERILEMEZ' :
+        'MESAJ GONDERILEMEDI'
+      );
+    });
 
     PP.net.on('left', function () { menuyeDon(null); });
 
@@ -874,14 +936,6 @@
     }
   }
 
-  // Cok uzun bir isim sag sutuna girmesin: sigmayani kisaltip nokta koyar
-  function sigdir(yazi, enFazla, olcek) {
-    if (f.width(yazi, olcek) <= enFazla) return yazi;
-    var k = yazi;
-    while (k.length > 1 && f.width(k + '.', olcek) > enFazla) k = k.slice(0, -1);
-    return k + '.';
-  }
-
   function kutuIcinde(p, k) {
     return p.x >= k.x && p.x <= k.x + k.w && p.y >= k.y && p.y <= k.y + k.h;
   }
@@ -993,7 +1047,7 @@
 
       // Isim karakterin ALTINDA, karakterle ayni eksende ortali.
       // Koyu yazi + beyaz hale mavi damada okunuyor; renk durumu da anlatir.
-      f.text(ctx, sigdir(p.name, LOBI.isimEn, 1), LOBI.karakterX, ust + LOBI.isimY, {
+      f.text(ctx, f.sigdir(p.name, LOBI.isimEn, 1), LOBI.karakterX, ust + LOBI.isimY, {
         color: kopukMu ? '#6b0d00' : (p.ready ? '#063b1c' : '#0a1826'),
         scale: 1, align: 'center', shadow: HALE
       });
@@ -1146,7 +1200,7 @@
       var pl = state.players[k];
       var cx = Math.round(slotW * k + slotW / 2);
       var c2 = g.colorForSlot(pl.slot);
-      f.text(ctx, pl.name, cx, 134, { color: c2, scale: 1, align: 'center' });
+      f.text(ctx, f.sigdir(pl.name, slotW - 4, 1), cx, 134, { color: c2, scale: 1, align: 'center' });
       f.text(ctx, pl.wins + ' / ' + state.needed, cx, 146, { color: P.white, scale: 2, align: 'center' });
     }
   }
@@ -1182,7 +1236,8 @@
     for (var k = 0; k < n; k++) {
       var pl = state.players[k];
       var cx = Math.round(slotW * k + slotW / 2);
-      f.text(ctx, pl.name + ' ' + pl.wins, cx, 132, {
+      var skor = ' ' + pl.wins;
+      f.text(ctx, f.sigdir(pl.name, slotW - 4 - f.width(skor, 1), 1) + skor, cx, 132, {
         color: g.colorForSlot(pl.slot), scale: 1, align: 'center'
       });
     }

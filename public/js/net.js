@@ -68,12 +68,36 @@
     return !!socket && socket.readyState === WebSocket.OPEN;
   }
 
+  // Yeni bir denemeye gerek var mi? CONNECTING durumundaki soket de "canli"
+  // sayilir: ustune ikinci soket acmak eskisini oksuz birakir, onun kapanma
+  // haberi de bosu bosuna bir yeniden baglanma turu baslatir.
+  function bosta() {
+    return !socket ||
+           socket.readyState === WebSocket.CLOSING ||
+           socket.readyState === WebSocket.CLOSED;
+  }
+
+  function hemenDene() {
+    if (kapatildi || !bosta()) return;
+    deneme = 0;
+    connect();
+  }
+
   // Telefon uykudan/sekme arka plandan donunce hemen dene, zamanlayiciyi bekleme
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && !bagliMi()) { deneme = 0; connect(); }
+    if (document.visibilityState === 'visible') hemenDene();
   });
-  window.addEventListener('online', function () { if (!bagliMi()) { deneme = 0; connect(); } });
+  window.addEventListener('online', hemenDene);
+
+  // pagehide "sayfa kapaniyor" demek DEGIL: telefon kilitlenince ya da sekme
+  // arka plana atilinca sayfa bfcache'e alinirken de calisir. O sirada
+  // denemeyi birakiyoruz, ama geri donuldugunde pageshow ile tekrar aciyoruz.
+  // Bu olmadan kilit ekranindan sonra oyun bir daha HIC baglanmiyordu.
   window.addEventListener('pagehide', function () { kapatildi = true; });
+  window.addEventListener('pageshow', function () {
+    kapatildi = false;
+    hemenDene();
+  });
 
   PP.net = { connect: connect, on: on, send: send, bagliMi: bagliMi };
 })(window.PP = window.PP || {});

@@ -15,6 +15,14 @@
        desen akar, boylece bolge sinirlarinda kayma olmaz. -->
   <div class="dama" aria-hidden="true"></div>
 
+  <!-- Ust cubuk her iki ekranin da ustunde durur: TAM EKRAN ve ses dugmesi
+       menude de, oyunda da ayni yerde olsun. CIK ise sadece odadayken gorunur. -->
+  <div id="topbar">
+    <button id="btnLeave" class="mini danger hidden">&#8592; ÇIK</button>
+    <button id="btnFull" class="mini">TAM EKRAN</button>
+    <button id="btnMute" class="mini simge" aria-label="Sesi kapat" title="Ses açık"></button>
+  </div>
+
   <div id="menu" class="screen">
     <h1>PARTİ<span>PANİK</span></h1>
     <p class="tag">2-4 kişilik mini oyun düellosu</p>
@@ -43,12 +51,6 @@
 
   <!-- ------- OYUN ------- -->
   <div id="game" class="screen hidden">
-    <div id="topbar">
-      <button id="btnLeave" class="mini danger">&#8592; ÇIK</button>
-      <button id="btnFull" class="mini">TAM EKRAN</button>
-      <button id="btnMute" class="mini simge" aria-label="Sesi kapat" title="Ses açık"></button>
-    </div>
-
     <!-- Lobide oyun alaninin yanina sohbet paneli acilir; mac baslayinca
          kapanir ve oyun alani tekrar buyur. Dar ekranda alta iner. -->
     <div id="arena">

@@ -35,7 +35,7 @@
         var me = st.pl[p.id] || { k: 1, a: true };
         var ax = Math.round(colW * i + (colW - st.w) / 2);
 
-        f.text(ctx, p.name, Math.round(colW * i + colW / 2), nameY, {
+        f.text(ctx, f.sigdir(p.name, colW - 4, 1), Math.round(colW * i + colW / 2), nameY, {
           color: col, scale: 1, align: 'center'
         });
 
