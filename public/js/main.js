@@ -824,9 +824,25 @@
   }
 
   // Taslaktaki gibi: kalin siyah hatli sari kutu, icinde siyah yazi
+  // Kutuyu damali zeminden ayiran yumusak golge. Gri degil, zeminin kendi
+  // mavisinin koyusu: desen uzerinde leke gibi durmasin.
+  var KUTU_GOLGE = 'rgba(4,32,56,0.32)';
+
+  // Duz renk yerine ustte isik altta golge: kutu dumduz degil, basilabilir
+  // bir tus gibi dursun.
+  function kabartma(ix, iy, iw, ih, ana, isik, golge) {
+    yumusakKutu(ix, iy, iw, ih, ana, KOSE_IC);
+    g.rect(ctx, ix + 2, iy, iw - 4, 2, isik);                // ust kenar isigi
+    g.rect(ctx, ix + 2, iy + ih - 2, iw - 4, 2, golge);       // alt kenar golgesi
+  }
+
   function sariKutu(k, yazi, olcek, vurgu) {
+    yumusakKutu(k.x + 2, k.y + 3, k.w, k.h, KUTU_GOLGE, KOSE_DIS);
     yumusakKutu(k.x, k.y, k.w, k.h, '#000000', KOSE_DIS);
-    yumusakKutu(k.x + 3, k.y + 3, k.w - 6, k.h - 6, vurgu ? '#fff45c' : '#ffe100', KOSE_IC);
+    kabartma(k.x + 3, k.y + 3, k.w - 6, k.h - 6,
+             vurgu ? '#fff45c' : '#ffe100',
+             vurgu ? '#fffcc4' : '#fff59b',
+             vurgu ? '#e6c92e' : '#d8a800');
     if (yazi) {
       f.text(ctx, yazi, k.x + k.w / 2, k.y + Math.round((k.h - 7 * olcek) / 2), {
         color: '#000000', scale: olcek, align: 'center'
@@ -933,7 +949,10 @@
           [[ok.sol, 'left'], [ok.sag, 'right']].forEach(function (par) {
             var k = par[0];
             g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
-            g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, parla ? '#ffb066' : '#ff8a3c');
+            var ta = parla ? '#ffb066' : '#ff8a3c';
+            g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, ta);
+            g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, 1, parla ? '#ffd0a0' : '#ffab74');
+            g.rect(ctx, k.x + 1, k.y + k.h - 2, k.w - 2, 1, parla ? '#d97a30' : '#c9601f');
             g.arrow(ctx, par[1], k.x + 1, k.y + 8, 1, '#000000');
           });
         }
@@ -970,10 +989,11 @@
     var yeterli = state.players.length >= state.min;
     if (hb) {
       if (!yeterli) {
-        g.rect(ctx, hb.x, hb.y, hb.w, hb.h, '#000000');
-        g.rect(ctx, hb.x + 3, hb.y + 3, hb.w - 6, hb.h - 6, '#c9b45a');
+        yumusakKutu(hb.x + 2, hb.y + 3, hb.w, hb.h, KUTU_GOLGE, KOSE_DIS);
+        yumusakKutu(hb.x, hb.y, hb.w, hb.h, '#000000', KOSE_DIS);
+        kabartma(hb.x + 3, hb.y + 3, hb.w - 6, hb.h - 6, '#cfa93c', '#e6c46a', '#a8801f');
         f.text(ctx, 'EN AZ ' + state.min + ' KISI', hb.x + hb.w / 2, hb.y + 11, {
-          color: '#3a3200', scale: 1, align: 'center'
+          color: '#402d00', scale: 1, align: 'center'
         });
       } else if (ben && ben.ready) {
         sariKutu(hb, 'HAZIR (IPTAL)', 1, true);
@@ -987,6 +1007,8 @@
         var k = par[0];
         g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
         g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, '#ff8a3c');
+        g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, 1, '#ffab74');
+        g.rect(ctx, k.x + 1, k.y + k.h - 2, k.w - 2, 1, '#c9601f');
         g.arrow(ctx, par[1], k.x + 6, k.y + 8, 1, '#000000');
       });
     }
