@@ -690,12 +690,12 @@
     // orta = sagX + sagW/2 = 194, iki yanda da ~45 px bosluk kalir.
     // Oklar HAZIR'in 26 px disina cizildigi icin baslik.w = hazir.w + 52 olmali.
     sagX: 112, sagW: 164,
-    // Blok dikeyde de ortali: 10..168 arasi, ustte 10 altta 11 px bosluk
-    baslik: { x: 112, y: 10, w: 164, h: 46 },  // buyuk "OYUN" kutusu (yazi 140 px)
-    hazir:  { x: 138, y: 62, w: 112, h: 30 },  // iki yaninda turuncu oklar
-    cik:    { x: 138, y: 106, w: 112, h: 26 },
-    kodY: 140,                                  // "KOD : XXXX" + kopyala tusu
-    altY: 162                                   // rakip araniyor / uyari
+    // Blok dikeyde de ortali: 12..166 arasi, ustte 12 altta 13 px bosluk
+    baslik: { x: 112, y: 12, w: 164, h: 46 },  // buyuk "OYUN" kutusu (yazi 140 px)
+    hazir:  { x: 142, y: 64, w: 104, h: 28 },  // iki yaninda turuncu oklar
+    cik:    { x: 142, y: 106, w: 104, h: 24 },
+    kodY: 138,                                  // "KOD : XXXX" + kopyala tusu
+    altY: 160                                   // rakip araniyor / uyari
   };
 
   // Kendi karakterini degistiren oklar - kendi satirinin iki yaninda
