@@ -683,7 +683,7 @@
     // 4 satir x 45 = 180: tuvalin tamami. Her satirda karakter (34 px) ve
     // altinda isim (7 px) var; zipla payi +-1 ile birlikte tam oturur.
     satirY: function (slot) { return slot * 45; },        // sol sutun satir ustu
-    karakterX: 33,                              // karakterin ORTASI (36 px genis cizilir)
+    karakterX: 35,                              // karakterin ORTASI (44 px genis cizilir)
     isimY: 37,                                  // isim satiri: ust + isimY
     isimEn: 66,                                 // isim karakterX'te ortalanir: 0..66
     // Blok, oyuncu sutunu (0..66) ile sag kenar arasina ortalanir:
@@ -707,9 +707,9 @@
     return {
       kw: 30,
       cx: LOBI.karakterX,
-      // Karakter 14..50 arasinda cizilir; oklar iki yanda 3'er piksel bosluk birakir
+      // Karakter 13..57 arasinda cizilir; oklar iki yanda 2'ser piksel bosluk birakir
       sol: { x: 0, y: ust + 5, w: 11, h: 26 },
-      sag: { x: 55, y: ust + 5, w: 11, h: 26 }
+      sag: { x: 60, y: ust + 5, w: 11, h: 26 }
     };
   }
 
@@ -907,8 +907,8 @@
       }
 
       if (!p) {
-        var bsol = LOBI.karakterX - 18, bsag = LOBI.karakterX + 18;
-        for (var d = 0; d < 36; d += 5) {
+        var bsol = LOBI.karakterX - 22, bsag = LOBI.karakterX + 22;
+        for (var d = 0; d < 44; d += 5) {
           g.rect(ctx, bsol + 1 + d, ust + 2, 3, 1, 'rgba(4,26,44,0.6)');
           g.rect(ctx, bsol + 1 + d, ust + 33, 3, 1, 'rgba(4,26,44,0.6)');
         }
@@ -923,7 +923,7 @@
       // Zipla payi +-1: satir yuksekligi 45 px ve altta isim var, +-2 olsa
       // en alt noktada isme deger.
       var bob = Math.round(Math.sin(time * 4 + s));
-      PP.chars.ciz(ctx, p.char, LOBI.karakterX, ust + 18 + bob, 36, 34);
+      PP.chars.ciz(ctx, p.char, LOBI.karakterX, ust + 18 + bob, 44, 34);
 
       // Kendi satirimda karakter degistirme oklari
       if (ben && p.id === ben.id) {
@@ -945,8 +945,8 @@
       var yanip = Math.floor(time * 2) % 2 === 0;
       var rozet = kopukMu ? (yanip ? '#ff4d3d' : '#a02316')
                           : (p.ready ? '#2fbf4f' : '#dfe9f2');
-      g.rect(ctx, LOBI.karakterX + 11, ust + 1, 7, 7, '#000000');
-      g.rect(ctx, LOBI.karakterX + 12, ust + 2, 5, 5, rozet);
+      g.rect(ctx, LOBI.karakterX + 15, ust + 1, 7, 7, '#000000');
+      g.rect(ctx, LOBI.karakterX + 16, ust + 2, 5, 5, rozet);
 
       // Isim karakterin ALTINDA, karakterle ayni eksende ortali.
       // Koyu yazi + beyaz hale mavi damada okunuyor; renk durumu da anlatir.
