@@ -282,7 +282,7 @@ html, body {
 }
 #chatLog {
   flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-  background: rgba(6,26,44,0.82);
+  background: rgba(4,20,36,0.97);   /* dama deseni arkadan sizmasin, yazi rahat okunsun */
   border: 3px solid #000000;
   padding: 6px 7px; font-size: 12px; line-height: 1.45;
   color: #eaf4ff; word-break: break-word;

@@ -594,6 +594,13 @@
   // artan bir bosluk kalir; panel o boslugu yutup genisler.
   var SOHBET_EN_AZ = 200, ARENA_BOSLUK = 8;
 
+  // Tuvali olcekerken panele ayrilan pay. Bu deger KUCULURSE tuvale yer
+  // acilir ve tuval bir kat buyur - yani sohbet degil oyun buyur. O yuzden
+  // pay, panelin eskiden CSS'ten aldigi genislige sabitlenmistir.
+  function sohbetPayi() {
+    return Math.min(300, Math.max(180, window.innerWidth * 0.26));
+  }
+
   function resize() {
     var stage = $('stage');
     if (!stage) return;
@@ -607,7 +614,7 @@
     var yanYana = !chat.classList.contains('hidden') &&
                   window.getComputedStyle($('arena')).flexDirection === 'row';
     var toplamW = r.width + (yanYana ? chat.getBoundingClientRect().width + ARENA_BOSLUK : 0);
-    var tuvaleKalan = yanYana ? toplamW - SOHBET_EN_AZ - ARENA_BOSLUK : r.width;
+    var tuvaleKalan = yanYana ? toplamW - sohbetPayi() - ARENA_BOSLUK : r.width;
 
     var scale = Math.min(tuvaleKalan / W, r.height / H);
     var k = scale >= 1 ? Math.floor(scale) : scale;   // ekranda kac kat gorunecek
