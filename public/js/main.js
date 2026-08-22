@@ -688,14 +688,13 @@
     karakterX: 33,                              // karakterin ORTASI (44 px genis cizilir)
     isimY: 37,                                  // isim satiri: ust + isimY
     isimEn: 66,                                 // isim karakterX'te ortalanir: 0..66
-    // Blok, oyuncu sutunu (0..66) ile sag kenar arasina ortalanir:
-    // orta = sagX + sagW/2 = 194, iki yanda da ~45 px bosluk kalir.
+    // Blok TUVALIN ORTASINA oturur: orta = sagX + sagW/2 = 160.
     // Oklar HAZIR'in 26 px disina cizildigi icin baslik.w = hazir.w + 52 olmali.
-    sagX: 112, sagW: 164,
+    sagX: 78, sagW: 164,
     // Blok dikeyde de ortali: 12..166 arasi, ustte 12 altta 13 px bosluk
-    baslik: { x: 112, y: 12, w: 164, h: 46 },  // buyuk "OYUN" kutusu (yazi 140 px)
-    hazir:  { x: 142, y: 64, w: 104, h: 28 },  // iki yaninda turuncu oklar
-    cik:    { x: 142, y: 106, w: 104, h: 24 },
+    baslik: { x: 78, y: 12, w: 164, h: 46 },   // buyuk "OYUN" kutusu (yazi 140 px)
+    hazir:  { x: 108, y: 64, w: 104, h: 28 },  // iki yaninda turuncu oklar
+    cik:    { x: 108, y: 106, w: 104, h: 24 },
     kodY: 138,                                  // "KOD : XXXX" + kopyala tusu
     altY: 160                                   // rakip araniyor / uyari
   };
