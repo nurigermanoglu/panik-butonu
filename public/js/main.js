@@ -361,7 +361,6 @@
     // gizli kaliyor ve tekrar girildiginde mac baslayana kadar gorunmuyorlar.
     $('btnLeave').classList.remove('hidden');
     $('chat').classList.add('hidden');
-    $('arena').classList.remove('sohbetli');
     $('chatLog').innerHTML = '';
     $('chatMsg').value = '';
     $('game').classList.add('hidden');
@@ -589,7 +588,6 @@
     var sohbet = $('chat');
     if (sohbet.classList.contains('hidden') === lobide) {
       sohbet.classList.toggle('hidden', !lobide);
-      $('arena').classList.toggle('sohbetli', lobide);
       if (lobide) sohbet.classList.add('sessiz');   // gecmis varsa sohbetEkle gosterir
       resize();
     }
@@ -640,7 +638,9 @@
     var chat = $('chat');
     var yanYana = !chat.classList.contains('hidden') &&
                   window.getComputedStyle($('arena')).flexDirection === 'row';
-    var toplamW = r.width + (yanYana ? chat.getBoundingClientRect().width + ARENA_BOSLUK : 0);
+    // Sohbet ustte duran bir katman: yer kaplamadigi icin sahne zaten
+    // tum genisligi kapliyor.
+    var toplamW = r.width;
     var tuvaleKalan = yanYana ? toplamW - sohbetPayi() - ARENA_BOSLUK : r.width;
 
     var scale = Math.min(tuvaleKalan / W, r.height / H);
@@ -651,13 +651,12 @@
 
     // Tuval yerlestikten sonra ARTAN yer panele gider
     if (yanYana) {
-      // Gorunen genislik olcekleme payindan DAR tutulur; boylece panel
-      // incelir ama tuvalin kati degismez (artan yer kenar bosluguna gider).
+      // Panel genisligi: tuvalin sagindaki bos seride sigsin
       var hedef = Math.min(260, Math.max(180, window.innerWidth * 0.20));
-      var panel = Math.min(toplamW - tuvalW - ARENA_BOSLUK, hedef);
-      chat.style.flexBasis = Math.round(Math.max(160, panel)) + 'px';
+      var panel = Math.min(Math.round((toplamW - tuvalW) / 2) - ARENA_BOSLUK, hedef);
+      chat.style.width = Math.round(Math.max(150, panel)) + 'px';
     } else {
-      chat.style.flexBasis = '';       // alt alta dizilimde CSS karar versin
+      chat.style.width = '';           // alt alta dizilimde CSS karar versin
     }
 
     // Ic cozunurluk: ekrandaki kat sayisi kadar (en fazla 3x). Boylece bir oyun

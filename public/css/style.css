@@ -261,6 +261,7 @@ html, body {
 
 /* Oyun alani + sohbet yan yana */
 #arena {
+  position: relative;                 /* sohbet buna gore konumlanir */
   flex: 1 1 auto; min-height: 0; min-width: 0;
   display: flex; gap: 8px; padding: 0 6px 6px;
 }
@@ -269,21 +270,24 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   padding: 6px 0;
 }
-/* Sohbet acikken (lobide) oyun alani sola yaslanir: tuval tam kat
-   olceklendigi icin sahnede artan yer kaliyor ve ortalaninca oyun
-   ekranin ortasina kaciyordu. Mac sirasinda sohbet yok, ortali kalir. */
-#arena.sohbetli #stage { justify-content: flex-start; }
+
 
 /* ------------------------- SOHBET ------------------------- */
 /* Oyunun sari/siyah kutu diliyle ayni; ama burasi GERCEK yazi:
    kucuk harf ve turkce karakterler rahatca sigsin diye tuvale degil
    HTML e ciziliyor. */
+/* Sohbet oyun alaninin UZERINDE durur, yer kaplamaz. Yer kaplasaydi
+   tuval sola itilir ve oyun ekranin ortasina gelemezdi. Zaten yari
+   saydam ve kendiliginden kayboluyor. */
 #chat {
-  /* Baslangic degeri; resize() gercek genisligi tuvale gore hesaplar */
-  flex: 0 0 clamp(160px, 20vw, 260px);
+  position: absolute; top: 0; right: 6px; bottom: 6px; z-index: 2;
+  width: clamp(160px, 20vw, 260px);   /* resize() gercek degeri yazar */
   display: flex; flex-direction: column; gap: 6px;
   min-height: 0; min-width: 0;
+  /* Bos kisimlarindan tiklama tuvale gecsin */
+  pointer-events: none;
 }
+#chatLog, #chatForm { pointer-events: auto; }
 #chatLog {
   flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   background: rgba(4,20,36,0.5);
@@ -311,7 +315,7 @@ html, body {
 /* Dar ekran: sohbet oyun alaninin ALTINA iner */
 @media (max-width: 760px), (max-aspect-ratio: 1/1) {
   #arena { flex-direction: column; gap: 6px; }
-  #chat { flex: 0 0 34%; }
+  #chat { position: static; width: auto; flex: 0 0 34%; }
 }
 
 canvas {
