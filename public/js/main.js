@@ -297,7 +297,7 @@
 
   // Sohbet kaydi normalde gorunmez. Yeni mesaj gelince veya yazmaya
   // baslayinca belirir, bir sure sonra tekrar kaybolur.
-  var SOHBET_ACIK_KAL = 5000;
+  var SOHBET_ACIK_KAL = 3000;
   var sohbetSayaci = null;
 
   function sohbetGoster() {
@@ -684,14 +684,14 @@
     isimY: 34,                                  // isim satiri: ust + isimY
     isimEn: 66,                                 // isim karakterX'te ortalanir: 0..66
     // Blok, oyuncu sutunu (0..66) ile sag kenar arasina ortalanir:
-    // orta = sagX + sagW/2 = 194, iki yanda da ~59 px bosluk kalir.
+    // orta = sagX + sagW/2 = 194, iki yanda da ~45 px bosluk kalir.
     // Oklar HAZIR'in 26 px disina cizildigi icin baslik.w = hazir.w + 52 olmali.
-    sagX: 126, sagW: 136,
-    baslik: { x: 126, y: 6, w: 136, h: 42 },   // buyuk "OYUN" kutusu (yazi 112 px)
-    hazir:  { x: 152, y: 54, w: 84, h: 26 },   // iki yaninda turuncu oklar
-    cik:    { x: 152, y: 98, w: 84, h: 22 },
-    kodY: 136,                                  // "KOD : XXXX" + kopyala tusu
-    altY: 160                                   // rakip araniyor / uyari
+    sagX: 112, sagW: 164,
+    baslik: { x: 112, y: 4, w: 164, h: 48 },   // buyuk "OYUN" kutusu (yazi 140 px)
+    hazir:  { x: 138, y: 58, w: 112, h: 30 },  // iki yaninda turuncu oklar
+    cik:    { x: 138, y: 104, w: 112, h: 28 },
+    kodY: 142,                                  // "KOD : XXXX" + kopyala tusu
+    altY: 164                                   // rakip araniyor / uyari
   };
 
   // Kendi karakterini degistiren oklar - kendi satirinin iki yaninda
@@ -956,7 +956,7 @@
     // 1) Baslik kutusu
     sariKutu(LOBI.baslik, null, 0);
     f.text(ctx, 'OYUN', sagOrta, LOBI.baslik.y + 7, {
-      color: '#000000', scale: 4, align: 'center'
+      color: '#000000', scale: 5, align: 'center'
     });
 
     // 2) HAZIR - iki yaninda turuncu oklar (tur sayisini degistirirler)
@@ -966,13 +966,13 @@
       if (!yeterli) {
         g.rect(ctx, hb.x, hb.y, hb.w, hb.h, '#000000');
         g.rect(ctx, hb.x + 3, hb.y + 3, hb.w - 6, hb.h - 6, '#c9b45a');
-        f.text(ctx, 'EN AZ ' + state.min + ' KISI', hb.x + hb.w / 2, hb.y + 10, {
+        f.text(ctx, 'EN AZ ' + state.min + ' KISI', hb.x + hb.w / 2, hb.y + 11, {
           color: '#3a3200', scale: 1, align: 'center'
         });
       } else if (ben && ben.ready) {
         sariKutu(hb, 'HAZIR (IPTAL)', 1, true);
       } else {
-        sariKutu(hb, 'HAZIR', 2, Math.floor(time * 2) % 2 === 0);
+        sariKutu(hb, 'HAZIR', 3, Math.floor(time * 2) % 2 === 0);
       }
     }
     var ho = hedefOklari();
@@ -981,7 +981,7 @@
         var k = par[0];
         g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
         g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, '#ff8a3c');
-        g.arrow(ctx, par[1], k.x + 6, k.y + 6, 1, '#000000');
+        g.arrow(ctx, par[1], k.x + 6, k.y + 8, 1, '#000000');
       });
     }
     // Oklarin ne yaptigi belli olsun
@@ -990,7 +990,7 @@
     });
 
     // 3) CIK  (SES ust cubuktaki hoparlor simgesinde)
-    sariKutu(LOBI.cik, 'CIK', 1);
+    sariKutu(LOBI.cik, 'CIK', 2);
 
 
     // 5) KOD - yaninda kopyalama simgesi; satirin tamamina basilabilir
