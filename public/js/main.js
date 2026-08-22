@@ -122,6 +122,11 @@
       e.preventDefault();
       sohbetGonder();
     });
+    ['focus', 'input', 'pointerdown'].forEach(function (ev) {
+      $('chatMsg').addEventListener(ev, sohbetGoster);
+    });
+    $('chatMsg').addEventListener('blur', sohbetGoster);   // sayaci yeniden baslatir
+    $('chatLog').addEventListener('pointerdown', sohbetGoster);
   }
 
   // ---------------------------------------------------------------- dokunma / fare
@@ -290,6 +295,24 @@
     sesButonuTazele();
   }
 
+  // Sohbet kaydi normalde gorunmez. Yeni mesaj gelince veya yazmaya
+  // baslayinca belirir, bir sure sonra tekrar kaybolur.
+  var SOHBET_ACIK_KAL = 5000;
+  var sohbetSayaci = null;
+
+  function sohbetGoster() {
+    $('chat').classList.remove('sessiz');
+    if (sohbetSayaci) clearTimeout(sohbetSayaci);
+    sohbetSayaci = setTimeout(sohbetSessiz, SOHBET_ACIK_KAL);
+  }
+
+  function sohbetSessiz() {
+    // Kutuda yaziyorsa veya yarim kalmis yazi varsa kaybolmasin
+    var kutu = $('chatMsg');
+    if (document.activeElement === kutu || kutu.value.trim()) return sohbetGoster();
+    $('chat').classList.add('sessiz');
+  }
+
   function sohbetGonder() {
     var kutu = $('chatMsg');
     var metin = kutu.value.trim();
@@ -314,6 +337,7 @@
     kutu.appendChild(satir);
     while (kutu.children.length > 60) kutu.removeChild(kutu.firstChild);
     if (dipte) kutu.scrollTop = kutu.scrollHeight;   // okurken yukari kaydirdiysa zorlamayalim
+    sohbetGoster();
   }
 
   // Yazan kisinin oyundaki rengi. Slot mesajin icinde geldigi icin gecmis
@@ -564,6 +588,7 @@
     var sohbet = $('chat');
     if (sohbet.classList.contains('hidden') === lobide) {
       sohbet.classList.toggle('hidden', !lobide);
+      if (lobide) sohbet.classList.add('sessiz');   // gecmis varsa sohbetEkle gosterir
       resize();
     }
 
