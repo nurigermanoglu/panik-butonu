@@ -275,7 +275,8 @@ html, body {
    kucuk harf ve turkce karakterler rahatca sigsin diye tuvale degil
    HTML e ciziliyor. */
 #chat {
-  flex: 0 0 clamp(180px, 26vw, 300px);
+  /* Baslangic degeri; resize() gercek genisligi tuvale gore hesaplar */
+  flex: 0 0 clamp(200px, 30vw, 520px);
   display: flex; flex-direction: column; gap: 6px;
   min-height: 0; min-width: 0;
 }

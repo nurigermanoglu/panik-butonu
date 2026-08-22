@@ -590,15 +590,40 @@
 
   // ---------------------------------------------------------------- olcek
 
+  // Sohbet paneli olculeri. Tuval tam kat olceklendigi icin yaninda hep
+  // artan bir bosluk kalir; panel o boslugu yutup genisler.
+  var SOHBET_EN_AZ = 200, ARENA_BOSLUK = 8;
+
   function resize() {
     var stage = $('stage');
     if (!stage) return;
     var r = stage.getBoundingClientRect();
     if (r.width < 4 || r.height < 4) return;
-    var scale = Math.min(r.width / W, r.height / H);
+
+    // Sohbet yan yanaysa tuval, panelin EN AZ payi ayrildiktan sonra kalan
+    // yere gore olceklenir. Boylece panel genisledikce tuval kucule kucule
+    // gitmez; ikisinin TOPLAM genisligi sabit kaldigi icin hesap kararlidir.
+    var chat = $('chat');
+    var yanYana = !chat.classList.contains('hidden') &&
+                  window.getComputedStyle($('arena')).flexDirection === 'row';
+    var toplamW = r.width + (yanYana ? chat.getBoundingClientRect().width + ARENA_BOSLUK : 0);
+    var tuvaleKalan = yanYana ? toplamW - SOHBET_EN_AZ - ARENA_BOSLUK : r.width;
+
+    var scale = Math.min(tuvaleKalan / W, r.height / H);
     var k = scale >= 1 ? Math.floor(scale) : scale;   // ekranda kac kat gorunecek
-    cv.style.width = Math.floor(W * k) + 'px';
+    var tuvalW = Math.floor(W * k);
+    cv.style.width = tuvalW + 'px';
     cv.style.height = Math.floor(H * k) + 'px';
+
+    // Tuval yerlestikten sonra ARTAN yer panele gider
+    if (yanYana) {
+      // Artan yerin TAMAMINI alir; tek sinir tuvalden genis olmamasi, yoksa
+      // sohbet oyunun onune gecerdi.
+      var panel = Math.min(toplamW - tuvalW - ARENA_BOSLUK, tuvalW);
+      chat.style.flexBasis = Math.round(Math.max(SOHBET_EN_AZ, panel)) + 'px';
+    } else {
+      chat.style.flexBasis = '';       // alt alta dizilimde CSS karar versin
+    }
 
     // Ic cozunurluk: ekrandaki kat sayisi kadar (en fazla 3x). Boylece bir oyun
     // karesi tam olarak k ekran pikseline denk gelir -> bloklar keskin kalir,
