@@ -149,6 +149,25 @@ kalıyor ve maçlar uzuyordu. Ölçüldü (25 maçın ortalaması, ayar 5):
 | 3 | 15.7 tur | 11.9 tur |
 | 4 | 16.0 tur | **11.6 tur** |
 
+### Final turu
+
+Biri **tek turda şampiyonluğu alabilecek** duruma geldiğinde sonraki tur
+*final turu* olur: geri sayım ekranında yanıp sönen
+`FINAL TURU - PUANLAR X2` uyarısı çıkar, müzik gerilim moduna geçer ve
+**o turda dağıtılan bütün puanlar iki katına çıkar**.
+
+Amaç maçın tek taraflı bitmemesi. Geride kalan normalde en fazla `n-1` puan
+alabilirken final turunda `2(n-1)` alır:
+
+| 4 kişi, hedef 15 | Önde 12, geride 6 |
+|---|---|
+| Normal turda geride olan en fazla | 9 puana çıkar |
+| Final turunda | **12 puana** çıkar |
+
+Koşul sağlandığı sürece her tur final turudur — "1 tur kala" durumu devam
+ettiği müddetçe gerilim de devam etsin diye. Beraberlikte yine kimse puan
+almaz, çarpan da uygulanmaz.
+
 ### Hedef puan (kaç puan şampiyon eder)
 
 Lobide `HEDEF: 15 PUAN` yazısının **iki yanındaki ok butonlarına tıklayarak** ayarlanır.
@@ -297,7 +316,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 97 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 110 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -305,6 +324,7 @@ yani yine `npm install` gerekmiyor. 97 test bir saniyede biter.
 | [test/minioyunlar.test.js](test/minioyunlar.test.js) | 10 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
+| [test/final.test.js](test/final.test.js) | Final turu koşulu (küçük hedeflerde bile maç başında ilan edilmemesi), çift puan, bayrağın tur başında sabitlenmesi |
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
 | [test/yakala.test.js](test/yakala.test.js) | Düşenleri Yakala: düşme programının adaleti (bombadan kaçış hep var), yakalama kuralları, sonuç seçimi |
 | [test/zemin.test.js](test/zemin.test.js) | Zemin Çöküyor deseninin adaleti (kusursuz oyuncu 600 desende hiç ölmüyor), kuşatılma olmaması, hareket kuralları, ortak ızgara davranışı |
