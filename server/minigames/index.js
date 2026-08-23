@@ -14,4 +14,5 @@ module.exports = [
   require('./puzzle'),
   require('./floor'),
   require('./collect'),
+  require('./tersemir'),
 ];

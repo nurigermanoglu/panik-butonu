@@ -86,7 +86,8 @@ describe('Oyuna ozel bot sunanlar', () => {
     // Bu oyunlarda genel davranis yetersizdi; ozel bot yazildi.
     // Liste degisirse (biri kaldirilirsa) haberimiz olsun.
     assert.deepStrictEqual(ozel.sort(), [
-      'collect', 'dodge', 'floor', 'memory', 'mole', 'puzzle', 'shapesort', 'wirecut',
+      'collect', 'dodge', 'floor', 'memory', 'mole', 'puzzle', 'shapesort',
+      'tersemir', 'wirecut',
     ]);
   });
 

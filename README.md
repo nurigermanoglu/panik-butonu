@@ -42,7 +42,7 @@ Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 | Karakter değiştir (lobide, herkes kendi karakterini) | Karakterinin yanındaki oklara **tıkla** | Oklara **dokun** |
 | At Yarışı, Refleks Düellosu, Sıcak Patates | `BOŞLUK` / `ENTER` ya da **ekrana sol tıkla** | Büyük **BAS** butonu ya da ekrana dokun |
 | Engelden Kaç, Düşenleri Yakala | `←` `→` şerit değiştir (veya `A` `D`) | Sol / sağ butonu |
-| Hafıza Dizisi, Zemin Çöküyor | Yön tuşları veya `W` `A` `S` `D` | 4 yön butonu |
+| Hafıza Dizisi, Zemin Çöküyor, Ters Emir | Yön tuşları veya `W` `A` `S` `D` | 4 yön butonu |
 | Sıcak Patates | `BOŞLUK` | Büyük **BAS** butonu |
 | Köstebek Avı, Kablo Kesme | Fareyle **tıkla** | Ekrana **dokun** |
 | Dosya Silme, Şekil Yerleştir, Puzzle | Fareyle tut-**sürükle**-bırak | Parmakla tut-**sürükle**-bırak |
@@ -80,9 +80,10 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
 | **Düşenleri Yakala** | 13 sn | Herkes aynı sahada, 5 şeritte: yukarıdan düşen yıldızları topla (+1), bombalardan kaç (-2). **Sol/sağ** ile şerit değiştir. Bir eşyayı o şeritteki herkes alır. Aynı anda en fazla 2 eşya düşer, yani bombadan kaçacak yer hep vardır |
 | **Zemin Çöküyor** | 14 sn | **Herkes aynı** 6x6 ızgarada oynar: kareler tek tek çöker (önce yanıp söner, sonra kaybolur), yön tuşlarıyla kaçıp ayakta kalırsın. **Boşluğa adım atarsan da düşersin** — çökmüş kareler görünmez duvar değildir. Aynı kareye birden fazla oyuncu girebilir — kimse kimseyi engellemez. Desen **her zaman kaçılabilir** üretilir. Son ayakta kalan kazanır; herkes düşerse en geç düşen |
+| **Ters Emir** | 14 sn | Ekranda bir yön yazar: `SOL`, `SAĞ`, `YUKARI`, `AŞAĞI`. Yazı **beyazsa** o yöne, **kırmızıysa tersine** basacaksın (kırmızıda ayrıca basılacak yönü gösteren bir ok da çıkar). Doğru +1, yanlış **-1**, cevapsız 0 — emin değilsen elini çekmek geçerli bir strateji. Tur boyunca ~8 emir gelir ve cevap süresi 1.5 sn'den 1.05 sn'ye daralır |
 | **Puzzle** | 14 sn | Elma resminin 4x4 ızgarasındaki eksik 3 karesini sağdaki parçalardan bulup doğru yuvaya sürükle. İki resim **sırayla** gelir (torba yöntemi), yani her ikisi de düzenli olarak çıkar |
 
-Toplam **12 mini oyun**. Her turda "torba" yönteminden biri gelir: hepsi tekrar etmeden birer kez
+Toplam **13 mini oyun**. Her turda "torba" yönteminden biri gelir: hepsi tekrar etmeden birer kez
 oynanır, sonra torba yenilenir.
 
 > Halka Geçirme, Şişe Vurma ve Buton Yağmuru oyunları çıkarıldı ve kodları
@@ -202,13 +203,18 @@ botHamle(pid, snap, zorluk)           // hamle araliklariyla; 0 kolay, 1 orta, 2
 Bot yalnızca `snap()` çıktısını kullanmalı — yani istemcinin de gördüğü bilgiyi.
 Oyunun iç değişkenlerine bakan bir bot "her şeyi bilen" bir rakip olurdu.
 
-8 oyun kendi bot mantığını kullanıyor; kalan 4'ünde (At Yarışı, Refleks, Sıcak
+9 oyun kendi bot mantığını kullanıyor; kalan 4'ünde (At Yarışı, Refleks, Sıcak
 Patates, Dosya Silme) genel davranış zaten yeterli.
 
 **Ezber gerektirenler** (Hafıza Dizisi, Kablo Kesme) için bot da insan gibi
 *ekranı izliyor*: `botIzle` her karede çağrıldığı için gösterilen sembolleri
 kaçırmıyor, sırayla aklında tutuyor, sonra tekrarlıyor. Zorluk burada hafızanın
 güvenilirliği oluyor.
+
+**Ters Emir**'de bot insanın yaptığı hatayı yapar: KOLAY bot yazıyı okuyup olduğu
+gibi basar, kırmızı olduğunu çoğu zaman fark etmez (%55 çevirme). ZOR bot %95
+çevirir — bilerek kusursuz değil, çünkü bu oyunda tavan sabit (her emir 1 puan)
+ve beraberlik çözücü yok: kusursuz bir bot insanı en fazla berabere bırakırdı.
 
 Aşağıdaki tablo botun her oyundaki performansı (50 deneme). "Botsuz" sütunu
 hiç oynamayan bir oyuncunun aldığı sonuç — karşılaştırma noktası:
@@ -227,6 +233,7 @@ hiç oynamayan bir oyuncunun aldığı sonuç — karşılaştırma noktası:
 | Puzzle | parça / 3 | 0 | 3.0 | 3.0 | **3.0** |
 | Zemin Çöküyor | yaşam sn | 6.6 | 11.6 | 13.6 | **14.0** |
 | Düşenleri Yakala | skor | 1.3 | 3.9 | 6.9 | **11.9** |
+| Ters Emir | skor / 8 | 0 | 3.5 | 6.7 | **7.6** |
 
 Şekil Yerleştir ve Puzzle'da üç seviye de görevi tamamlıyor; fark **bitirme
 süresine** yansıyor (şekilde 5.4 → 1.7 → 0.8 sn, puzzle'da 2.3 → 0.9 → 0.4 sn),
@@ -429,21 +436,22 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 196 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 223 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
 | [test/oda.test.js](test/oda.test.js) | Kopan oyuncunun yerini cihaz anahtarıyla geri alması, aynı ismi yazan yabancının yeri kapamaması, sohbet kuralları |
-| [test/minioyunlar.test.js](test/minioyunlar.test.js) | 10 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
+| [test/minioyunlar.test.js](test/minioyunlar.test.js) | 13 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
-| [test/botkapsam.test.js](test/botkapsam.test.js) | **Botun 12 oyunun hepsini oynayabildiği**: her oyunda pasif rakibi yenmesi, zorluğun ters dönmemesi |
+| [test/botkapsam.test.js](test/botkapsam.test.js) | **Botun 13 oyunun hepsini oynayabildiği**: her oyunda pasif rakibi yenmesi, zorluğun ters dönmemesi |
 | [test/ezberbot.test.js](test/ezberbot.test.js) | Ezber oyunlarında bot: gösterimi izleyip diziyi doğru öğrenmesi, gösterim sırasında hamle yapmaması, zorluğa göre yanılması |
 | [test/bot.test.js](test/bot.test.js) | Botlar: ekleme/çıkarma sınırları, paket gönderilmemesi, tek başına maç başlatma, gerçekten oynayıp puan alması, refleks turunda erken basmaması |
 | [test/istatistik.test.js](test/istatistik.test.js) | Maç sonu istatistikleri: sayımlar, eşitlikte satırın atlanması, beraberlik durumları, yalnızca şampiyon ekranında yayınlanması |
 | [test/final.test.js](test/final.test.js) | Final turu koşulu (küçük hedeflerde bile maç başında ilan edilmemesi), çift puan, bayrağın tur başında sabitlenmesi |
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
 | [test/yakala.test.js](test/yakala.test.js) | Düşenleri Yakala: düşme programının adaleti (bombadan kaçış hep var), yakalama kuralları, sonuç seçimi |
+| [test/tersemir.test.js](test/tersemir.test.js) | Ters Emir: emir listesinin adaleti (ilk emir hep düz, aynı yön üst üste gelmez, üçten fazla ters yığılmaz), puanlama, bir emre tek cevap, sıradaki emrin istemciye sızmaması, botun zorluk basamakları |
 | [test/zemin.test.js](test/zemin.test.js) | Zemin Çöküyor deseninin adaleti (kusursuz oyuncu 600 desende hiç ölmüyor), kuşatılma olmaması, hareket kuralları, ortak ızgara davranışı |
 
 Testlerin kendisi de sınandı: koda bilerek üç hata sokulup (gösterim koruması
@@ -462,6 +470,7 @@ ve orada kalıyor. Geri sayım ekranında `TUR 7` ve `HIZ +%67` yazar.
 | Dosya Silme | 7 dosya, 12 sn | **10 dosya**, 10.2 sn |
 | Engelden Kaç | 16 engel sırası | **20 engel sırası**, %25 daha hızlı |
 | Sıcak Patates | normal fitil | **%35 daha kısa fitil** |
+| Ters Emir | 1.5 sn cevap süresi | **%22 daha dar pencere**, aralar da kısalır |
 | Kablo Kesme | 4.6 sn ezberleme + 9 sn kesme | **3.2 sn ezberleme + 6.8 sn kesme**, **1.68 sn ceza** |
 | Şekil Yerleştir / Puzzle | 14 sn | **10.1 sn** |
 | Zemin Çöküyor | 0.75 sn uyarı, 14 sn | **0.45 sn uyarı**, 11.2 sn, çökmeler sıklaşır |
