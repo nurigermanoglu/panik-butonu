@@ -76,7 +76,7 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 | **Dosya Silme** | 12 sn | Eski bir bilgisayar masaüstünde 7 klasörü çöp kutusuna sürükle. Hepsini en hızlı silen kazanır |
 | **Kablo Kesme** | ~13.6 sn | İki aşamalı: önce renkler tek tek gösterilir (kablolar henüz yok), sonra kablolar açılır ve sırayı **ezberden** kesmen gerekir — sıra bir daha gösterilmez. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır **ve sıra başa sarar**: kesilen kablolar onarılır, baştan başlarsın. Sırayı ilk bitiren kazanır; kimse bitiremezse **en çok ilerleyebilen** kazanır |
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
-| **Zemin Çöküyor** | 14 sn | **Herkes aynı** 5x5 ızgarada oynar: kareler tek tek çöker (önce yanıp söner, sonra kaybolur), yön tuşlarıyla kaçıp ayakta kalırsın. Aynı kareye birden fazla oyuncu girebilir — kimse kimseyi engellemez. Desen **her zaman kaçılabilir** üretilir. Son ayakta kalan kazanır; herkes düşerse en geç düşen |
+| **Zemin Çöküyor** | 14 sn | **Herkes aynı** 6x6 ızgarada oynar: kareler tek tek çöker (önce yanıp söner, sonra kaybolur), yön tuşlarıyla kaçıp ayakta kalırsın. Aynı kareye birden fazla oyuncu girebilir — kimse kimseyi engellemez. Desen **her zaman kaçılabilir** üretilir. Son ayakta kalan kazanır; herkes düşerse en geç düşen |
 | **Puzzle** | 14 sn | Elma resminin 4x4 ızgarasındaki eksik 3 karesini sağdaki parçalardan bulup doğru yuvaya sürükle. İki resim **sırayla** gelir (torba yöntemi), yani her ikisi de düzenli olarak çıkar |
 
 Toplam **11 mini oyun**. Her turda "torba" yönteminden biri gelir: hepsi tekrar etmeden birer kez

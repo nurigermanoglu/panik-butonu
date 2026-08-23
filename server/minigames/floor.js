@@ -32,16 +32,30 @@
 
 const { dereceler } = require('./siralama');
 
-const N = 5;                 // izgara N x N
+const N = 6;                 // izgara N x N
 const DURATION = 14;
 const UYARI = 0.75;          // kare cokmeden once ne kadar yanip soner
 const ILK_COKME = 1.4;
 const ARA_BAS = 0.85;        // cokmeler arasi bekleme (basta)
 const ARA_SON = 0.4;         // ... ve tur sonuna dogru
-const EN_AZ_KALAN = 3;       // izgara bu kare sayisinin altina inmez
+// Izgara bu kare sayisinin altina inmez. 5x5 + alt sinir 3 iken tur sonunda
+// ortalama 7 kare kaliyordu (olculdu) - 4 oyuncu icin fazla dardi. Izgara
+// 6x6'ya cikarilip alt sinir yukseltildi.
+const EN_AZ_KALAN = 12;
+
 // Oyuncular kenar ortalarindan baslar: birbirinden uzak ve simetrik.
 // (Koseler 2 komsulu oldugu icin baslangic olarak daha dezavantajli olurdu.)
-const BASLANGIC = [10, 14, 2, 22];
+// N'e gore hesaplanir, boylece izgara boyutu degisince kendiliginden uyar.
+function baslangicKareleri() {
+  const a = Math.floor((N - 1) / 2), b = Math.ceil((N - 1) / 2);
+  return [
+    a * N,                    // sol kenar ortasi
+    b * N + (N - 1),          // sag kenar ortasi
+    a,                        // ust kenar ortasi
+    (N - 1) * N + b,          // alt kenar ortasi
+  ];
+}
+const BASLANGIC = baslangicKareleri();
 
 function komsular(h) {
   const x = h % N, y = Math.floor(h / N);

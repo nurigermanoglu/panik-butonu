@@ -228,11 +228,13 @@ describe('Ortak izgara', () => {
     // Engelleme olsaydi rakip senin tek kacis karene oturup seni caresiz
     // birakabilirdi - bu da adalet garantisini bozardi.
     const inst = floor.create(['p0', 'p1'], 0);
-    inst.pl.p0.h = 12;
-    inst.pl.p1.h = 11;
+    // Izgara boyutundan bagimsiz: ikinci satirin ikinci karesi ve solundaki
+    const hedef = inst.n + 1;
+    inst.pl.p0.h = hedef;
+    inst.pl.p1.h = hedef - 1;
     inst.input('p1', 'dir', 'right');
-    assert.strictEqual(inst.pl.p1.h, 12, 'dolu kareye girilemedi');
-    assert.strictEqual(inst.pl.p0.h, 12, 'oradaki oyuncu itilmemeli');
+    assert.strictEqual(inst.pl.p1.h, hedef, 'dolu kareye girilemedi');
+    assert.strictEqual(inst.pl.p0.h, hedef, 'oradaki oyuncu itilmemeli');
   });
 
   test('hic kacmayan HER oyuncu duser', () => {
