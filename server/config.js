@@ -22,6 +22,13 @@ module.exports = {
   CHAT_MAX_LEN: 120,
   CHAT_HISTORY: 30,
   CHAT_MIN_ARA_MS: 600,
+  // Mac ici emote: kac tepki var, ard arda gonderme siniri, balonun ekranda
+  // kalma suresi. Sohbet mac icinde kapali (okumaya vakit yok) - emote onun
+  // yerini tutar ve tek dokunusla gonderilir.
+  EMOTE_COUNT: 4,
+  EMOTE_ARA_MS: 700,
+  EMOTE_SURE_MS: 2000,
+
   RECONNECT_GRACE: 15,
   LOBBY_GRACE: 8,
 

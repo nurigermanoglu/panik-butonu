@@ -13,6 +13,7 @@
 
 
   function begin(key) {
+    if (key.indexOf('emote') === 0) { fire('emote', Number(key.slice(5))); return; }
     if (key === 'action') { fire('press', 1); return; }
     if (key === 'left' || key === 'right') {
       // 'lr' = sadece sol/sag olan oyunlar (Engelden Kac). Basili tutma degil,
@@ -28,6 +29,8 @@
 
   var KEYMAP = {
     Space: 'action', Enter: 'action', KeyZ: 'action', KeyX: 'action', NumpadEnter: 'action',
+    // Mac ici tepkiler: 1-4 tuslari. Hicbir mini oyun bu tuslari kullanmiyor.
+    Digit1: 'emote0', Digit2: 'emote1', Digit3: 'emote2', Digit4: 'emote3',
     ArrowLeft: 'left', KeyA: 'left',
     ArrowRight: 'right', KeyD: 'right',
     ArrowUp: 'up', KeyW: 'up',

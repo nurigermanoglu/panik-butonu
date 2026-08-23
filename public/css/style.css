@@ -264,6 +264,19 @@ html, body {
 .mini:active { transform: translateY(2px); }
 /* CIK solda tek basina; TAM EKRAN ile ses simgesi sagda yan yana dursun */
 #btnLeave { margin-right: auto; }
+
+/* Mac ici tepki dugmeleri - ust cubukta, sag taraftaki butonlarin solunda */
+#emotes { display: flex; gap: 4px; margin-right: 6px; }
+.ebtn {
+  width: 30px; height: 26px; padding: 0;
+  font-size: 15px; line-height: 1;
+  background: #d9d6f2; border: 2px solid #0e0d1c; border-radius: 0;
+  cursor: pointer;
+}
+.ebtn:active { transform: translateY(2px); }
+@media (max-height: 620px) {
+  .ebtn { width: 24px; height: 20px; font-size: 12px; }
+}
 /* Simge butonu: yazi yerine SVG tasir */
 .mini.simge { padding: 4px 6px; line-height: 0; }
 .mini.simge svg { display: block; }
