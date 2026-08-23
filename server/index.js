@@ -140,6 +140,16 @@ ws.attach(server, (conn) => {
       case 'char':
         if (room) room.game.setChar(player, msg.d);
         break;
+      // Bot ekle / cikar - sadece odayi kuran
+      case 'bot': {
+        if (!room) break;
+        if (room.game.phase !== 'lobby') break;
+        if (player.id !== room.hostId) break;
+        if (msg.d < 0) room.botCikar(); else room.botEkle();
+        room.game.dirty = true;
+        room.broadcast(room.game.snapshot());
+        break;
+      }
       case 'emote':
         if (room) room.game.setEmote(player, msg.i);
         break;

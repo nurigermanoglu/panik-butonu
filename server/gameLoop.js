@@ -42,8 +42,10 @@ class Game {
   tryStart() {
     const ps = this.room.players;
     if (ps.length < cfg.MIN_PLAYERS) return;
+    // Sadece botlardan olusan bir oda mac baslatmasin
+    if (!ps.some((p) => !p.bot)) return;
     if (!ps.every((p) => p.ready)) return;
-    for (const p of ps) { p.wins = 0; p.ready = false; }
+    for (const p of ps) { p.wins = 0; p.ready = p.bot; }
     this.notice = null;
     this.tur = 0;
     this.bag = [];
@@ -144,7 +146,7 @@ class Game {
     this.final = false;
     this.emotes = {};
     this.istat = {};
-    for (const p of this.room.players) { p.ready = false; p.wins = 0; }
+    for (const p of this.room.players) { p.ready = p.bot; p.wins = 0; }
     this.tur = 0;
     this.dirty = true;
   }
@@ -175,6 +177,7 @@ class Game {
 
   nextRound() {
     this.tur++;
+    for (const p of this.room.players) if (p.bot) p.botBekle = 0.3;
     // Bayrak tur BASINDA sabitlenir: tur ortasinda degisip puani sasirtmasin
     this.final = this.finalTuru;
     this.mg = this.pickMinigame();
@@ -318,6 +321,72 @@ class Game {
     }
   }
 
+  // ---------- botlar ----------
+  //
+  // Botlar sunucuda oynar ama oyunun IC degiskenlerine bakmaz: yalnizca
+  // snap() ciktisini, yani istemcinin de gordugu bilgiyi kullanirlar.
+  // Boylece "her seyi bilen" bir rakip olmazlar.
+  //
+  // Kontrol semasina gore genel bir davranis uygularlar; her mini oyun icin
+  // ayri bot yazilmadi. Sonuc: iyi bir insanin gerisinde kalirlar ama odayi
+  // doldurup maci canlandirirlar.
+
+  botAraligi(controls) {
+    // Hamleler arasi bekleme. Kisa aralik = daha atak bot.
+    switch (controls) {
+      case 'action': return 0.15 + Math.random() * 0.2;
+      case 'lr': return 0.3 + Math.random() * 0.4;
+      case 'dpad': return 0.25 + Math.random() * 0.35;
+      default: return 0.2 + Math.random() * 0.25;    // pointer
+    }
+  }
+
+  botHamle(bot, snap) {
+    const ctrl = this.mg.controls;
+
+    if (ctrl === 'action') {
+      // Refleks turunda isaret gelmeden basmak "yanmak" demek; bot da
+      // ekranda isareti gorene kadar bekler.
+      if (this.mg.id === 'reflex' && snap && !snap.sig) return;
+      // Tepki suresi olarak insan sinirlarina yakin bir deger bildirir
+      this.inst.input(bot.id, 'press', 220 + Math.floor(Math.random() * 120), 0);
+      return;
+    }
+
+    if (ctrl === 'lr') {
+      this.inst.input(bot.id, 'dir', Math.random() < 0.5 ? 'left' : 'right');
+      return;
+    }
+
+    if (ctrl === 'dpad') {
+      const yonler = ['up', 'down', 'left', 'right'];
+      this.inst.input(bot.id, 'dir', yonler[Math.floor(Math.random() * 4)]);
+      return;
+    }
+
+    // pointer: rastgele bir noktaya dokun, sonra birak.
+    // Surukleme gereken oyunlarda (dosya/sekil/puzzle) birakma noktasi
+    // hedefe yakin secilir ki bot bazen isabet ettirebilsin.
+    const x = 20 + Math.random() * 280;
+    const y = 40 + Math.random() * 120;
+    this.inst.input(bot.id, 'grab', { x: x, y: y });
+    this.inst.input(bot.id, 'drag', { x: 250, y: 110 });
+    this.inst.input(bot.id, 'drop', { x: 250, y: 110 });
+  }
+
+  botTick(dt) {
+    if (this.phase !== 'play' || !this.inst || !this.mg) return;
+    let snap = null;
+    for (const p of this.room.players) {
+      if (!p.bot) continue;
+      p.botBekle -= dt;
+      if (p.botBekle > 0) continue;
+      p.botBekle = this.botAraligi(this.mg.controls);
+      if (snap === null) snap = this.inst.snap ? this.inst.snap() : {};
+      this.botHamle(p, snap);
+    }
+  }
+
   // ---------- ana dongu ----------
 
   tick(dt) {
@@ -342,6 +411,7 @@ class Game {
 
       case 'play':
         this.timer -= dt;
+        this.botTick(dt);
         this.inst.update(dt);
         if (this.inst.done() || this.timer <= 0) {
           this.timer = Math.max(0, this.timer);

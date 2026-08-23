@@ -189,6 +189,9 @@
         var ho = hedefOklari();
         if (ho && kutuIcinde(p2, ho.sol)) { PP.sfx.tick(); PP.net.send({ t: 'target', d: -1 }); return; }
         if (ho && kutuIcinde(p2, ho.sag)) { PP.sfx.tick(); PP.net.send({ t: 'target', d: 1 }); return; }
+        var bo2 = botOklari();
+        if (bo2 && kutuIcinde(p2, bo2.sol)) { PP.sfx.tick(); PP.net.send({ t: 'bot', d: -1 }); return; }
+        if (bo2 && kutuIcinde(p2, bo2.sag)) { PP.sfx.tick(); PP.net.send({ t: 'bot', d: 1 }); return; }
         var cb = cikButonu();
         if (cb && kutuIcinde(p2, cb)) { PP.sfx.click(); odadanCik(); return; }
         var kb = kodButonu();
@@ -795,10 +798,30 @@
     // Blok dikeyde de ortali: 12..166 arasi, ustte 12 altta 13 px bosluk
     baslik: { x: 78, y: 12, w: 164, h: 46 },   // buyuk "OYUN" kutusu (yazi 140 px)
     hazir:  { x: 108, y: 64, w: 104, h: 28 },  // iki yaninda turuncu oklar
-    cik:    { x: 108, y: 106, w: 104, h: 24 },
-    kodY: 138,                                  // "KOD : XXXX" + kopyala tusu
-    altY: 160                                   // rakip araniyor / uyari
+    botY: 106,                                  // "BOT: n" + iki yaninda oklar
+    cik:    { x: 108, y: 126, w: 104, h: 22 },
+    kodY: 154,                                  // "KOD : XXXX" + kopyala tusu
+    altY: 170                                   // rakip araniyor / uyari
   };
+
+  // Bot sayisini degistiren oklar - SADECE odayi kurana gorunur/calisir.
+  // Hedef oklariyla ayni desen: yazinin iki yaninda turuncu tuslar.
+  function botOklari() {
+    if (!state || state.phase !== 'lobby') return null;
+    if (state.host !== youId) return null;
+    var orta = LOBI.sagX + LOBI.sagW / 2;
+    return {
+      sol: { x: Math.round(orta - 62), y: LOBI.botY - 4, w: 20, h: 15 },
+      sag: { x: Math.round(orta + 42), y: LOBI.botY - 4, w: 20, h: 15 }
+    };
+  }
+
+  function botSayisi() {
+    if (!state) return 0;
+    var n = 0;
+    for (var i = 0; i < state.players.length; i++) if (state.players[i].bot) n++;
+    return n;
+  }
 
   // Kendi karakterini degistiren oklar - kendi satirinin iki yaninda
   function karakterOklari() {
@@ -1062,8 +1085,10 @@
       // Yazi yerine renk kullaniyoruz cunku isim satiri artik alttaki tek satir.
       var kopukMu = p.on === false;
       var yanip = Math.floor(time * 2) % 2 === 0;
-      var rozet = kopukMu ? (yanip ? '#ff4d3d' : '#a02316')
-                          : (p.ready ? '#2fbf4f' : '#dfe9f2');
+      // Bot: mavi rozet. Hazir/kopuk durumu botlar icin anlamsiz.
+      var rozet = p.bot ? '#49b4ff'
+                        : kopukMu ? (yanip ? '#ff4d3d' : '#a02316')
+                                  : (p.ready ? '#2fbf4f' : '#dfe9f2');
       g.rect(ctx, LOBI.karakterX + 15, ust + 1, 7, 7, '#000000');
       g.rect(ctx, LOBI.karakterX + 16, ust + 2, 5, 5, rozet);
 
@@ -1118,7 +1143,23 @@
       color: '#0a1826', scale: 1, align: 'center', shadow: HALE
     });
 
-    // 3) CIK  (SES ust cubuktaki hoparlor simgesinde)
+    // 3) BOT sayisi - odayi kuran ekleyip cikarabilir
+    var bo = botOklari();
+    if (bo) {
+      [[bo.sol, 'left'], [bo.sag, 'right']].forEach(function (par) {
+        var k = par[0];
+        g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
+        g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, '#ff8a3c');
+        g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, 1, '#ffab74');
+        g.rect(ctx, k.x + 1, k.y + k.h - 2, k.w - 2, 1, '#c9601f');
+        g.arrow(ctx, par[1], k.x + 5, k.y + 3, 1, '#000000');
+      });
+    }
+    f.text(ctx, 'BOT: ' + botSayisi(), sagOrta, LOBI.botY, {
+      color: '#0a1826', scale: 1, align: 'center', shadow: HALE
+    });
+
+    // 4) CIK  (SES ust cubuktaki hoparlor simgesinde)
     sariKutu(LOBI.cik, 'CIK', 2);
 
 

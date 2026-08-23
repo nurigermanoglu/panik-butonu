@@ -38,6 +38,7 @@ Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 | Maç sırasında tepki gönder | `1` `2` `3` `4` | Üst çubuktaki emoji butonları |
 | Tekrar oyna (şampiyon ekranında) | `BOŞLUK` veya `ENTER` | Ekrana dokun ya da **BAS** |
 | Hedef tur sayısını değiştir (lobide, **sadece odayı kuran**) | `←` `→` | Yanlardaki ok butonları |
+| Bot ekle / çıkar (lobide, **sadece odayı kuran**) | — | `BOT: n` yazısının yanındaki oklara dokun |
 | Karakter değiştir (lobide, herkes kendi karakterini) | Karakterinin yanındaki oklara **tıkla** | Oklara **dokun** |
 | At Yarışı, Refleks Düellosu, Sıcak Patates | `BOŞLUK` / `ENTER` ya da **ekrana sol tıkla** | Büyük **BAS** butonu ya da ekrana dokun |
 | Engelden Kaç, Düşenleri Yakala | `←` `→` şerit değiştir (veya `A` `D`) | Sol / sağ butonu |
@@ -152,6 +153,28 @@ kalıyor ve maçlar uzuyordu. Ölçüldü (25 maçın ortalaması, ayar 5):
 | 2 | 14.9 tur | 13.5 tur |
 | 3 | 15.7 tur | 11.9 tur |
 | 4 | 16.0 tur | **11.6 tur** |
+
+### Botlar (tek başına oynama)
+
+Lobide `BOT: n` yazısının iki yanındaki oklarla bot eklenip çıkarılır. Oklar
+sadece **odayı kurana** görünür.
+
+Bot gerçek oyuncu gibi slot, renk ve karakter alır ama soketi yoktur: ona paket
+gönderilmez, kopma/bekleme kuralları işlemez ve her zaman "hazır" sayılır — yani
+kimseyi bekletmez. **Tek başına maç başlatabilirsin**: 1 insan + 1 bot yeterli.
+
+Odada her zaman en az bir insan kalır (en fazla 3 bot). Son insan çıkarsa oda
+kapanır, botlar kendi başlarına oynamaya devam etmez.
+
+Botlar sunucuda oynar ama oyunun iç değişkenlerine bakmaz: yalnızca `snap()`
+çıktısını, yani **istemcinin de gördüğü** bilgiyi kullanırlar. Kontrol şemasına
+göre genel bir davranışları vardır (her mini oyun için ayrı bot yazılmadı), tek
+istisna Refleks Düellosu: orada işaret gelmeden basmazlar, yoksa her turda
+yanarlardı.
+
+Sonuç olarak iyi bir insanın gerisinde kalırlar ama odayı doldurup maçı
+canlandırırlar. Ölçüldü (1 insan + 2 bot, 3 tur hedefi): insan 8 puanla
+kazanırken botlar 4 ve 6 puan topladı.
 
 ### Maç sonu istatistikleri
 
@@ -357,7 +380,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 139 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 155 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -365,6 +388,7 @@ yani yine `npm install` gerekmiyor. 139 test bir saniyede biter.
 | [test/minioyunlar.test.js](test/minioyunlar.test.js) | 10 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
+| [test/bot.test.js](test/bot.test.js) | Botlar: ekleme/çıkarma sınırları, paket gönderilmemesi, tek başına maç başlatma, gerçekten oynayıp puan alması, refleks turunda erken basmaması |
 | [test/istatistik.test.js](test/istatistik.test.js) | Maç sonu istatistikleri: sayımlar, eşitlikte satırın atlanması, beraberlik durumları, yalnızca şampiyon ekranında yayınlanması |
 | [test/emote.test.js](test/emote.test.js) | Maç içi tepkiler: faz kontrolü, geçersiz numaraların reddi, hız sınırı, balonların süresi dolunca düşmesi |
 | [test/final.test.js](test/final.test.js) | Final turu koşulu (küçük hedeflerde bile maç başında ilan edilmemesi), çift puan, bayrağın tur başında sabitlenmesi |

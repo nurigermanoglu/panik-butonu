@@ -25,6 +25,10 @@ module.exports = {
   // Mac ici emote: kac tepki var, ard arda gonderme siniri, balonun ekranda
   // kalma suresi. Sohbet mac icinde kapali (okumaya vakit yok) - emote onun
   // yerini tutar ve tek dokunusla gonderilir.
+  // Bot isimleri. En fazla bu kadar bot eklenebilir (odada en az bir insan
+  // kalmasi icin zaten MAX_PLAYERS - 1 ile de sinirli).
+  BOT_ADLARI: ['ROBOT', 'MAKINE', 'DEVRE'],
+
   EMOTE_COUNT: 4,
   EMOTE_ARA_MS: 700,
   EMOTE_SURE_MS: 2000,

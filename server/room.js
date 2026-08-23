@@ -41,6 +41,10 @@ class Player {
     this.ready = false;
     this.wins = 0;
     this.connected = true;
+    // Bot oyuncular gercek oyuncu gibi slot/renk/karakter alir ama soketleri
+    // yoktur: onlara paket gonderilmez, kopma/bekleme kurallari islemez.
+    this.bot = false;
+    this.botBekle = 0;   // bir sonraki hamleye kalan sure (saniye)
 
     // Baglanti kopup geri gelince "ben o oyuncuyum" diyebilmek icin gizli anahtar.
     // Sadece sahibine yollanir; baskasi bilirse onun yerine gecebilirdi.
@@ -53,6 +57,7 @@ class Player {
       ready: this.ready, wins: this.wins,
       ping: this.conn ? this.conn.rtt || 0 : 0,
       on: this.connected,      // false = kopuk, ekranda "BAGLANIYOR" gorunur
+      bot: this.bot || undefined,
     };
   }
 }
@@ -74,7 +79,8 @@ class Room {
   }
 
   get isFull() { return this.players.length >= cfg.MAX_PLAYERS; }
-  get isEmpty() { return this.players.length === 0; }
+  // Sadece botlar kaldiysa oda bos sayilir: kimse yokken bot oynamasin
+  get isEmpty() { return this.players.every((p) => p.bot); }
 
   freeSlot() {
     for (let s = 0; s < cfg.MAX_PLAYERS; s++) {
@@ -98,6 +104,56 @@ class Room {
     this.players.push(player);
     this.players.sort((a, b) => a.slot - b.slot);
     return player;
+  }
+
+  get botSayisi() {
+    return this.players.filter((p) => p.bot).length;
+  }
+
+  get insanSayisi() {
+    return this.players.filter((p) => !p.bot).length;
+  }
+
+  // Bot ekler. Odada en az bir insan kalmali, o yuzden bot sayisi
+  // MAX_PLAYERS - 1 ile sinirli.
+  botEkle() {
+    if (this.isFull) return null;
+    if (this.botSayisi >= cfg.BOT_ADLARI.length) return null;
+    if (this.botSayisi >= cfg.MAX_PLAYERS - 1) return null;
+
+    const slot = this.freeSlot();
+    if (slot < 0) return null;
+
+    // Kullanilmayan ilk bot adini sec
+    const alinanAd = new Set(this.players.map((p) => p.name));
+    const ad = cfg.BOT_ADLARI.find((a) => !alinanAd.has(a)) || 'BOT';
+
+    const bot = new Player(null, ad, slot, '');
+    bot.bot = true;
+    bot.ready = true;           // bot her zaman hazir: insanlari bekletmesin
+
+    const alinanChar = new Set(this.players.map((p) => p.char));
+    for (let i = 0; i < cfg.CHAR_COUNT; i++) {
+      const c = (slot + i) % cfg.CHAR_COUNT;
+      if (!alinanChar.has(c)) { bot.char = c; break; }
+    }
+
+    this.players.push(bot);
+    this.players.sort((a, b) => a.slot - b.slot);
+    return bot;
+  }
+
+  // Son eklenen botu cikarir
+  botCikar() {
+    for (let i = this.players.length - 1; i >= 0; i--) {
+      if (this.players[i].bot) {
+        const bot = this.players[i];
+        this.players.splice(i, 1);
+        this.game.onPlayerLeft(bot);
+        return bot;
+      }
+    }
+    return null;
   }
 
   remove(player) {
@@ -179,9 +235,9 @@ class Room {
   broadcast(obj) {
     const msg = JSON.stringify(obj);
     for (const p of this.players) {
-      if (p.connected) {
-        try { p.conn.send(msg); } catch (e) { /* yoksay */ }
-      }
+      // Botun soketi yok: p.conn null oldugu icin atlanmali
+      if (p.bot || !p.connected) continue;
+      try { p.conn.send(msg); } catch (e) { /* yoksay */ }
     }
   }
 
