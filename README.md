@@ -93,7 +93,7 @@ Her şey [server/config.js](server/config.js) içinde:
 ```js
 MAX_PLAYERS: 4,     // odaya en fazla kaç kişi (2 yaparsan tekrar ikili düello olur)
 MIN_PLAYERS: 2,     // oyunun başlayabilmesi için gereken en az kişi
-WINS_NEEDED: 5,     // başlangıç hedefi (odayı kuran lobide değiştirebilir)
+WINS_NEEDED: 5,     // başlangıç hedefi; kişi sayısıyla çarpılır (4 kişide 15 puan)
 WINS_MIN: 1,        // hedefin inebileceği en düşük değer
 WINS_MAX: 9,        // hedefin çıkabileceği en yüksek değer
 RECONNECT_GRACE: 15, // maç ortasında kopan oyuncunun yeri kaç saniye tutulur
@@ -122,10 +122,45 @@ karakteri soluk çizilir.
 Yeni karakter eklemek için `public/js/chars.js` içindeki `KUTU` listesine sayfadaki kutusunu
 ekle ve `server/config.js` içindeki `CHAR_COUNT` değerini artır.
 
-### Hedef tur sayısı (kaç galibiyet şampiyon eder)
+### Puanlama (derece puanı)
 
-Lobide `5 TUR KAZANAN ŞAMPİYON` yazısının **iki yanındaki ok butonlarına tıklayarak** ayarlanır
-(1 ile 9 arası). Bu oklar sadece **odayı kurana** görünür ve sadece onda çalışır; diğerleri
+Her turun sonunda **sadece kazanan değil, herkes derecesine göre puan alır**. `n` kişilik
+bir turda önünde `k` kişi olan oyuncu `n-1-k` puan kazanır:
+
+| Sıra | 2 kişi | 3 kişi | 4 kişi |
+|---|---|---|---|
+| 1. | 1 | 2 | 3 |
+| 2. | 0 | 1 | 2 |
+| 3. | — | 0 | 1 |
+| 4. | — | — | 0 |
+
+Eşit derecedekiler aynı puanı paylaşır. **Herkes eşitse kimse puan almaz** — yoksa berabere
+turlar da herkesi hedefe aynı hızda yaklaştırır, şampiyonluk da aradaki farkla değil kurayla
+belirlenirdi.
+
+Eskiden yalnızca kazanan 1 puan alıyordu; 4 kişilik maçlarda her turda üç kişi eli boş
+kalıyor ve maçlar uzuyordu. Ölçüldü (25 maçın ortalaması, ayar 5):
+
+| Kişi | Eskiden | Şimdi |
+|---|---|---|
+| 2 | 14.9 tur | 13.5 tur |
+| 3 | 15.7 tur | 11.9 tur |
+| 4 | 16.0 tur | **11.6 tur** |
+
+### Hedef puan (kaç puan şampiyon eder)
+
+Lobide `HEDEF: 15 PUAN` yazısının **iki yanındaki ok butonlarına tıklayarak** ayarlanır.
+Ayar tur cinsindendir (1-9) ve **kişi sayısına göre ölçeklenir**: tur başına en fazla `n-1`
+puan dağıtıldığı için ayar "kaç tur kazanmaya denk" anlamını korur.
+
+| Ayar | 2 kişi | 3 kişi | 4 kişi |
+|---|---|---|---|
+| 5 | 5 puan | 10 puan | 15 puan |
+
+Hedefe iki kişi **aynı puanla** ulaşırsa maç biter değil, devam eder: şampiyonluk oyuncu
+sırasına göre kurayla verilmez, aradaki fark açılana kadar oynanır.
+
+Bu oklar sadece **odayı kurana** görünür ve sadece onda çalışır; diğerleri
 yazıyı gri olarak görür ama değiştiremez. Klavyeden `←` `→` tuşları da aynı işi yapar.
 
 Kurucu = odayı açan kişi. Kurucu odadan ayrılırsa sıradaki oyuncu devralır.
@@ -144,8 +179,8 @@ kılmak isterseniz `MIN_PLAYERS` değerini de 4 yapın.
 4 kişide **Engelden Kaç** ekranı dört sahaya bölünür ve sahalar otomatik daralır
 (100 birim yerine 74); engel deseni yine herkes için birebir aynı ve her zaman geçilebilir kalır.
 
-4 kişilik maç 5 galibiyete kadar uzun sürebilir — kısa tutmak için odayı kuran lobide
-hedefi 2-3'e düşürebilir.
+4 kişilik maçlar derece puanı sayesinde artık daha kısa (bkz. [Puanlama](#puanlama-derece-puanı));
+yine de kısa tutmak istersen odayı kuran lobide hedefi 2-3'e düşürebilir.
 
 ## Yeni mini oyun eklemek
 
@@ -171,6 +206,10 @@ module.exports = {
       update(dt) {},                 // her karede
       done() { return false; },      // erken bitti mi
       winners() { return []; },      // kazananlar ([] = berabere)
+      // Derece puani icin TAM SIRALAMA: birinciden sonuncuya gruplar.
+      // Esitler ayni grupta olur -> [['p0'], ['p1','p2']]
+      // Kolayligi icin server/minigames/siralama.js kullanilabilir.
+      derece() { return []; },
       text() { return ''; },         // sonuç ekranı yazısı
       snap() { return {}; },         // istemciye gönderilen durum
     };
@@ -256,7 +295,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 46 test yarım saniyede biter.
+yani yine `npm install` gerekmiyor. 64 test yarım saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -264,6 +303,7 @@ yani yine `npm install` gerekmiyor. 46 test yarım saniyede biter.
 | [test/minioyunlar.test.js](test/minioyunlar.test.js) | 10 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
+| [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, 10 oyunun `derece()` sıralamasının tutarlılığı |
 
 Testlerin kendisi de sınandı: koda bilerek üç hata sokulup (gösterim koruması
 kaldırıldı, yer kapma tekrar isme bağlandı, şampiyon ekranında otomatik hazır

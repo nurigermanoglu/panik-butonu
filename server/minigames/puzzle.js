@@ -4,6 +4,7 @@
 // Resim (2 elmadan biri), hangi 3 karenin eksik oldugu ve parca sirasi bir kez uretilir;
 // HERKES ayni bulmacayi oynar. Ilerleme oyuncu basina ayri tutulur.
 
+const { dereceler } = require('./siralama');
 const COLS = 4, ROWS = 4;
 const CW = 30, CH = 34;                  // hucre boyutu (resim orani ~0.90 korunur)
 const GX = 20, GY = 32;                  // izgara sol ust kosesi (resim solda, buyuk)
@@ -153,6 +154,15 @@ module.exports = {
 
       done() {
         return this.ids.every((id) => this.pl[id].score >= MISSING);
+      },
+
+      // Skor onde gelir; esit skorda isini ONCE bitiren ustte olur.
+      // Skor 1000 kat agirlikli oldugu icin zaman yalnizca esitligi bozar.
+      derece() {
+        return dereceler(this.ids, (id) => {
+          const me = this.pl[id];
+          return -me.score * 1000 + me.lastAt;
+        });
       },
 
       winners() {

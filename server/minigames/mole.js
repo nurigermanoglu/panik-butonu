@@ -11,6 +11,7 @@ const HOLES = [
 ];
 // Vurus alani elips: yatayda 32, DIKEYDE daha genis (kostebek delikten yukari
 // ciktigi icin ustune vurmak da sayilsin diye)
+const { dereceler } = require('./siralama');
 const HIT_RX = 32;
 const HIT_RY = 40;
 const RISE = 0.12;         // cikis/inis animasyon suresi
@@ -119,6 +120,11 @@ module.exports = {
       },
 
       done() { return false; },   // sure dolana kadar surer
+
+      // Skor yuksek olan onde (bomba cezasi skoru dusurur).
+      derece() {
+        return dereceler(this.ids, (id) => -this.pl[id].score);
+      },
 
       winners() {
         const best = Math.max(...this.ids.map((id) => this.pl[id].score));

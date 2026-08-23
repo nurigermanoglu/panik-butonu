@@ -2,6 +2,7 @@
 // AT YARISI - tusa bastikca kosarsin. Bitis cizgisine ilk varan kazanir.
 // (Eski "Buton Yagmuru" ile ayni mekanik, yaris pistine cevrildi.)
 
+const { dereceler } = require('./siralama');
 const TARGET = 100;
 const PER_PRESS = 2.4;
 const MAX_PRESS_PER_SEC = 22; // hile/otomatik tiklayici korumasi
@@ -50,6 +51,13 @@ module.exports = {
       // Herkes bitis cizgisini gectiyse tur erken bitsin
       done() {
         return this.ids.every((id) => this.prog[id] >= TARGET);
+      },
+
+      // Once bitis cizgisini gecenler (erken gecen onde), sonra en cok yol alanlar.
+      // bitis degerleri 0..sure arasinda; bitirmeyenler 1000'in ustunde kalir.
+      derece() {
+        return dereceler(this.ids, (id) =>
+          this.bitis[id] >= 0 ? this.bitis[id] : 1000 - this.prog[id]);
       },
 
       winners() {

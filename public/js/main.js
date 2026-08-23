@@ -613,7 +613,9 @@
     for (var i = 0; i < state.players.length; i++) {
       if (state.players[i].wins > enYuksek) enYuksek = state.players[i].wins;
     }
-    PP.muzik.calis(enYuksek >= state.needed - 1 ? 'gerilim' : 'oyun');
+    var hedef = state.hedef || state.needed;
+    var turBasiEnFazla = Math.max(1, state.players.length - 1);
+    PP.muzik.calis(enYuksek >= hedef - turBasiEnFazla ? 'gerilim' : 'oyun');
   }
 
   function onSync() {
@@ -959,25 +961,30 @@
     };
   }
 
-  function drawScorePips(y) {
-    var n = state.players.length, needed = state.needed;
-    var pip = 3, gap = 1, groupW = needed * (pip + gap) - gap;
-    var totalW = n * groupW + (n - 1) * 5;
-    var x0 = W - 4 - totalW;
+  // Ust cubuktaki puan gostergesi.
+  // Derece puaninda hedef 15'e kadar cikabiliyor; her puan icin bir kare
+  // cizmek artik sigmiyor. Onun yerine dolum cubugu + puan sayisi.
+  function drawScoreBars(y) {
+    var n = state.players.length;
+    var hedef = state.hedef || state.needed || 1;
+    var barW = 24, yaziW = 14, ara = 4;
+    var birim = barW + 2 + yaziW;
+    var x0 = W - 4 - (n * birim + (n - 1) * ara);
     for (var i = 0; i < n; i++) {
       var p = state.players[i];
       var col = g.colorForSlot(p.slot);
-      for (var k = 0; k < needed; k++) {
-        var px = x0 + i * (groupW + 5) + k * (pip + gap);
-        g.rect(ctx, px, y, pip, pip, k < p.wins ? col : P.dark);
-      }
+      var bx = x0 + i * (birim + ara);
+      var oran = Math.max(0, Math.min(1, p.wins / hedef));
+      g.rect(ctx, bx, y, barW, 5, P.dark);
+      if (oran > 0) g.rect(ctx, bx, y, Math.max(1, Math.round(barW * oran)), 5, col);
+      f.text(ctx, String(p.wins), bx + barW + 2, y - 1, { color: col, scale: 1 });
     }
   }
 
   function drawTopBar() {
     g.rect(ctx, 0, 0, W, TOP, P.black);
     if (state.mg) f.text(ctx, state.mg.name, 4, 4, { color: P.white, scale: 1 });
-    drawScorePips(4);
+    drawScoreBars(4);
 
     var pct = 1;
     if (state.phase === 'play' && state.mg) pct = Math.max(0, state.timer / state.mg.dur);
@@ -1091,7 +1098,8 @@
       });
     }
     // Oklarin ne yaptigi belli olsun
-    f.text(ctx, state.needed + ' TUR KAZANAN', sagOrta, LOBI.hazir.y + LOBI.hazir.h + 2, {
+    f.text(ctx, 'HEDEF: ' + (state.hedef || state.needed) + ' PUAN',
+      sagOrta, LOBI.hazir.y + LOBI.hazir.h + 2, {
       color: '#0a1826', scale: 1, align: 'center', shadow: HALE
     });
 
@@ -1201,7 +1209,8 @@
       var cx = Math.round(slotW * k + slotW / 2);
       var c2 = g.colorForSlot(pl.slot);
       f.text(ctx, f.sigdir(pl.name, slotW - 4, 1), cx, 134, { color: c2, scale: 1, align: 'center' });
-      f.text(ctx, pl.wins + ' / ' + state.needed, cx, 146, { color: P.white, scale: 2, align: 'center' });
+      f.text(ctx, pl.wins + ' / ' + (state.hedef || state.needed), cx, 146,
+        { color: P.white, scale: 2, align: 'center' });
     }
   }
 

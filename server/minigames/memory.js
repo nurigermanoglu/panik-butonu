@@ -1,6 +1,7 @@
 'use strict';
 // HAFIZA DIZISI - gosterilen ok dizisini once dogru tekrarlayan kazanir. Yanlis tus -> elenirsin.
 
+const { dereceler } = require('./siralama');
 const DIRS = ['up', 'down', 'left', 'right'];
 const SEQ_LEN = 4;
 const LEAD_IN = 0.6;   // gosterim baslamadan once bekleme
@@ -63,6 +64,12 @@ module.exports = {
         if (this.winner) return true;
         if (this.showing) return false;
         return this.ids.every((id) => this.out[id]);
+      },
+
+      // Diziyi bitiren birinci; digerleri ne kadar ilerlediklerine gore.
+      derece() {
+        return dereceler(this.ids, (id) =>
+          this.winner === id ? -1e6 : -this.prog[id]);
       },
 
       winners() {

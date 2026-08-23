@@ -46,7 +46,9 @@ function ilerlet(inst, saniye) {
 function sampiyonEkranina(kisi) {
   const { oda, oyuncular } = odaKur(kisi, { hedef: 1 });
   for (const p of oyuncular) oda.game.setReady(p, true);
-  oyuncular[0].wins = 1;
+  // Hedef artik kisi sayisina gore olcekleniyor (derece puani):
+  // 4 kisilik odada ayar 1 -> 3 puan. Sampiyon yapmak icin tam hedefi veriyoruz.
+  oyuncular[0].wins = oda.game.hedefPuan;
   oda.game.phase = 'result';
   oda.game.timer = 0;
   oda.game.afterResult();

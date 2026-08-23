@@ -11,6 +11,7 @@ for (let r = 0; r < 3; r++) {
   }
 }
 
+const { dereceler } = require('./siralama');
 const TRASH = { x: 244, y: 88, w: 58, h: 70 };   // birakma bolgesi (comert)
 const FILE_W = 30, FILE_H = 24;
 const FILE_COUNT = 7;
@@ -109,6 +110,15 @@ module.exports = {
       // Herkes butun dosyalarini sildiyse tur erken bitsin
       done() {
         return this.ids.every((id) => this.pl[id].score >= this.adet);
+      },
+
+      // Skor onde gelir; esit skorda isini ONCE bitiren ustte olur.
+      // Skor 1000 kat agirlikli oldugu icin zaman yalnizca esitligi bozar.
+      derece() {
+        return dereceler(this.ids, (id) => {
+          const me = this.pl[id];
+          return -me.score * 1000 + me.lastAt;
+        });
       },
 
       winners() {

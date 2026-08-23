@@ -6,6 +6,7 @@
 // bildirir (isareti gordugu an ile tusa bastigi an arasi), sunucu da bunu makul sinirlar
 // icinde dogrular. Boylece ping denklemden cikar; herkes kendi ekraninda yaristigi gibi olur.
 
+const { dereceler } = require('./siralama');
 const HUMAN_FLOOR_MS = 90;   // insan tepkisinin makul alt siniri
 const SLACK_MS = 40;         // olcum/yuvarlama payi
 
@@ -70,6 +71,14 @@ module.exports = {
       // Herkes basana (ya da yanana) kadar bekle - yavas baglanti kaybetmesin
       done() {
         return this.ids.every((id) => this.fouled[id] || this.reaction[id] !== null);
+      },
+
+      // En hizli tepki onde; hic basamayanlar arkada; erken basip yananlar en sonda.
+      derece() {
+        return dereceler(this.ids, (id) => {
+          if (this.fouled[id]) return 2e5;
+          return this.reaction[id] !== null ? this.reaction[id] : 1e5;
+        });
       },
 
       winners() {

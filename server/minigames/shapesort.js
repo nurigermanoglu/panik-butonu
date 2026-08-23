@@ -3,6 +3,7 @@
 //
 // Yuva sirasi ve sekillerin baslangic yerleri bir kez karistirilir, HERKES ayni duzeni oynar.
 
+const { dereceler } = require('./siralama');
 const TIPLER = ['kare', 'ucgen', 'daire', 'arti', 'yildiz'];
 const SLOT_Y = 64;
 const HOME_Y = 142;
@@ -120,6 +121,15 @@ module.exports = {
 
       done() {
         return this.ids.every((id) => this.pl[id].score >= TIPLER.length);
+      },
+
+      // Skor onde gelir; esit skorda isini ONCE bitiren ustte olur.
+      // Skor 1000 kat agirlikli oldugu icin zaman yalnizca esitligi bozar.
+      derece() {
+        return dereceler(this.ids, (id) => {
+          const me = this.pl[id];
+          return -me.score * 1000 + me.lastAt;
+        });
       },
 
       winners() {

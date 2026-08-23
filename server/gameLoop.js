@@ -153,11 +153,43 @@ class Game {
     if (this.inst.start) this.inst.start();
   }
 
-  finishRound() {
-    const winners = this.inst.winners() || [];
-    for (const p of this.room.players) {
-      if (winners.includes(p.id)) p.wins++;
+  // Hedef, odadaki kisi sayisina gore olceklenir. Tur basina en fazla (n-1)
+  // puan dagitildigi icin lobideki ayar "kac tur kazanmaya denk" anlamini
+  // korur:  2 kisi + ayar 5 -> 5 puan,  4 kisi + ayar 5 -> 15 puan.
+  get hedefPuan() {
+    const n = Math.max(2, this.room.players.length);
+    return this.room.winsNeeded * (n - 1);
+  }
+
+  // Turda kacinci gelen kac puan alir:
+  //   n kisilik turda onunde k kisi olan (n - 1 - k) puan alir
+  //   2 kisi -> 1 / 0          (eski sistemle birebir ayni)
+  //   4 kisi -> 3 / 2 / 1 / 0
+  // Esit derecedekiler ayni puani paylasir.
+  //
+  // HERKES esitse (tek grup) kimse puan almaz. Yoksa berabere turlar da
+  // herkesi hedefe ayni hizda yaklastirir, sampiyonluk da kurayla belirlenirdi.
+  puanDagit() {
+    const oyuncular = this.room.players;
+    const n = oyuncular.length;
+    const gruplar = this.inst.derece ? this.inst.derece() : null;
+    if (!gruplar || gruplar.length <= 1) return;
+
+    let onunde = 0;
+    for (const grup of gruplar) {
+      const puan = Math.max(0, n - 1 - onunde);
+      if (puan > 0) {
+        for (const p of oyuncular) {
+          if (grup.indexOf(p.id) >= 0) p.wins += puan;
+        }
+      }
+      onunde += grup.length;
     }
+  }
+
+  finishRound() {
+    this.puanDagit();
+    const winners = this.inst.winners() || [];
     this.result = { winners, text: this.inst.text ? this.inst.text() : '' };
     this.phase = 'result';
     this.timer = cfg.RESULT_TIME;
@@ -165,7 +197,15 @@ class Game {
   }
 
   afterResult() {
-    const champ = this.room.players.find((p) => p.wins >= this.room.winsNeeded);
+    // Hedefe ulasan tek kisiyse sampiyon olur. Iki kisi ayni anda ve ayni
+    // puanla ulastiysa mac devam eder: sampiyonluk siralamayla degil,
+    // aradaki farkla belirlensin.
+    const hedef = this.hedefPuan;
+    const enYuksek = Math.max(...this.room.players.map((p) => p.wins));
+    const adaylar = enYuksek >= hedef
+      ? this.room.players.filter((p) => p.wins === enYuksek)
+      : [];
+    const champ = adaylar.length === 1 ? adaylar[0] : null;
     if (champ) {
       this.winner = champ.id;
       this.phase = 'gameover';
@@ -243,7 +283,8 @@ class Game {
       result: this.result,
       winner: this.winner,
       notice: this.notice,
-      needed: this.room.winsNeeded,
+      needed: this.room.winsNeeded,     // lobideki ayar (tur cinsinden)
+      hedef: this.hedefPuan,            // sampiyonluk icin gereken PUAN
       tur: this.tur,
       seviye: Math.round(this.seviye() * 100) / 100,
       // Kopuk oyuncu varsa: kimi bekledigimiz ve kac saniye kaldigi

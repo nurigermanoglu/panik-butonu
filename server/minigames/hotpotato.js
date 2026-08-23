@@ -3,6 +3,7 @@
 // Fitil el degistirse de yanmaya devam eder; patladigi anda bombayi tutan elenir.
 // Tek kisi kalana kadar surer, kalan kazanir.
 
+const { dereceler } = require('./siralama');
 const FUSE_MIN = 2.6;
 const FUSE_MAX = 6.4;
 const HOLD_MIN = 0.18;     // bombayi en az bu kadar tutmak zorundasin (hemen sektirme yok)
@@ -91,6 +92,13 @@ module.exports = {
 
       done() {
         return this.aliveIds().length <= 1 && this.boom <= 0;
+      },
+
+      // Ayakta kalanlar esit birinci; elenenler arasinda GEC elenen onde.
+      // elenme dizisi elenme sirasini tutuyor: ilk elenen en kotu derece.
+      derece() {
+        return dereceler(this.ids, (id) =>
+          this.alive[id] ? -1e6 : -this.elenme.indexOf(id));
       },
 
       winners() {

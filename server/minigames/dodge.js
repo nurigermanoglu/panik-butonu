@@ -11,6 +11,7 @@
 //
 // Kazanan: hayatta kalan; ikisi de olduyse daha uzun kosan.
 
+const { dereceler } = require('./siralama');
 const LANES = 3;
 const ARENA_H = 140;
 const PLAYER_W = 14, PLAYER_H = 16;
@@ -151,6 +152,14 @@ module.exports = {
 
       done() {
         return this.ids.every((id) => !this.pl[id].alive);
+      },
+
+      // Hayatta kalanlar esit birinci; olenler arasinda gec olen onde.
+      derece() {
+        return dereceler(this.ids, (id) => {
+          const p = this.pl[id];
+          return p.alive ? -1e6 : -p.deadAt;
+        });
       },
 
       winners() {

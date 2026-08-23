@@ -17,6 +17,7 @@
 // gosterilen rengi tasir. Yoksa oyunu bilen biri konsoldan cevabi okuyabilirdi
 // ve ezberlemenin bir anlami kalmazdi.
 
+const { dereceler } = require('./siralama');
 const RENKLER = ['#41a6f6', '#ffcd75', '#a7f070', '#b13e53', '#b55088'];
 const WIRE_COUNT = 5;
 const BAND = 28;           // kablonun dokunma yaricapi (yatayda)
@@ -134,6 +135,16 @@ module.exports = {
       // biri sirayi tamamladiysa tur biter
       done() {
         return this.ids.some((id) => this.pl[id].prog >= this.order.length);
+      },
+
+      // Sirayi bitirenler onde (erken bitiren ustte); bitiremeyenler arasinda
+      // ULASILAN EN IYI ilerleme belirleyici - basa sarma anlik ilerlemeyi
+      // sifirladigi icin ona bakilamaz.
+      derece() {
+        return dereceler(this.ids, (id) => {
+          const me = this.pl[id];
+          return me.prog >= this.order.length ? me.bitAt : 1000 - me.enIyi;
+        });
       },
 
       winners() {
