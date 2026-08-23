@@ -22,6 +22,10 @@ class Game {
     this.notice = null;
     this.final = false;    // bu tur FINAL TURU mu (puanlar iki katina cikar)
     this.emotes = {};      // { oyuncuId: { i: tepkiNo, at: zaman } }
+    // Mac boyunca biriken istatistikler. Mini oyunlara HIC dokunmadan,
+    // yalnizca tur sonuclarindan cikarilir - yeni bir oyun eklendiginde
+    // kendiliginden calisir.
+    this.istat = {};
     this.dirty = true;
     this.refresh = 0;
   }
@@ -122,6 +126,7 @@ class Game {
 
   onPlayerLeft(player) {
     delete this.emotes[player.id];
+    delete this.istat[player.id];
     if (this.phase === 'lobby') { this.dirty = true; return; }
     this.toLobby(player.name + ' AYRILDI');
   }
@@ -138,6 +143,7 @@ class Game {
     this.notice = notice;
     this.final = false;
     this.emotes = {};
+    this.istat = {};
     for (const p of this.room.players) { p.ready = false; p.wins = 0; }
     this.tur = 0;
     this.dirty = true;
@@ -236,9 +242,54 @@ class Game {
     }
   }
 
+  // Bir oyuncunun mac istatistigi (yoksa olusturulur)
+  istatOku(id) {
+    if (!this.istat[id]) {
+      this.istat[id] = {
+        kazanma: 0,      // kac tur birinci bitirdi
+        seri: 0,         // su anki ust uste kazanma
+        enUzunSeri: 0,
+        oyunlar: {},     // { miniOyunId: kazanma sayisi }
+        sonuncu: 0,      // kac turda tek basina sonuncu oldu
+      };
+    }
+    return this.istat[id];
+  }
+
+  istatIsle(winners) {
+    const oyuncular = this.room.players;
+    const n = oyuncular.length;
+
+    // Derece gruplarindan herkesin sirasini cikar (0 = birinci)
+    const gruplar = this.inst.derece ? this.inst.derece() : null;
+    const sira = {};
+    if (gruplar) {
+      let onunde = 0;
+      for (const grup of gruplar) {
+        for (const id of grup) sira[id] = onunde;
+        onunde += grup.length;
+      }
+    }
+
+    for (const p of oyuncular) {
+      const st = this.istatOku(p.id);
+      if (winners.indexOf(p.id) >= 0) {
+        st.kazanma++;
+        st.seri++;
+        if (st.seri > st.enUzunSeri) st.enUzunSeri = st.seri;
+        if (this.mg) st.oyunlar[this.mg.id] = (st.oyunlar[this.mg.id] || 0) + 1;
+      } else {
+        st.seri = 0;
+      }
+      // Tek basina sonuncu olmak: berabere bitmis turlarda kimse sonuncu sayilmaz
+      if (sira[p.id] === n - 1 && n > 1) st.sonuncu++;
+    }
+  }
+
   finishRound() {
     this.puanDagit();
     const winners = this.inst.winners() || [];
+    this.istatIsle(winners);
     this.result = { winners, text: this.inst.text ? this.inst.text() : '' };
     this.phase = 'result';
     this.timer = cfg.RESULT_TIME;
@@ -320,6 +371,79 @@ class Game {
     }
   }
 
+  // Sampiyon ekraninda gosterilecek istatistik satirlari.
+  // Sunucu HAZIR liste gonderir, istemci yalnizca cizer - boylece iki tarafta
+  // ayni hesabin tekrarlanmasi gerekmez.
+  //
+  // Her satir yalnizca ANLAMLIYSA listeye girer: tek tur kazanmak "seri"
+  // sayilmaz, herkes bir tur kazandiysa "hic kazanamayan" satiri cikmaz.
+  istatListesi() {
+    const oyuncular = this.room.players;
+    if (!oyuncular.length) return null;
+    const adi = (id) => {
+      const p = oyuncular.find((x) => x.id === id);
+      return p ? p.name : '?';
+    };
+    // Bir olcute gore en iyi olan(lar); esitlik varsa satir atlanir cunku
+    // "en cok" demek anlamsizlasir.
+    const tekLider = (olc) => {
+      let en = -1, kim = null, esit = false;
+      for (const p of oyuncular) {
+        const d = olc(this.istatOku(p.id));
+        if (d > en) { en = d; kim = p.id; esit = false; }
+        else if (d === en) esit = true;
+      }
+      return esit || en <= 0 ? null : { id: kim, deger: en };
+    };
+
+    const out = [];
+
+    const enCok = tekLider((s) => s.kazanma);
+    if (enCok) {
+      out.push({ ad: 'EN COK TUR KAZANAN', kim: adi(enCok.id), deger: enCok.deger + ' TUR' });
+    }
+
+    const seri = tekLider((s) => (s.enUzunSeri >= 2 ? s.enUzunSeri : 0));
+    if (seri) {
+      out.push({ ad: 'EN UZUN SERI', kim: adi(seri.id), deger: seri.deger + ' TUR UST USTE' });
+    }
+
+    // Favori oyun: bir oyuncunun EN COK kazandigi mini oyun (en az 2 kez)
+    let favEn = 1, favId = null, favOyun = null, favEsit = false;
+    for (const p of oyuncular) {
+      const oy = this.istatOku(p.id).oyunlar;
+      for (const gid in oy) {
+        if (oy[gid] > favEn) { favEn = oy[gid]; favId = p.id; favOyun = gid; favEsit = false; }
+        else if (oy[gid] === favEn && favId && (p.id !== favId || gid !== favOyun)) favEsit = true;
+      }
+    }
+    if (favId && !favEsit) {
+      const mg = MINIGAMES.find((m) => m.id === favOyun);
+      out.push({
+        ad: 'UZMANLIK ALANI',
+        kim: adi(favId),
+        deger: (mg ? mg.name : favOyun) + ' x' + favEn,
+      });
+    }
+
+    // Hic tur kazanamayanlar (herkes kazandiysa bu satir cikmaz)
+    const bosta = oyuncular.filter((p) => this.istatOku(p.id).kazanma === 0);
+    if (bosta.length && bosta.length < oyuncular.length) {
+      out.push({
+        ad: 'HIC TUR KAZANAMADI',
+        kim: bosta.map((p) => p.name).join(', '),
+        deger: '',
+      });
+    }
+
+    const dip = tekLider((s) => (s.sonuncu >= 2 ? s.sonuncu : 0));
+    if (dip) {
+      out.push({ ad: 'EN COK SONUNCU', kim: adi(dip.id), deger: dip.deger + ' TUR' });
+    }
+
+    return out.length ? out : null;
+  }
+
   snapshot() {
     // Aktif balonlar: { oyuncuId: tepkiNo }. Hicbiri yoksa null gonderilir
     // ki istemci bos nesne icin bosuna donmesin.
@@ -341,6 +465,9 @@ class Game {
       winner: this.winner,
       notice: this.notice,
       emote: emoteVar ? emote : null,   // mac ici tepki balonlari
+      // Istatistikler yalnizca sampiyon ekraninda anlamli; her karede
+      // hesaplanip bosuna yollanmasin.
+      istat: this.phase === 'gameover' ? this.istatListesi() : null,
       final: this.final,                // bu tur puanlar iki katina cikiyor mu
       needed: this.room.winsNeeded,     // lobideki ayar (tur cinsinden)
       hedef: this.hedefPuan,            // sampiyonluk icin gereken PUAN

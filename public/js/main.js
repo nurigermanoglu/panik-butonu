@@ -1314,10 +1314,45 @@
       });
     }
 
+    drawIstat();
+
     if (Math.floor(time * 2) % 2 === 0) {
-      f.text(ctx, 'TEKRAR OYNAMAK ICIN BAS', W / 2, 158, {
+      f.text(ctx, 'TEKRAR OYNAMAK ICIN BAS', W / 2, 166, {
         color: P.white, scale: 1, align: 'center', shadow: P.black
       });
+    }
+  }
+
+  // ---- mac sonu istatistikleri ----
+  // Sunucu hazir satirlar gonderir (kim, ne, ne kadar). Hepsi ayni anda
+  // ekrana sigmadigi icin 2.6 saniyede bir siradaki satira geciyoruz.
+  var ISTAT_SURE = 2.6;
+
+  function drawIstat() {
+    var liste = state.istat;
+    if (!liste || !liste.length) return;
+
+    var it = liste[Math.floor(time / ISTAT_SURE) % liste.length];
+    var y = 142;
+
+    // Koyu serit: konfetinin ustunde yazi okunakli kalsin
+    g.rect(ctx, 0, y - 3, W, 20, 'rgba(10,24,38,0.92)');
+
+    f.text(ctx, it.ad, W / 2, y, { color: P.yellow, scale: 1, align: 'center' });
+
+    var alt = it.deger ? it.kim + ' - ' + it.deger : it.kim;
+    f.text(ctx, f.sigdir(alt, W - 8, 1), W / 2, y + 9, {
+      color: P.white, scale: 1, align: 'center'
+    });
+
+    // Birden fazla satir varsa hangisinde oldugumuzu gosteren noktalar
+    if (liste.length > 1) {
+      var sira = Math.floor(time / ISTAT_SURE) % liste.length;
+      var np = 3, gap = 3, toplam = liste.length * np + (liste.length - 1) * gap;
+      var px = Math.round((W - toplam) / 2);
+      for (var i = 0; i < liste.length; i++) {
+        g.rect(ctx, px + i * (np + gap), y + 20, np, np, i === sira ? P.yellow : P.dark);
+      }
     }
   }
 

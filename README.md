@@ -153,6 +153,28 @@ kalıyor ve maçlar uzuyordu. Ölçüldü (25 maçın ortalaması, ayar 5):
 | 3 | 15.7 tur | 11.9 tur |
 | 4 | 16.0 tur | **11.6 tur** |
 
+### Maç sonu istatistikleri
+
+Şampiyon ekranında, skorların altında dönen bir şerit çıkar. Hepsi aynı anda
+ekrana sığmadığı için satırlar **2.6 saniyede bir** değişir; altındaki noktalar
+kaçıncı satırda olduğunu gösterir.
+
+| Satır | Ne zaman çıkar |
+|---|---|
+| `EN COK TUR KAZANAN` | Tek bir kişi diğerlerinden fazla tur kazandıysa |
+| `EN UZUN SERI` | Biri en az 2 turu üst üste kazandıysa |
+| `UZMANLIK ALANI` | Biri aynı mini oyunu en az 2 kez kazandıysa |
+| `HIC TUR KAZANAMADI` | Bazıları hiç tur alamadıysa (herkes alamadıysa çıkmaz) |
+| `EN COK SONUNCU` | Biri en az 2 turda tek başına sonuncu olduysa |
+
+Bir satır ancak **anlamlıysa** listeye girer: eşitlik varsa "en çok" demek
+anlamsızlaşacağı için o satır atlanır, beraberlikle biten turlar da kimseye
+kazanma ya da sonunculuk yazmaz.
+
+İstatistikler mini oyunların hiçbirine dokunmadan, yalnızca tur sonuçlarından
+(kim kaçıncı bitirdi) çıkarılır — **yeni bir mini oyun eklendiğinde
+kendiliğinden çalışır**.
+
 ### Maç içi tepkiler (emote)
 
 Sohbet maç sırasında kapalı — kimse yazı okumaya vakit bulamaz. Onun yerine
@@ -335,7 +357,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 122 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 139 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -343,6 +365,7 @@ yani yine `npm install` gerekmiyor. 122 test bir saniyede biter.
 | [test/minioyunlar.test.js](test/minioyunlar.test.js) | 10 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
+| [test/istatistik.test.js](test/istatistik.test.js) | Maç sonu istatistikleri: sayımlar, eşitlikte satırın atlanması, beraberlik durumları, yalnızca şampiyon ekranında yayınlanması |
 | [test/emote.test.js](test/emote.test.js) | Maç içi tepkiler: faz kontrolü, geçersiz numaraların reddi, hız sınırı, balonların süresi dolunca düşmesi |
 | [test/final.test.js](test/final.test.js) | Final turu koşulu (küçük hedeflerde bile maç başında ilan edilmemesi), çift puan, bayrağın tur başında sabitlenmesi |
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
