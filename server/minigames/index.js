@@ -12,4 +12,5 @@ module.exports = [
   require('./wirecut'),
   require('./shapesort'),
   require('./puzzle'),
+  require('./floor'),
 ];

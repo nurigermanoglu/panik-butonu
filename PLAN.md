@@ -88,6 +88,26 @@ Sonradan eklenebilecekler: halat çekme, hedef vurma, hızlı matematik, ritim t
 - [x] Tüm ekranların 4 kişilik yerleşimi font ölçüleriyle doğrulandı, taşma yok
 - [ ] Geç katılan oyuncu için bekleme davranışı (şu an maç başladıysa odaya alınmıyor, sonraki maçı bekliyor)
 
+### Aşama 6 — Denge, altyapı ve genişleme ✅
+
+- [x] **Derece puanı**: her turda herkes sırasına göre puan alır (4 kişide 3/2/1/0);
+      hedef kişi sayısına göre ölçeklenir. Ölçüldü: 4 kişilik maçlar 16 → 11.6 tura indi
+- [x] **Otomatik test paketi**: `npm test` — 77 test, harici bağımlılık yok
+      (Node'un `node:test` aracı). Testler mutasyonla doğrulandı
+- [x] **Kablo Kesme yeniden tasarlandı**: iki aşamalı ezber oyunu; sıra istemciye
+      hiç gönderilmiyor, yanlış kesim başa sarıyor
+- [x] **Zemin Çöküyor** eklendi (11. mini oyun, `dpad`)
+- [x] Altı hata düzeltildi (patlama sprite'ı, telefon kilidi sonrası bağlantı,
+      isim taşmaları, sessiz sohbet reddi, isimle yer kapma, paylaşılan puzzle torbası)
+- [x] Ana menü lobinin görsel diline uyarlandı; üst çubuk her iki ekranda ortak
+
+### Sırada ne var
+
+- [ ] Yeni `dpad` / `lr` oyunları (dağılım hâlâ pointer ağırlıklı: 5 pointer, 3 action, 1 lr, 2 dpad)
+- [ ] İzleyici modu (yukarıdaki geç katılım maddesinin çözümü)
+- [ ] Lobide oyun seçimi/eleme
+- [ ] Maç sonu istatistikleri, bot, maç içi emote, renk körü desteği, ayrı ses seviyeleri
+
 ## 6. Test notları
 
 - Uçtan uca test: iki sahte oyuncu (bot) ile tam maç oynatıldı; 4 kişilik mod da doğrulandı.
