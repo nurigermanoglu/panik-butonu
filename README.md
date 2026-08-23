@@ -76,7 +76,7 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 | **Dosya Silme** | 12 sn | Eski bir bilgisayar masaüstünde 7 klasörü çöp kutusuna sürükle. Hepsini en hızlı silen kazanır |
 | **Kablo Kesme** | ~13.6 sn | İki aşamalı: önce renkler tek tek gösterilir (kablolar henüz yok), sonra kablolar açılır ve sırayı **ezberden** kesmen gerekir — sıra bir daha gösterilmez. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır **ve sıra başa sarar**: kesilen kablolar onarılır, baştan başlarsın. Sırayı ilk bitiren kazanır; kimse bitiremezse **en çok ilerleyebilen** kazanır |
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
-| **Zemin Çöküyor** | 14 sn | 5x5 ızgarada kareler tek tek çöker: önce yanıp söner, sonra kaybolur. Yön tuşlarıyla kaçıp ayakta kal. Desen herkes için aynı ve **her zaman kaçılabilir** üretilir. Son ayakta kalan kazanır; herkes düşerse en geç düşen |
+| **Zemin Çöküyor** | 14 sn | **Herkes aynı** 5x5 ızgarada oynar: kareler tek tek çöker (önce yanıp söner, sonra kaybolur), yön tuşlarıyla kaçıp ayakta kalırsın. Aynı kareye birden fazla oyuncu girebilir — kimse kimseyi engellemez. Desen **her zaman kaçılabilir** üretilir. Son ayakta kalan kazanır; herkes düşerse en geç düşen |
 | **Puzzle** | 14 sn | Elma resminin 4x4 ızgarasındaki eksik 3 karesini sağdaki parçalardan bulup doğru yuvaya sürükle. İki resim **sırayla** gelir (torba yöntemi), yani her ikisi de düzenli olarak çıkar |
 
 Toplam **11 mini oyun**. Her turda "torba" yönteminden biri gelir: hepsi tekrar etmeden birer kez
@@ -296,7 +296,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 77 test yarım saniyede biter.
+yani yine `npm install` gerekmiyor. 81 test yarım saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -305,7 +305,7 @@ yani yine `npm install` gerekmiyor. 77 test yarım saniyede biter.
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
-| [test/zemin.test.js](test/zemin.test.js) | Zemin Çöküyor deseninin adaleti (kusursuz oyuncu 600 desende hiç ölmüyor), kuşatılma olmaması, hareket kuralları |
+| [test/zemin.test.js](test/zemin.test.js) | Zemin Çöküyor deseninin adaleti (kusursuz oyuncu 600 desende hiç ölmüyor), kuşatılma olmaması, hareket kuralları, ortak ızgara davranışı |
 
 Testlerin kendisi de sınandı: koda bilerek üç hata sokulup (gösterim koruması
 kaldırıldı, yer kapma tekrar isme bağlandı, şampiyon ekranında otomatik hazır

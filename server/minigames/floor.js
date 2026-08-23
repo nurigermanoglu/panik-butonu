@@ -1,6 +1,14 @@
 'use strict';
-// ZEMIN COKUYOR - 5x5 izgarada kareler tek tek cokuyor, 4 yonde kacip
-// ayakta kalmaya calisiyorsun.
+// ZEMIN COKUYOR - HERKES AYNI 5x5 izgarada oynar; kareler tek tek cokuyor,
+// 4 yonde kacip ayakta kalmaya calisiyorsun.
+//
+// Ortak izgara bilerek secildi: ekran bolununce hem saha kuculuyor hem de
+// oyuncular birbirini gormuyordu. Simdi herkes ayni karelerde, birbirinin
+// nereye kactigini gorerek oynuyor.
+//
+// Ayni kareye birden fazla oyuncu girebilir - kimse kimseyi engellemez.
+// Engelleme olsaydi rakip senin tek kacis karene oturup seni caresiz
+// birakabilirdi; o da adalet garantisini bozardi.
 //
 // Bir kare once YANIP SONER (uyari), sonra cokup kalici olarak kaybolur.
 // Uzerindeyken cokerse dusersin. Son ayakta kalan kazanir; herkes duserse
@@ -31,6 +39,9 @@ const ILK_COKME = 1.4;
 const ARA_BAS = 0.85;        // cokmeler arasi bekleme (basta)
 const ARA_SON = 0.4;         // ... ve tur sonuna dogru
 const EN_AZ_KALAN = 3;       // izgara bu kare sayisinin altina inmez
+// Oyuncular kenar ortalarindan baslar: birbirinden uzak ve simetrik.
+// (Koseler 2 komsulu oldugu icin baslangic olarak daha dezavantajli olurdu.)
+const BASLANGIC = [10, 14, 2, 22];
 
 function komsular(h) {
   const x = h % N, y = Math.floor(h / N);
@@ -59,7 +70,7 @@ function uygunMu(aday, cokmus) {
   return true;
 }
 
-function desenUret(sv, sure) {
+function desenUret(sv, sure, zorunlu) {
   const uyari = UYARI * (1 - 0.4 * sv);      // turlar ilerledikce tepki payi daralir
   const cokmus = new Set();
   const plan = [];
@@ -77,13 +88,13 @@ function desenUret(sv, sure) {
       }
       if (!adaylar.length) return plan;             // guvenle cokecek kare kalmadi
 
-      // Herkesin basladigi ORTA kare, turun yarisindan sonra oncelikli olarak
-      // cokertilir. Yoksa hic kipirdamayan biri sirf ortasi cokmedigi icin
-      // kurtulabiliyordu (olculdu: maclarin %17'si). Uyari suresi yine
+      // Oyuncularin BASLADIGI kareler, turun yarisindan sonra oncelikli olarak
+      // cokertilir. Yoksa hic kipirdamayan biri sirf durdugu kare cokmedigi
+      // icin kurtulabiliyordu (olculdu: maclarin %17'si). Uyari suresi yine
       // verildigi icin bu haksiz bir olum degil, sadece "oyna" zorlamasi.
-      const orta = Math.floor(N * N / 2);
-      const secilen = (t > sure * 0.45 && !cokmus.has(orta) && adaylar.indexOf(orta) >= 0)
-        ? orta
+      const bekleyen = zorunlu.filter((h) => !cokmus.has(h) && adaylar.indexOf(h) >= 0);
+      const secilen = (t > sure * 0.4 && bekleyen.length)
+        ? bekleyen[0]
         : adaylar[Math.floor(Math.random() * adaylar.length)];
       cokmus.add(secilen);
       plan.push({ h: secilen, t: t, uyari: uyari });
@@ -103,13 +114,16 @@ module.exports = {
   create(playerIds, seviye) {
     const sv = Math.max(0, Math.min(1, seviye || 0));
     const sure = DURATION * (1 - 0.2 * sv);
-    const plan = desenUret(sv, sure);
 
-    const orta = Math.floor(N * N / 2);            // herkes ortadan baslar
     const pl = {};
-    for (const id of playerIds) {
-      pl[id] = { h: orta, alive: true, deadAt: sure };
-    }
+    const baslangiclar = [];
+    playerIds.forEach((id, i) => {
+      const h = BASLANGIC[i % BASLANGIC.length];
+      baslangiclar.push(h);
+      pl[id] = { h: h, alive: true, deadAt: sure };
+    });
+
+    const plan = desenUret(sv, sure, baslangiclar);
 
     return {
       ids: playerIds.slice(),

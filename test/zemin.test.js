@@ -204,3 +204,48 @@ describe('Sonuc', () => {
     assert.strictEqual(inst.text(), 'HEPSI AYAKTA KALDI!');
   });
 });
+
+describe('Ortak izgara', () => {
+  test('oyuncular farkli karelerden baslar', () => {
+    for (const kisi of [2, 3, 4]) {
+      const ids = [];
+      for (let i = 0; i < kisi; i++) ids.push('p' + i);
+      const inst = floor.create(ids, 0);
+      const yerler = ids.map((id) => inst.pl[id].h);
+      assert.strictEqual(new Set(yerler).size, kisi,
+        kisi + ' kisi ayni kareden basladi: ' + yerler.join(','));
+    }
+  });
+
+  test('herkes ayni izgarada: tek hucre listesi yayinlaniyor', () => {
+    const inst = floor.create(['p0', 'p1', 'p2', 'p3'], 0);
+    const s = inst.snap();
+    assert.strictEqual(s.hucre.length, inst.n * inst.n,
+      'oyuncu basina ayri izgara gonderilmemeli');
+  });
+
+  test('ayni kareye birden fazla oyuncu girebilir', () => {
+    // Engelleme olsaydi rakip senin tek kacis karene oturup seni caresiz
+    // birakabilirdi - bu da adalet garantisini bozardi.
+    const inst = floor.create(['p0', 'p1'], 0);
+    inst.pl.p0.h = 12;
+    inst.pl.p1.h = 11;
+    inst.input('p1', 'dir', 'right');
+    assert.strictEqual(inst.pl.p1.h, 12, 'dolu kareye girilemedi');
+    assert.strictEqual(inst.pl.p0.h, 12, 'oradaki oyuncu itilmemeli');
+  });
+
+  test('hic kacmayan HER oyuncu duser', () => {
+    // Baslangic karelerinin hepsi turun bir noktasinda cokmeli.
+    let kurtulan = 0, toplam = 0;
+    for (let i = 0; i < 120; i++) {
+      const inst = floor.create(['p0', 'p1', 'p2', 'p3'], 0);
+      let kalan = inst.sure;
+      while (kalan > 0) { inst.update(DT); kalan -= DT; }
+      for (const id of inst.ids) { toplam++; if (inst.pl[id].alive) kurtulan++; }
+    }
+    const oran = kurtulan / toplam;
+    assert.ok(oran <= 0.12,
+      'hic oynamayanlarin %' + Math.round(oran * 100) + "'i kurtuldu (esik %12)");
+  });
+});
