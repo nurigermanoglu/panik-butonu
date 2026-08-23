@@ -148,16 +148,28 @@ describe('Hareket kurallari', () => {
     assert.strictEqual(inst.pl.p0.h, 1 + inst.n);
   });
 
-  test('cokmus kareye adim atilmaz', () => {
+  test('cokmus kareye adim atan bosluga duser', () => {
+    // Bosluklar gorunmez duvar degil: yanlis yone basarsan dusersin.
     const inst = floor.create(['p0'], 0);
     const hedef = inst.plan[0].h;
     while (inst.hucreDurum(hedef) !== 2) inst.update(DT);
     const kom = komsular(hedef, inst.n).filter((k) => inst.hucreDurum(k) !== 2)[0];
     inst.pl.p0.h = kom;
+    assert.strictEqual(inst.pl.p0.alive, true, 'kurulum: hala ayakta olmali');
     const fark = hedef - kom;
     inst.input('p0', 'dir',
       fark === 1 ? 'right' : fark === -1 ? 'left' : fark === inst.n ? 'down' : 'up');
-    assert.strictEqual(inst.pl.p0.h, kom, 'cokmus kareye girildi');
+    assert.strictEqual(inst.pl.p0.h, hedef, 'bosluga girilemedi');
+    assert.strictEqual(inst.pl.p0.alive, false, 'bosluga girdi ama dusmedi');
+    assert.ok(inst.pl.p0.deadAt <= inst.t, 'dusme ani kaydedilmedi');
+  });
+
+  test('dusen oyuncu bir daha dusmez', () => {
+    const inst = floor.create(['p0'], 0);
+    inst.pl.p0.alive = false;
+    inst.pl.p0.deadAt = 3;
+    inst.input('p0', 'dir', 'right');
+    assert.strictEqual(inst.pl.p0.deadAt, 3, 'dusme ani ustune yazildi');
   });
 
   test('dusen oyuncu artik hareket edemez', () => {

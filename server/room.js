@@ -68,6 +68,7 @@ class Room {
     this.players = [];         // hicbir yerde "oyuncu1/oyuncu2" sabiti yok - hep bu liste
     this.sohbet = [];          // son mesajlar; odaya girene toplu gonderilir
     this.winsNeeded = cfg.WINS_NEEDED;   // odayi kuran lobide degistirebilir
+    this.botZorluk = cfg.BOT_ZORLUK;     // 0 kolay, 1 orta, 2 zor
     this.acik = false;                   // true = HIZLI OYNA havuzunda, yabancilar eslesebilir
     this.game = new Game(this);
     this.dead = false;

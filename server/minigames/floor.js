@@ -174,10 +174,16 @@ module.exports = {
         if (nx < 0 || ny < 0 || nx >= N || ny >= N) return;
 
         const hedef = ny * N + nx;
-        // Cokmus kareye adim atilmaz - istemeden intihar olmasin.
-        // Uyaridaki kareye girilebilir: risk oyuncunun kendi tercihi.
-        if (this.hucreDurum(hedef) === 2) return;
         me.h = hedef;
+
+        // Cokmus kareye adim atan BOSLUGA DUSER. Once bu hamle engelleniyordu
+        // ("istemeden intihar olmasin" diye) ama o zaman bosluklar gorunmez
+        // duvar gibi davraniyordu: oyuncu kendi hatasiyla dusemiyordu.
+        // Artik nereye bastigina dikkat etmek gerekiyor.
+        if (this.hucreDurum(hedef) === 2 && me.alive) {
+          me.alive = false;
+          me.deadAt = this.t;
+        }
       },
 
       update(dt) {

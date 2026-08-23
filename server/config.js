@@ -28,6 +28,12 @@ module.exports = {
   // Bot isimleri. En fazla bu kadar bot eklenebilir (odada en az bir insan
   // kalmasi icin zaten MAX_PLAYERS - 1 ile de sinirli).
   BOT_ADLARI: ['ROBOT', 'MAKINE', 'DEVRE'],
+  // Bot zorlugu: 0 kolay, 1 orta, 2 zor. Hamle sikligini belirler -
+  // kolay bot seyrek, zor bot sik hamle yapar.
+  BOT_ZORLUK: 1,
+  BOT_ZORLUK_ADLARI: ['KOLAY', 'ORTA', 'ZOR'],
+  // Hamle araligi carpani (buyuk = yavas bot)
+  BOT_ZORLUK_TEMPO: [2.2, 1, 0.55],
 
   EMOTE_COUNT: 4,
   EMOTE_ARA_MS: 700,

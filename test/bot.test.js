@@ -206,3 +206,78 @@ describe('Bot davranisi', () => {
     assert.ok(true);
   });
 });
+
+describe('Bot zorlugu', () => {
+  test('varsayilan orta seviye', () => {
+    const { oda } = odaKur(1);
+    assert.strictEqual(oda.botZorluk, cfg.BOT_ZORLUK);
+    assert.strictEqual(oda.game.snapshot().botZor, cfg.BOT_ZORLUK);
+  });
+
+  test('sadece odayi kuran degistirebilir', () => {
+    const { oda, oyuncular } = odaKur(2);
+    oda.game.setBotZorluk(oyuncular[1], 2);          // kurucu degil
+    assert.strictEqual(oda.botZorluk, cfg.BOT_ZORLUK, 'kurucu olmayan degistirdi');
+    oda.game.setBotZorluk(oyuncular[0], 2);          // kurucu
+    assert.strictEqual(oda.botZorluk, 2);
+  });
+
+  test('gecersiz degerler reddedilir', () => {
+    const { oda, oyuncular } = odaKur(1);
+    for (const kotu of [-1, 3, 99, 1.5, NaN, '2', null, undefined, {}]) {
+      oda.botZorluk = 1;
+      oda.game.setBotZorluk(oyuncular[0], kotu);
+      assert.strictEqual(oda.botZorluk, 1, 'kabul edildi: ' + String(kotu));
+    }
+  });
+
+  test('mac basladiktan sonra degistirilemez', () => {
+    const { oda, oyuncular } = odaKur(1);
+    oda.botEkle();
+    oda.game.setReady(oyuncular[0], true);
+    assert.notStrictEqual(oda.game.phase, 'lobby');
+    oda.game.setBotZorluk(oyuncular[0], 2);
+    assert.strictEqual(oda.botZorluk, cfg.BOT_ZORLUK, 'mac ortasinda degisti');
+  });
+
+  test('zorluk hamle sikligini gercekten degistiriyor', () => {
+    const { oda } = odaKur(1);
+    const olc = (z) => {
+      oda.botZorluk = z;
+      let t = 0;
+      for (let i = 0; i < 400; i++) t += oda.game.botAraligi('action');
+      return t / 400;
+    };
+    const kolay = olc(0), orta = olc(1), zor = olc(2);
+    assert.ok(kolay > orta, 'kolay bot daha yavas olmali: ' + kolay + ' vs ' + orta);
+    assert.ok(zor < orta, 'zor bot daha hizli olmali: ' + zor + ' vs ' + orta);
+  });
+
+  test('zorluk botun mutlak performansini degistiriyor', () => {
+    // Yaris oyununda bot tek basina ne kadar yol aliyor?
+    const race = require('../server/minigames/race');
+    const yol = (z) => {
+      let toplam = 0;
+      for (let n = 0; n < 25; n++) {
+        const oda = new Room('T');
+        const insan = oda.add(sahteConn(), 'AYSE', 'c0');
+        const bot = oda.botEkle();
+        oda.botZorluk = z;
+        oda.game.mg = race;
+        oda.game.inst = race.create([insan.id, bot.id], 0, {});
+        oda.game.phase = 'play';
+        let kalan = oda.game.inst.sure;
+        while (kalan > 0 && !oda.game.inst.done()) {
+          oda.game.botTick(DT);
+          oda.game.inst.update(DT);
+          kalan -= DT;
+        }
+        toplam += oda.game.inst.prog[bot.id];
+      }
+      return toplam / 25;
+    };
+    const kolay = yol(0), zor = yol(2);
+    assert.ok(zor > kolay * 1.5,
+      'zor bot belirgin sekilde onde olmali: kolay ' + kolay.toFixed(1) + ', zor ' + zor.toFixed(1));
+  });
+});

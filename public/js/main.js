@@ -192,6 +192,16 @@
         var bo2 = botOklari();
         if (bo2 && kutuIcinde(p2, bo2.sol)) { PP.sfx.tick(); PP.net.send({ t: 'bot', d: -1 }); return; }
         if (bo2 && kutuIcinde(p2, bo2.sag)) { PP.sfx.tick(); PP.net.send({ t: 'bot', d: 1 }); return; }
+        var zb2 = zorlukButonlari();
+        if (zb2) {
+          for (var zj = 0; zj < zb2.length; zj++) {
+            if (kutuIcinde(p2, zb2[zj])) {
+              PP.sfx.tick();
+              PP.net.send({ t: 'botzor', d: zb2[zj].idx });
+              return;
+            }
+          }
+        }
         var cb = cikButonu();
         if (cb && kutuIcinde(p2, cb)) { PP.sfx.click(); odadanCik(); return; }
         var kb = kodButonu();
@@ -796,13 +806,34 @@
     // Oklar HAZIR'in 26 px disina cizildigi icin baslik.w = hazir.w + 52 olmali.
     sagX: 78, sagW: 164,
     // Blok dikeyde de ortali: 12..166 arasi, ustte 12 altta 13 px bosluk
-    baslik: { x: 78, y: 12, w: 164, h: 46 },   // buyuk "OYUN" kutusu (yazi 140 px)
-    hazir:  { x: 108, y: 64, w: 104, h: 28 },  // iki yaninda turuncu oklar
-    botY: 106,                                  // "BOT: n" + iki yaninda oklar
-    cik:    { x: 108, y: 126, w: 104, h: 22 },
-    kodY: 154,                                  // "KOD : XXXX" + kopyala tusu
-    altY: 170                                   // rakip araniyor / uyari
+    baslik: { x: 78, y: 8, w: 164, h: 44 },    // buyuk "OYUN" kutusu (yazi 140 px)
+    hazir:  { x: 108, y: 56, w: 104, h: 26 },  // iki yaninda turuncu oklar
+    botY: 97,                                   // "BOT: n" + iki yaninda oklar
+    zorY: 110,                                  // bot zorlugu: uc renkli tus
+    cik:    { x: 108, y: 127, w: 104, h: 22 },
+    kodY: 155,                                  // "KOD : XXXX" + kopyala tusu
+    altY: 171                                   // rakip araniyor / uyari
   };
+
+  // Bot zorlugu tuslari - SADECE odayi kurana gorunur/calisir.
+  // Uc tus yan yana: kolay (yesil), orta (sari), zor (kirmizi).
+  var ZORLUK = [
+    { ad: 'KOLAY', renk: '#2fbf4f', isik: '#7fe89a', golge: '#1c7a33' },
+    { ad: 'ORTA', renk: '#ffd34d', isik: '#ffe9a0', golge: '#c79a1e' },
+    { ad: 'ZOR', renk: '#f45b69', isik: '#ff9aa4', golge: '#a82c39' }
+  ];
+
+  function zorlukButonlari() {
+    if (!state || state.phase !== 'lobby') return null;
+    if (state.host !== youId) return null;
+    var orta = LOBI.sagX + LOBI.sagW / 2;
+    var w = 46, ara = 5;
+    var toplam = ZORLUK.length * w + (ZORLUK.length - 1) * ara;
+    var x0 = Math.round(orta - toplam / 2);
+    return ZORLUK.map(function (z, i) {
+      return { x: x0 + i * (w + ara), y: LOBI.zorY, w: w, h: 13, idx: i };
+    });
+  }
 
   // Bot sayisini degistiren oklar - SADECE odayi kurana gorunur/calisir.
   // Hedef oklariyla ayni desen: yazinin iki yaninda turuncu tuslar.
@@ -1158,6 +1189,30 @@
     f.text(ctx, 'BOT: ' + botSayisi(), sagOrta, LOBI.botY, {
       color: '#0a1826', scale: 1, align: 'center', shadow: HALE
     });
+
+    // 3b) Bot zorlugu - uc renkli tus, secili olan parlak ve cerceveli
+    var zb = zorlukButonlari();
+    if (zb) {
+      var secili = state.botZor === undefined ? 1 : state.botZor;
+      for (var zi = 0; zi < zb.length; zi++) {
+        var k = zb[zi], z = ZORLUK[zi], aktif = zi === secili;
+        g.rect(ctx, k.x, k.y, k.w, k.h, '#000000');
+        if (aktif) {
+          g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, z.renk);
+          g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, 1, z.isik);
+          g.rect(ctx, k.x + 1, k.y + k.h - 2, k.w - 2, 1, z.golge);
+        } else {
+          // Secili olmayanlar soluk: hangisinin acik oldugu bir bakista belli
+          ctx.save();
+          ctx.globalAlpha = 0.42;
+          g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, z.renk);
+          ctx.restore();
+        }
+        f.text(ctx, z.ad, k.x + k.w / 2, k.y + 3, {
+          color: aktif ? '#0a1826' : 'rgba(10,24,38,0.55)', scale: 1, align: 'center'
+        });
+      }
+    }
 
     // 4) CIK  (SES ust cubuktaki hoparlor simgesinde)
     sariKutu(LOBI.cik, 'CIK', 2);

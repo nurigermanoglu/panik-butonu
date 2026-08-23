@@ -333,12 +333,27 @@ class Game {
 
   botAraligi(controls) {
     // Hamleler arasi bekleme. Kisa aralik = daha atak bot.
+    let temel;
     switch (controls) {
-      case 'action': return 0.15 + Math.random() * 0.2;
-      case 'lr': return 0.3 + Math.random() * 0.4;
-      case 'dpad': return 0.25 + Math.random() * 0.35;
-      default: return 0.2 + Math.random() * 0.25;    // pointer
+      case 'action': temel = 0.15 + Math.random() * 0.2; break;
+      case 'lr': temel = 0.3 + Math.random() * 0.4; break;
+      case 'dpad': temel = 0.25 + Math.random() * 0.35; break;
+      default: temel = 0.2 + Math.random() * 0.25; break;    // pointer
     }
+    // Zorluk tempoyu olcekler: kolay bot seyrek, zor bot sik hamle yapar
+    const z = this.room.botZorluk;
+    const carpan = cfg.BOT_ZORLUK_TEMPO[z] !== undefined ? cfg.BOT_ZORLUK_TEMPO[z] : 1;
+    return temel * carpan;
+  }
+
+  // Bot zorlugu - sadece odayi kuran, sadece lobide
+  setBotZorluk(player, idx) {
+    if (this.phase !== 'lobby') return;
+    if (player.id !== this.room.hostId) return;
+    if (typeof idx !== 'number' || !Number.isInteger(idx)) return;
+    if (idx < 0 || idx >= cfg.BOT_ZORLUK_ADLARI.length) return;
+    this.room.botZorluk = idx;
+    this.dirty = true;
   }
 
   botHamle(bot, snap) {
@@ -539,6 +554,7 @@ class Game {
       // hesaplanip bosuna yollanmasin.
       istat: this.phase === 'gameover' ? this.istatListesi() : null,
       final: this.final,                // bu tur puanlar iki katina cikiyor mu
+      botZor: this.room.botZorluk,      // 0 kolay, 1 orta, 2 zor
       needed: this.room.winsNeeded,     // lobideki ayar (tur cinsinden)
       hedef: this.hedefPuan,            // sampiyonluk icin gereken PUAN
       tur: this.tur,

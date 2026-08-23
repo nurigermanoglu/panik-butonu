@@ -150,6 +150,9 @@ ws.attach(server, (conn) => {
         room.broadcast(room.game.snapshot());
         break;
       }
+      case 'botzor':
+        if (room) room.game.setBotZorluk(player, msg.d);
+        break;
       case 'emote':
         if (room) room.game.setEmote(player, msg.i);
         break;
