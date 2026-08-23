@@ -154,8 +154,11 @@ describe('Hareket kurallari', () => {
     const hedef = inst.plan[0].h;
     while (inst.hucreDurum(hedef) !== 2) inst.update(DT);
     const kom = komsular(hedef, inst.n).filter((k) => inst.hucreDurum(k) !== 2)[0];
+    // Kurulum: izgarayi ilerletirken oyuncunun kendi karesi cokmus olabilir.
+    // Test edilen sey bosluga ADIM ATMAK oldugu icin durumu sifirliyoruz.
     inst.pl.p0.h = kom;
-    assert.strictEqual(inst.pl.p0.alive, true, 'kurulum: hala ayakta olmali');
+    inst.pl.p0.alive = true;
+    inst.pl.p0.deadAt = inst.sure;
     const fark = hedef - kom;
     inst.input('p0', 'dir',
       fark === 1 ? 'right' : fark === -1 ? 'left' : fark === inst.n ? 'down' : 'up');

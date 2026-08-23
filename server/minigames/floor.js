@@ -202,6 +202,37 @@ module.exports = {
         }
       },
 
+      // ---- bu oyuna ozel bot ----
+      // Rastgele yon degistiren genel bot bosluga adim atip kendini
+      // olduruyordu. Bu bot yalnizca zemini yanip sonerken kacar ve
+      // cokmus kareye asla basmaz.
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me || !me.a) return;
+        const n = snap.n, durum = snap.hucre;
+        if (durum[me.h] !== 1) return;         // ayagimin altinda tehlike yok
+
+        const ISABET = [0.6, 0.85, 1];
+        const isabet = ISABET[zorluk] !== undefined ? ISABET[zorluk] : 0.85;
+
+        const x = me.h % n, y = Math.floor(me.h / n);
+        const kom = [];
+        if (x > 0) kom.push({ h: me.h - 1, d: 'left' });
+        if (x < n - 1) kom.push({ h: me.h + 1, d: 'right' });
+        if (y > 0) kom.push({ h: me.h - n, d: 'up' });
+        if (y < n - 1) kom.push({ h: me.h + n, d: 'down' });
+
+        // Once saglam kareler; yoksa hic degilse cokmemis olan
+        let secenek = kom.filter((k) => durum[k.h] === 0);
+        if (!secenek.length) secenek = kom.filter((k) => durum[k.h] !== 2);
+        if (!secenek.length) return;
+
+        let hedef = secenek[Math.floor(Math.random() * secenek.length)];
+        // Yanlis karar: cokmus kare dahil herhangi bir komsuya basar
+        if (Math.random() > isabet) hedef = kom[Math.floor(Math.random() * kom.length)];
+        this.input(pid, 'dir', hedef.d);
+      },
+
       done() {
         return this.ids.every((id) => !this.pl[id].alive);
       },

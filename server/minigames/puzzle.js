@@ -152,6 +152,34 @@ module.exports = {
         for (const id of this.ids) if (this.pl[id].flash > 0) this.pl[id].flash -= dt;
       },
 
+      // ---- bu oyuna ozel bot ----
+      // Genel bot rastgele noktaya birakiyordu ve HIC parca takamiyordu
+      // (olculdu: 0.0 / 3). Bu bot bekleyen parcayi alip ait oldugu
+      // hucrenin merkezine birakir.
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me) return;
+
+        const bekleyen = me.p.filter((q) => q.st === 0);
+        if (!bekleyen.length) return;
+        const parca = bekleyen[Math.floor(Math.random() * bekleyen.length)];
+
+        // Hucre merkezi - istemcinin cizerken kullandigi hesabin aynisi
+        const merkez = (c) => ({
+          x: snap.gx + (c % snap.cols) * snap.cw + snap.cw / 2,
+          y: snap.gy + Math.floor(c / snap.cols) * snap.ch + snap.ch / 2,
+        });
+
+        const ISABET = [0.55, 0.82, 1];
+        const isabet = ISABET[zorluk] !== undefined ? ISABET[zorluk] : 0.82;
+        const hedefHucre = Math.random() <= isabet
+          ? parca.c
+          : snap.miss[Math.floor(Math.random() * snap.miss.length)];
+
+        this.input(pid, 'grab', { x: parca.x, y: parca.y });
+        this.input(pid, 'drop', merkez(hedefHucre));
+      },
+
       done() {
         return this.ids.every((id) => this.pl[id].score >= MISSING);
       },

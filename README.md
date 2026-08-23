@@ -206,27 +206,43 @@ botHamle(pid, snap, zorluk)           // hamle araliklariyla; 0 kolay, 1 orta, 2
 Bot yalnızca `snap()` çıktısını kullanmalı — yani istemcinin de gördüğü bilgiyi.
 Oyunun iç değişkenlerine bakan bir bot "her şeyi bilen" bir rakip olurdu.
 
-**Düşenleri Yakala:** bot düşen eşyaları takip ediyor, ulaşamayacağı yıldızın
-peşinden koşmuyor, kendi şeridine bomba inerken bombasız komşu şeride kaçıyor.
+8 oyun kendi bot mantığını kullanıyor; kalan 4'ünde (At Yarışı, Refleks, Sıcak
+Patates, Dosya Silme) genel davranış zaten yeterli.
 
-**Hafıza Dizisi ve Kablo Kesme:** bu ikisi ezber gerektirdiği için bot da insan
-gibi *ekranı izliyor* — `botIzle` her karede çağrıldığından gösterilen sembolleri
-kaçırmıyor, sırayla aklında tutuyor, sonra tekrarlıyor. Zorluk burada **hafızanın
-güvenilirliği** oluyor (kolay %50-55, orta %80-82, zor %100 doğru hatırlama).
+**Ezber gerektirenler** (Hafıza Dizisi, Kablo Kesme) için bot da insan gibi
+*ekranı izliyor*: `botIzle` her karede çağrıldığı için gösterilen sembolleri
+kaçırmıyor, sırayla aklında tutuyor, sonra tekrarlıyor. Zorluk burada hafızanın
+güvenilirliği oluyor.
 
-| Oyun | Ölçüt | Kolay | Orta | Zor |
-|---|---|---|---|---|
-| Düşenleri Yakala | skor | 4.4 | 7.9 | **11.9** |
-| Hafıza Dizisi | tamamlama | %16 | %51 | **%100** |
-| Hafıza Dizisi | bitirme süresi | 6.8 sn | 5.1 sn | **4.4 sn** |
-| Kablo Kesme | tamamlama | %57 | %100 | **%100** |
-| Kablo Kesme | başa sarma | 1.9 | 0.3 | **0.0** |
+Aşağıdaki tablo botun her oyundaki performansı (50 deneme). "Botsuz" sütunu
+hiç oynamayan bir oyuncunun aldığı sonuç — karşılaştırma noktası:
 
-Bu üç oyunda genel bot neredeyse hiç ilerleyemiyordu (yakalada ~1.3 puan, hafızada
-4-6 sembolden 0.3, kabloda 5'ten 1.2 ve tamamlama %0-5).
+| Oyun | Ölçüt | Botsuz | Kolay | Orta | Zor |
+|---|---|---|---|---|---|
+| At Yarışı | yol / 100 | 0 | 35 | 73 | **100** |
+| Refleks Düellosu | basabildi | 0 | ✓ | ✓ | **✓** |
+| Engelden Kaç | yaşam sn | 3.5 | 5.3 | 6.3 | **9.5** |
+| Hafıza Dizisi | sembol / 4 | 0 | 1.6 | 2.9 | **4.0** |
+| Köstebek Avı | skor | 0 | 11.0 | 14.9 | **15.4** |
+| Sıcak Patates | kurtuldu | %60 | ✓ | ✓ | **✓** |
+| Dosya Silme | dosya / 7 | 0 | 3.4 | 5.2 | **6.2** |
+| Kablo Kesme | kablo / 5 | 0 | 3.6 | 5.0 | **5.0** |
+| Şekil Yerleştir | şekil / 5 | 0 | 5.0 | 5.0 | **5.0** |
+| Puzzle | parça / 3 | 0 | 3.0 | 3.0 | **3.0** |
+| Zemin Çöküyor | yaşam sn | 6.6 | 11.6 | 13.6 | **14.0** |
+| Düşenleri Yakala | skor | 1.3 | 3.9 | 6.9 | **11.9** |
+
+Şekil Yerleştir ve Puzzle'da üç seviye de görevi tamamlıyor; fark **bitirme
+süresine** yansıyor (şekilde 5.4 → 1.7 → 0.8 sn, puzzle'da 2.3 → 0.9 → 0.4 sn),
+yani yarışta zor bot kazanıyor.
 
 Karşılaştırma için insan simülasyonu (Düşenleri Yakala): acemi 6.5, orta 11.1,
 usta 16.2 puan. Yani **ZOR bot orta seviye bir insan kadar** oynuyor.
+
+[test/botkapsam.test.js](test/botkapsam.test.js) bunu kalıcı olarak koruyor:
+mini oyun listesini olduğu gibi gezip her oyunda botun hiç oynamayan bir rakibi
+yendiğini doğruluyor. **Yeni bir oyun eklendiğinde otomatik kapsama giriyor** —
+bot orada oynayamıyorsa test kırmızı yanıyor.
 
 ### Maç sonu istatistikleri
 
@@ -432,7 +448,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 181 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 208 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -440,6 +456,7 @@ yani yine `npm install` gerekmiyor. 181 test bir saniyede biter.
 | [test/minioyunlar.test.js](test/minioyunlar.test.js) | 10 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
+| [test/botkapsam.test.js](test/botkapsam.test.js) | **Botun 12 oyunun hepsini oynayabildiği**: her oyunda pasif rakibi yenmesi, zorluğun ters dönmemesi |
 | [test/ezberbot.test.js](test/ezberbot.test.js) | Ezber oyunlarında bot: gösterimi izleyip diziyi doğru öğrenmesi, gösterim sırasında hamle yapmaması, zorluğa göre yanılması |
 | [test/bot.test.js](test/bot.test.js) | Botlar: ekleme/çıkarma sınırları, paket gönderilmemesi, tek başına maç başlatma, gerçekten oynayıp puan alması, refleks turunda erken basmaması |
 | [test/istatistik.test.js](test/istatistik.test.js) | Maç sonu istatistikleri: sayımlar, eşitlikte satırın atlanması, beraberlik durumları, yalnızca şampiyon ekranında yayınlanması |

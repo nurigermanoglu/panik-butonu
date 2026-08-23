@@ -119,6 +119,37 @@ module.exports = {
         for (const id of this.ids) if (this.pl[id].flash > 0) this.pl[id].flash -= dt;
       },
 
+      // ---- bu oyuna ozel bot ----
+      // Genel bot rastgele noktaya birakiyordu, sekil hep yerine donuyordu:
+      // bot HIC puan alamiyordu. Bu bot bekleyen bir sekli alip tipine uyan
+      // bos yuvaya birakir.
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me) return;
+
+        const bekleyen = me.sh.filter((q) => q.st === 0);
+        if (!bekleyen.length) return;
+        const sekil = bekleyen[Math.floor(Math.random() * bekleyen.length)];
+
+        const dolu = me.sh.filter((q) => q.st === 2).map((q) => q.sl);
+        let dogru = -1;
+        for (let i = 0; i < snap.slots.length; i++) {
+          if (dolu.indexOf(i) >= 0) continue;
+          if (snap.slots[i].tip === sekil.t) { dogru = i; break; }
+        }
+        if (dogru < 0) return;
+
+        // Zorluk: yanlis yuvaya birakma ihtimali (sekil yerine doner)
+        const ISABET = [0.55, 0.82, 1];
+        const isabet = ISABET[zorluk] !== undefined ? ISABET[zorluk] : 0.82;
+        const hedef = Math.random() <= isabet
+          ? snap.slots[dogru]
+          : snap.slots[Math.floor(Math.random() * snap.slots.length)];
+
+        this.input(pid, 'grab', { x: sekil.x, y: sekil.y });
+        this.input(pid, 'drop', { x: hedef.x, y: hedef.y });
+      },
+
       done() {
         return this.ids.every((id) => this.pl[id].score >= TIPLER.length);
       },

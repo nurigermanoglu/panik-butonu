@@ -119,6 +119,34 @@ module.exports = {
         }
       },
 
+      // ---- bu oyuna ozel bot ----
+      // Genel bot rastgele noktalara vuruyordu: bazen kostebege denk geliyor,
+      // bazen bombaya. Bu bot ekranda duran bombasiz kostebeklerden birini
+      // secip deligine vurur.
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me) return;
+
+        // Henuz vurulmamis, bombasiz ve yeterince cikmis kostebekler
+        const hedefler = snap.act.filter((a) =>
+          !a.bomb && a.r > 0.5 && me.hit.indexOf(a.i) < 0);
+        if (!hedefler.length) return;
+
+        const ISABET = [0.55, 0.85, 1];
+        const isabet = ISABET[zorluk] !== undefined ? ISABET[zorluk] : 0.85;
+
+        let secim;
+        if (Math.random() <= isabet) {
+          secim = hedefler[Math.floor(Math.random() * hedefler.length)];
+        } else {
+          // Yanlis karar: ekrandaki herhangi bir cikisa vurur (bomba olabilir)
+          secim = snap.act[Math.floor(Math.random() * snap.act.length)];
+        }
+        if (!secim) return;
+        const delik = snap.holes[secim.h];
+        this.input(pid, 'grab', { x: delik.x, y: delik.y });
+      },
+
       done() { return false; },   // sure dolana kadar surer
 
       // Skor yuksek olan onde (bomba cezasi skoru dusurur).

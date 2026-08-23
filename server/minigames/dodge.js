@@ -150,6 +150,50 @@ module.exports = {
         }
       },
 
+      // ---- bu oyuna ozel bot ----
+      // Rastgele serit degistiren genel bot kendini engele sokuyordu: hic
+      // oynamayandan bile kotu sonuc aliyordu. Bu bot yaklasan satira bakip
+      // acik serite gecer.
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me || !me.a) return;
+
+        const ISABET = [0.6, 0.85, 1];
+        const isabet = ISABET[zorluk] !== undefined ? ISABET[zorluk] : 0.85;
+        const serit = Math.round(me.h);        // hedeflenen serit
+
+        // Serit degisimi ANLIK degil, suzulerek olur. Hedefe varmadan yeni
+        // karar verilirse bot iki serit arasinda kalip ikisinden de carpar -
+        // olculdu: zor bot (sik hamle yaptigi icin) kolaydan bile kotuydu.
+        if (Math.abs(me.k - me.h) > 0.15) return;
+
+        // Oyuncuya en yakin, henuz TAMAMEN gecmemis satir.
+        // "uzaklik < 0 ise atla" demek hataliydi: oyuncunun hizasina girmis
+        // ama henuz gecmemis satir yok sayiliyor, bot bir sonrakine gore
+        // kacip mevcut engele carpiyordu.
+        let yakin = null, enKisa = Infinity;
+        for (const r of snap.rows) {
+          if (r.y > snap.py + snap.ph) continue;      // tamamen gecti
+          const uzaklik = Math.max(0, snap.py - (r.y + r.h));
+          const sure = uzaklik / Math.max(1, r.v);
+          if (sure < enKisa) { enKisa = sure; yakin = r; }
+        }
+        if (!yakin) return;
+        if (yakin.k.indexOf(serit) < 0) return; // seridim zaten acik
+
+        // Kapali olmayan seritlerden en yakinina gec
+        const acik = [];
+        for (let l = 0; l < snap.lanes; l++) if (yakin.k.indexOf(l) < 0) acik.push(l);
+        if (!acik.length) return;
+        let hedef = acik[0];
+        for (const l of acik) {
+          if (Math.abs(l - serit) < Math.abs(hedef - serit)) hedef = l;
+        }
+        if (Math.random() > isabet) hedef = Math.floor(Math.random() * snap.lanes);
+        if (hedef === serit) return;
+        this.input(pid, 'dir', hedef < serit ? 'left' : 'right');
+      },
+
       done() {
         return this.ids.every((id) => !this.pl[id].alive);
       },
