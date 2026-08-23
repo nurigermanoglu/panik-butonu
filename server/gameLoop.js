@@ -357,6 +357,14 @@ class Game {
   }
 
   botHamle(bot, snap) {
+    // Mini oyun kendi bot mantigini sunuyorsa o kullanilir. Genel davranis
+    // (asagisi) kontrol semasina gore rastgele hamle yapar; bu bazi oyunlarda
+    // yeterli, bazilarinda degil.
+    if (this.inst.botHamle) {
+      this.inst.botHamle(bot.id, snap, this.room.botZorluk);
+      return;
+    }
+
     const ctrl = this.mg.controls;
 
     if (ctrl === 'action') {

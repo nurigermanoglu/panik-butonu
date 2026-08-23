@@ -188,3 +188,100 @@ describe('Sonuc', () => {
     assert.deepStrictEqual(inst.derece(), [['p0'], ['p1']], 'az kaybeden onde');
   });
 });
+
+describe('Oyuna ozel bot', () => {
+  const DTX = 1 / 30;
+
+  // snap ciktisini elle kurup botun tek bir karar vermesini olcer
+  function karar(inst, botLane, esyalar, zorluk) {
+    inst.pl.p0.lane = botLane;
+    const snap = {
+      lanes: inst.lanes, yak: 148,
+      items: esyalar,
+      pl: { p0: { l: botLane, s: 0, fl: 0 } },
+    };
+    inst.botHamle('p0', snap, zorluk === undefined ? 2 : zorluk);
+    return inst.pl.p0.lane;
+  }
+
+  test('oyun kendi bot mantigini sunuyor', () => {
+    const inst = collect.create(['p0'], 0);
+    assert.strictEqual(typeof inst.botHamle, 'function');
+  });
+
+  test('yildiza dogru yonelir', () => {
+    const inst = collect.create(['p0'], 0);
+    // Bot 2. seritte, yildiz 3. seritte ve inmesine bol zaman var
+    const yeni = karar(inst, 2, [{ l: 3, y: 40, b: false, v: 108 }]);
+    assert.strictEqual(yeni, 3, 'yildiza yonelmedi');
+  });
+
+  test('yetisemeyecegi yildizin pesinden kosmaz', () => {
+    const inst = collect.create(['p0'], 0);
+    // Yildiz 4 serit uzakta ve neredeyse inmis: yetisilmez
+    const yeni = karar(inst, 0, [{ l: 4, y: 145, b: false, v: 108 }]);
+    assert.strictEqual(yeni, 0, 'yetisemeyecegi yildiza kostu');
+  });
+
+  test('bombanin ustune gitmez', () => {
+    const inst = collect.create(['p0'], 0);
+    // 3. seritte bomba, 1. seritte yildiz: yildiza gitmeli
+    const yeni = karar(inst, 2, [
+      { l: 3, y: 60, b: true, v: 108 },
+      { l: 1, y: 60, b: false, v: 108 },
+    ]);
+    assert.strictEqual(yeni, 1, 'bombaya dogru gitti');
+  });
+
+  test('kendi seridine bomba inerken kacar', () => {
+    const inst = collect.create(['p0'], 0);
+    // Bot 2. seritte, ustune bomba iniyor, baska esya yok
+    const yeni = karar(inst, 2, [{ l: 2, y: 110, b: true, v: 108 }]);
+    assert.notStrictEqual(yeni, 2, 'bomba inerken yerinde kaldi');
+  });
+
+  test('kacarken bombasiz serit secer', () => {
+    const inst = collect.create(['p0'], 0);
+    // Bot 1. seritte; hem 1 hem 0 bombali, 2 temiz
+    const yeni = karar(inst, 1, [
+      { l: 1, y: 110, b: true, v: 108 },
+      { l: 0, y: 110, b: true, v: 108 },
+    ]);
+    assert.strictEqual(yeni, 2, 'bombali serite kacti');
+  });
+
+  test('esya yoksa yerinde kalir', () => {
+    const inst = collect.create(['p0'], 0);
+    assert.strictEqual(karar(inst, 2, []), 2);
+  });
+
+  test('zorluk arttikca skor artiyor', () => {
+    const { Room } = require('../server/room');
+    const { sahteConn } = require('./yardimci');
+    const olc = (z) => {
+      let toplam = 0;
+      for (let n = 0; n < 40; n++) {
+        const oda = new Room('T');
+        const insan = oda.add(sahteConn(), 'AYSE', 'c0');
+        const bot = oda.botEkle();
+        oda.botZorluk = z;
+        oda.game.mg = collect;
+        oda.game.inst = collect.create([insan.id, bot.id], 0, {});
+        oda.game.phase = 'play';
+        let kalan = oda.game.inst.sure;
+        while (kalan > 0) {
+          oda.game.botTick(DTX);
+          oda.game.inst.update(DTX);
+          kalan -= DTX;
+        }
+        toplam += oda.game.inst.pl[bot.id].score;
+      }
+      return toplam / 40;
+    };
+    const kolay = olc(0), zor = olc(2);
+    assert.ok(zor > kolay * 1.6,
+      'zor bot belirgin onde olmali: kolay ' + kolay.toFixed(1) + ', zor ' + zor.toFixed(1));
+    assert.ok(kolay > 2,
+      'kolay bot bile eski genel bottan (1.3) iyi olmali: ' + kolay.toFixed(1));
+  });
+});

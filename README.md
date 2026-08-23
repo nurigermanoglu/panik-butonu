@@ -190,10 +190,28 @@ Zorluk botun **hamle sıklığını** ölçekler. Botun tek başına aldığı m
 |---|---|---|---|
 | At Yarışı (mesafe) | 33 | 71 | **100** |
 | Köstebek Avı (skor) | 0.8 | 2.2 | **3.0** |
-| Düşenleri Yakala (skor) | 1.3 | 1.2 | **1.9** |
+| Düşenleri Yakala (skor) | 4.4 | 7.9 | **11.9** |
 
-Düşenleri Yakala'da fark küçük: bot yıldızı takip etmiyor, rastgele şerit
-değiştiriyor. Orada daha akıllı bir bot yazılabilir.
+#### Oyuna özel bot
+
+Mini oyunlar isteğe bağlı olarak kendi bot mantıklarını sunabilir; sunmayanlarda
+yukarıdaki genel davranış kullanılır:
+
+```js
+// create() icinde dondurulen nesneye eklenir
+botHamle(pid, snap, zorluk) { ... }   // zorluk: 0 kolay, 1 orta, 2 zor
+```
+
+**Düşenleri Yakala** bunu kullanıyor: bot düşen eşyaları takip ediyor, ulaşamayacağı
+yıldızın peşinden koşmuyor, kendi şeridine bomba inerken bombasız komşu şeride
+kaçıyor. Genel bot rastgele şerit değiştirdiği için zorluk ne olursa olsun ~1.3
+puan alıyordu; şimdi 4.4 / 7.9 / 11.9.
+
+Karşılaştırma için insan simülasyonu: acemi 6.5, orta 11.1, usta 16.2 puan. Yani
+**ZOR bot orta seviye bir insan kadar** oynuyor, usta bir oyuncuyu yenemiyor.
+
+Bot yalnızca `snap()` çıktısını kullanmalı — yani istemcinin de gördüğü bilgiyi.
+Oyunun iç değişkenlerine bakan bir bot "her şeyi bilen" bir rakip olurdu.
 
 ### Maç sonu istatistikleri
 
@@ -399,7 +417,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 162 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 170 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|

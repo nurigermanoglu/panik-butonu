@@ -130,6 +130,59 @@ module.exports = {
         }
       },
 
+      // ---- bu oyuna ozel bot ----
+      // Genel bot rastgele serit degistirdigi icin yildizlari nadiren
+      // yakaliyordu (olculdu: zorluk ne olursa olsun ~1.3 puan). Buradaki bot
+      // dusen esyalari takip eder, bombadan kacar.
+      //
+      // Yalnizca snap ciktisini kullanir - yani istemcinin de gordugu bilgiyi.
+      // Oyunun ic degiskenlerine (plan, sirada...) bakmaz.
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me) return;
+
+        // Zor bot her zaman dogru karar verir, kolay bot sik sik sasirir.
+        const ISABET = [0.5, 0.8, 1];
+        const isabet = ISABET[zorluk] !== undefined ? ISABET[zorluk] : 0.8;
+        if (Math.random() > isabet) {
+          this.input(pid, 'dir', Math.random() < 0.5 ? 'left' : 'right');
+          return;
+        }
+
+        // Bir esyanin yakalama cizgisine inmesine kalan sure
+        const varis = (it) => (snap.yak - it.y) / Math.max(1, it.v);
+        const SERIT_SURE = 0.3;      // bir serit degistirmek yaklasik bu kadar surer
+        const TEHLIKE = 1.1;         // bu sure icinde inen bomba tehlikeli sayilir
+
+        const bombaVar = (lane) => snap.items.some((it) => {
+          if (!it.b || it.l !== lane) return false;
+          const s = varis(it);
+          return s > 0 && s < TEHLIKE;
+        });
+
+        // 1) Ulasabilecegim en yakin yildizi hedefle
+        let hedef = -1, enYakin = Infinity;
+        for (const it of snap.items) {
+          if (it.b) continue;
+          const s = varis(it);
+          if (s <= 0) continue;
+          // Yetisemeyecegim yildizin pesinden kosmak bosuna
+          if (Math.abs(it.l - me.l) * SERIT_SURE > s) continue;
+          // Uzerine bomba dusen serite gitmenin anlami yok
+          if (bombaVar(it.l)) continue;
+          if (s < enYakin) { enYakin = s; hedef = it.l; }
+        }
+
+        // 2) Durdugum seride bomba iniyorsa kacmak yildizdan onceliklidir
+        if (bombaVar(me.l) && (hedef < 0 || hedef === me.l)) {
+          if (me.l > 0 && !bombaVar(me.l - 1)) hedef = me.l - 1;
+          else if (me.l < snap.lanes - 1 && !bombaVar(me.l + 1)) hedef = me.l + 1;
+        }
+
+        if (hedef < 0 || hedef === me.l) return;
+        this.input(pid, 'dir', hedef < me.l ? 'left' : 'right');
+      },
+
       done() { return false; },               // sure dolana kadar surer
 
       // Skor yuksek olan onde; bomba cezasi skoru dusurur.
