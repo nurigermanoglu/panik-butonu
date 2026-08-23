@@ -13,4 +13,5 @@ module.exports = [
   require('./shapesort'),
   require('./puzzle'),
   require('./floor'),
+  require('./collect'),
 ];

@@ -39,7 +39,7 @@ Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 | Hedef tur sayısını değiştir (lobide, **sadece odayı kuran**) | `←` `→` | Yanlardaki ok butonları |
 | Karakter değiştir (lobide, herkes kendi karakterini) | Karakterinin yanındaki oklara **tıkla** | Oklara **dokun** |
 | At Yarışı, Refleks Düellosu, Sıcak Patates | `BOŞLUK` / `ENTER` ya da **ekrana sol tıkla** | Büyük **BAS** butonu ya da ekrana dokun |
-| Engelden Kaç | `←` `→` şerit değiştir (veya `A` `D`) | Sol / sağ butonu |
+| Engelden Kaç, Düşenleri Yakala | `←` `→` şerit değiştir (veya `A` `D`) | Sol / sağ butonu |
 | Hafıza Dizisi, Zemin Çöküyor | Yön tuşları veya `W` `A` `S` `D` | 4 yön butonu |
 | Sıcak Patates | `BOŞLUK` | Büyük **BAS** butonu |
 | Köstebek Avı, Kablo Kesme | Fareyle **tıkla** | Ekrana **dokun** |
@@ -76,10 +76,11 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 | **Dosya Silme** | 12 sn | Eski bir bilgisayar masaüstünde 7 klasörü çöp kutusuna sürükle. Hepsini en hızlı silen kazanır |
 | **Kablo Kesme** | ~13.6 sn | İki aşamalı: önce renkler tek tek gösterilir (kablolar henüz yok), sonra kablolar açılır ve sırayı **ezberden** kesmen gerekir — sıra bir daha gösterilmez. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır **ve sıra başa sarar**: kesilen kablolar onarılır, baştan başlarsın. Sırayı ilk bitiren kazanır; kimse bitiremezse **en çok ilerleyebilen** kazanır |
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
+| **Düşenleri Yakala** | 13 sn | Herkes aynı sahada, 5 şeritte: yukarıdan düşen yıldızları topla (+1), bombalardan kaç (-2). **Sol/sağ** ile şerit değiştir. Bir eşyayı o şeritteki herkes alır. Aynı anda en fazla 2 eşya düşer, yani bombadan kaçacak yer hep vardır |
 | **Zemin Çöküyor** | 14 sn | **Herkes aynı** 6x6 ızgarada oynar: kareler tek tek çöker (önce yanıp söner, sonra kaybolur), yön tuşlarıyla kaçıp ayakta kalırsın. Aynı kareye birden fazla oyuncu girebilir — kimse kimseyi engellemez. Desen **her zaman kaçılabilir** üretilir. Son ayakta kalan kazanır; herkes düşerse en geç düşen |
 | **Puzzle** | 14 sn | Elma resminin 4x4 ızgarasındaki eksik 3 karesini sağdaki parçalardan bulup doğru yuvaya sürükle. İki resim **sırayla** gelir (torba yöntemi), yani her ikisi de düzenli olarak çıkar |
 
-Toplam **11 mini oyun**. Her turda "torba" yönteminden biri gelir: hepsi tekrar etmeden birer kez
+Toplam **12 mini oyun**. Her turda "torba" yönteminden biri gelir: hepsi tekrar etmeden birer kez
 oynanır, sonra torba yenilenir.
 
 > Halka Geçirme, Şişe Vurma ve Buton Yağmuru oyunları çıkarıldı ve kodları
@@ -296,7 +297,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 81 test yarım saniyede biter.
+yani yine `npm install` gerekmiyor. 97 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -305,6 +306,7 @@ yani yine `npm install` gerekmiyor. 81 test yarım saniyede biter.
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
+| [test/yakala.test.js](test/yakala.test.js) | Düşenleri Yakala: düşme programının adaleti (bombadan kaçış hep var), yakalama kuralları, sonuç seçimi |
 | [test/zemin.test.js](test/zemin.test.js) | Zemin Çöküyor deseninin adaleti (kusursuz oyuncu 600 desende hiç ölmüyor), kuşatılma olmaması, hareket kuralları, ortak ızgara davranışı |
 
 Testlerin kendisi de sınandı: koda bilerek üç hata sokulup (gösterim koruması
@@ -326,6 +328,7 @@ ve orada kalıyor. Geri sayım ekranında `TUR 7` ve `HIZ +%67` yazar.
 | Kablo Kesme | 4.6 sn ezberleme + 9 sn kesme | **3.2 sn ezberleme + 6.8 sn kesme**, **1.68 sn ceza** |
 | Şekil Yerleştir / Puzzle | 14 sn | **10.1 sn** |
 | Zemin Çöküyor | 0.75 sn uyarı, 14 sn | **0.45 sn uyarı**, 11.2 sn, çökmeler sıklaşır |
+| Düşenleri Yakala | 108 birim/sn düşüş | **%35 daha hızlı**, eşyalar sıklaşır |
 | At Yarışı | 8 sn | **6 sn** (aynı mesafe) |
 | Refleks Düellosu | 10 sn | 7.5 sn — *zorlaşmaz, sadece tempo artar* |
 
