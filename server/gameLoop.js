@@ -21,7 +21,6 @@ class Game {
     this.winner = null;
     this.notice = null;
     this.final = false;    // bu tur FINAL TURU mu (puanlar iki katina cikar)
-    this.emotes = {};      // { oyuncuId: { i: tepkiNo, at: zaman } }
     // Mac boyunca biriken istatistikler. Mini oyunlara HIC dokunmadan,
     // yalnizca tur sonuclarindan cikarilir - yeni bir oyun eklendiginde
     // kendiliginden calisir.
@@ -88,33 +87,6 @@ class Game {
   // Lobide gelen 'again' paketleri de yok sayilir. Iki kisi sampiyon ekraninda
   // neredeyse ayni anda basmis olabilir; ikinci paket oda lobiye dustukten
   // sonra ulasir ve o kisiyi istem disi hazir yapardi.
-  // Mac sirasinda gonderilen kisa tepki. Lobide ve sampiyon ekraninda
-  // kapalidir: orada sohbet zaten acik.
-  setEmote(player, idx) {
-    if (this.phase === 'lobby' || this.phase === 'gameover') return;
-    // Tip kontrolu kati: Number(null) 0 verdigi icin gevsek donusum
-    // "i: null" gonderen bir istemciyi gecerli tepki saymis oluyordu.
-    if (typeof idx !== 'number' || !Number.isInteger(idx)) return;
-    if (idx < 0 || idx >= cfg.EMOTE_COUNT) return;
-    const i = idx;
-    const simdi = Date.now();
-    if (simdi - player.sonEmoteAn < cfg.EMOTE_ARA_MS) return;
-    player.sonEmoteAn = simdi;
-    this.emotes[player.id] = { i: i, at: simdi };
-    this.dirty = true;
-  }
-
-  // Suresi dolan balonlari dusurur. tick her karede cagirir.
-  emoteTemizle() {
-    const simdi = Date.now();
-    for (const id in this.emotes) {
-      if (simdi - this.emotes[id].at > cfg.EMOTE_SURE_MS) {
-        delete this.emotes[id];
-        this.dirty = true;
-      }
-    }
-  }
-
   requestRematch() {
     if (this.phase !== 'gameover') return;
     this.toLobby(null);
@@ -127,7 +99,6 @@ class Game {
   }
 
   onPlayerLeft(player) {
-    delete this.emotes[player.id];
     delete this.istat[player.id];
     if (this.phase === 'lobby') { this.dirty = true; return; }
     this.toLobby(player.name + ' AYRILDI');
@@ -144,7 +115,6 @@ class Game {
     this.winner = null;
     this.notice = notice;
     this.final = false;
-    this.emotes = {};
     this.istat = {};
     for (const p of this.room.players) { p.ready = p.bot; p.wins = 0; }
     this.tur = 0;
@@ -434,8 +404,6 @@ class Game {
       return;
     }
 
-    this.emoteTemizle();
-
     switch (this.phase) {
       case 'intro':
         this.timer -= dt;
@@ -548,12 +516,6 @@ class Game {
   }
 
   snapshot() {
-    // Aktif balonlar: { oyuncuId: tepkiNo }. Hicbiri yoksa null gonderilir
-    // ki istemci bos nesne icin bosuna donmesin.
-    const emote = {};
-    let emoteVar = false;
-    for (const id in this.emotes) { emote[id] = this.emotes[id].i; emoteVar = true; }
-
     return {
       t: 'sync',
       code: this.room.code,
@@ -567,7 +529,6 @@ class Game {
       result: this.result,
       winner: this.winner,
       notice: this.notice,
-      emote: emoteVar ? emote : null,   // mac ici tepki balonlari
       // Istatistikler yalnizca sampiyon ekraninda anlamli; her karede
       // hesaplanip bosuna yollanmasin.
       istat: this.phase === 'gameover' ? this.istatListesi() : null,

@@ -108,12 +108,6 @@
       odadanCik();
     });
 
-    Array.prototype.forEach.call(document.querySelectorAll('.ebtn'), function (b) {
-      b.addEventListener('click', function () {
-        onAction('emote', Number(b.getAttribute('data-e')));
-      });
-    });
-
     $('btnMute').addEventListener('click', sesiDegistir);
     sesButonuTazele();
 
@@ -428,7 +422,6 @@
     // Menude cikilacak bir oda yok: CIK gizlenir. TAM EKRAN ve ses dugmesi
     // ust cubukta kalir - onlar her ekranda ise yarar.
     $('btnLeave').classList.add('hidden');
-    $('emotes').classList.add('hidden');
     $('chat').classList.add('hidden');
     $('arena').classList.remove('sohbetli');
     $('chatLog').innerHTML = '';
@@ -521,14 +514,6 @@
   function onAction(kind, value) {
     PP.sfx.unlock();
     if (!state) return;
-
-    // Tepkiler mac sirasinda calisir; lobide ve sampiyon ekraninda sohbet var
-    if (kind === 'emote') {
-      if (state.phase === 'lobby' || state.phase === 'gameover') return;
-      PP.sfx.tick();
-      PP.net.send({ t: 'emote', i: value });
-      return;
-    }
 
     if (state.phase === 'lobby') {
       if (kind === 'dir') {                       // sadece oda kurucusunda ise yarar
@@ -665,11 +650,6 @@
                      state.st && state.st.boom);
     if (patlama && !wasBoom) PP.sfx.patla();
     wasBoom = patlama;
-
-    // Tepki dugmeleri sadece mac sirasinda: lobide ve sampiyon ekraninda
-    // sohbet zaten acik.
-    var macta = state.phase === 'intro' || state.phase === 'play' || state.phase === 'result';
-    $('emotes').classList.toggle('hidden', !macta);
 
     var lobide = state.phase === 'lobby';
     // Lobide CIK ekranin kendisinde (sari kutu) duruyor; ust cubuktaki gizlenir
@@ -1287,36 +1267,6 @@
       });
     }
     drawTopBar();
-    drawEmotes();
-  }
-
-  // ---- mac ici tepkiler ----
-  // Sunucudaki EMOTE_COUNT ile ayni sirada olmali.
-  var EMOTE = ['👍', '😂', '😱', '😎'];
-
-  // Her mini oyunun kendi duzeni oldugu icin balonlar ORTAK bir yere cizilir:
-  // ust cubugun hemen altina, oyuncu slotuna gore. Iki saniye sonra dusuyorlar,
-  // o yuzden altlarindaki icerigi kisa sure kapatmalari sorun degil.
-  function drawEmotes() {
-    if (!state.emote) return;
-    var n = state.players.length, slotW = W / n;
-    for (var i = 0; i < n; i++) {
-      var p = state.players[i];
-      var e = state.emote[p.id];
-      if (e === undefined || e === null) continue;
-      var sim = EMOTE[e];
-      if (!sim) continue;
-
-      var cx = Math.round(slotW * i + slotW / 2);
-      var by = TOP + 3, bw = 28, bh = 17;
-      var bx = Math.round(cx - bw / 2);
-      // Konusma balonu: siyah hat + beyaz dolgu + alt kuyruk
-      g.rect(ctx, bx, by, bw, bh, '#000000');
-      g.rect(ctx, bx + 1, by + 1, bw - 2, bh - 2, '#fbfaff');
-      g.rect(ctx, cx - 3, by + bh, 6, 3, '#000000');
-      g.rect(ctx, cx - 2, by + bh, 4, 2, '#fbfaff');
-      f.text(ctx, sim, cx, by + 3, { scale: 1.4, align: 'center' });
-    }
   }
 
   function drawPlay() {
@@ -1324,7 +1274,6 @@
     if (mg && state.st) mg.draw(ctx, state.st, view());
     else g.rect(ctx, 0, 0, W, H, P.bg);
     drawTopBar();
-    drawEmotes();
   }
 
   function drawResult() {

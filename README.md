@@ -35,7 +35,6 @@ Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 | Ne zaman | Bilgisayar | Telefon |
 |---|---|---|
 | Hazır ol (lobide) | `BOŞLUK` / `ENTER` ya da ekrandaki **HAZIRIM** butonu | **HAZIRIM** butonu veya alttaki **BAS** |
-| Maç sırasında tepki gönder | `1` `2` `3` `4` | Üst çubuktaki emoji butonları |
 | Tekrar oyna (şampiyon ekranında) | `BOŞLUK` veya `ENTER` | Ekrana dokun ya da **BAS** |
 | Hedef tur sayısını değiştir (lobide, **sadece odayı kuran**) | `←` `→` | Yanlardaki ok butonları |
 | Bot ekle / çıkar (lobide, **sadece odayı kuran**) | — | `BOT: n` yazısının yanındaki oklara dokun |
@@ -101,9 +100,6 @@ MIN_PLAYERS: 2,     // oyunun başlayabilmesi için gereken en az kişi
 WINS_NEEDED: 5,     // başlangıç hedefi; kişi sayısıyla çarpılır (4 kişide 15 puan)
 WINS_MIN: 1,        // hedefin inebileceği en düşük değer
 WINS_MAX: 9,        // hedefin çıkabileceği en yüksek değer
-EMOTE_COUNT: 4,     // maç içi hazır tepki sayısı
-EMOTE_ARA_MS: 700,  // ard arda tepki gönderme sınırı
-EMOTE_SURE_MS: 2000,// balonun ekranda kalma süresi
 RECONNECT_GRACE: 15, // maç ortasında kopan oyuncunun yeri kaç saniye tutulur
 LOBBY_GRACE: 8,      // lobide kopan için aynısı (beklemenin anlamı yok, kısa)
 SPEED_ROUNDS: 10,    // kaçıncı turda oyunlar en hızlı hâline gelir
@@ -265,21 +261,6 @@ kazanma ya da sonunculuk yazmaz.
 İstatistikler mini oyunların hiçbirine dokunmadan, yalnızca tur sonuçlarından
 (kim kaçıncı bitirdi) çıkarılır — **yeni bir mini oyun eklendiğinde
 kendiliğinden çalışır**.
-
-### Maç içi tepkiler (emote)
-
-Sohbet maç sırasında kapalı — kimse yazı okumaya vakit bulamaz. Onun yerine
-tek dokunuşla gönderilen dört hazır tepki var: 👍 😂 😱 😎
-
-Bilgisayarda `1`-`4` tuşları, telefonda üst çubuktaki butonlar. Tepki, gönderenin
-sütununda konuşma balonu olarak belirir ve **2 saniye sonra kaybolur**.
-
-Butonlar sadece maç sırasında görünür; lobide ve şampiyon ekranında sohbet
-zaten açık olduğu için gizlenirler. Ard arda gönderme 700 ms ile sınırlıdır.
-
-Balonlar her mini oyunun kendi çiziminden bağımsız, **ortak** bir yere çizilir
-(üst çubuğun hemen altı, oyuncu sütununa göre) — böylece yeni bir mini oyun
-eklerken emote için ayrıca bir şey yapmak gerekmez.
 
 ### Final turu
 
@@ -448,7 +429,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 208 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 196 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -460,7 +441,6 @@ yani yine `npm install` gerekmiyor. 208 test bir saniyede biter.
 | [test/ezberbot.test.js](test/ezberbot.test.js) | Ezber oyunlarında bot: gösterimi izleyip diziyi doğru öğrenmesi, gösterim sırasında hamle yapmaması, zorluğa göre yanılması |
 | [test/bot.test.js](test/bot.test.js) | Botlar: ekleme/çıkarma sınırları, paket gönderilmemesi, tek başına maç başlatma, gerçekten oynayıp puan alması, refleks turunda erken basmaması |
 | [test/istatistik.test.js](test/istatistik.test.js) | Maç sonu istatistikleri: sayımlar, eşitlikte satırın atlanması, beraberlik durumları, yalnızca şampiyon ekranında yayınlanması |
-| [test/emote.test.js](test/emote.test.js) | Maç içi tepkiler: faz kontrolü, geçersiz numaraların reddi, hız sınırı, balonların süresi dolunca düşmesi |
 | [test/final.test.js](test/final.test.js) | Final turu koşulu (küçük hedeflerde bile maç başında ilan edilmemesi), çift puan, bayrağın tur başında sabitlenmesi |
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
 | [test/yakala.test.js](test/yakala.test.js) | Düşenleri Yakala: düşme programının adaleti (bombadan kaçış hep var), yakalama kuralları, sonuç seçimi |

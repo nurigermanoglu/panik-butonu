@@ -37,7 +37,6 @@ class Player {
     this.id = 'p' + slot;
     this.char = slot % cfg.CHAR_COUNT;   // baslangicta herkes farkli karakter
     this.sonMesajAn = 0;                 // sohbette ard arda yazmayi sinirlar
-    this.sonEmoteAn = 0;                 // emote'ta ard arda gondermeyi sinirlar
     this.ready = false;
     this.wins = 0;
     this.connected = true;

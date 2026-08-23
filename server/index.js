@@ -153,9 +153,6 @@ ws.attach(server, (conn) => {
       case 'botzor':
         if (room) room.game.setBotZorluk(player, msg.d);
         break;
-      case 'emote':
-        if (room) room.game.setEmote(player, msg.i);
-        break;
       case 'again':
         if (room) room.game.requestRematch();
         break;
