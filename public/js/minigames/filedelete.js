@@ -9,6 +9,20 @@
     cop: { src: 'img/cop.png', kirp: { x: 63, y: 16, w: 375, h: 475 }, w: 46, h: 58 }
   };
 
+  // Gorev cubugundaki baslat dugmesi. Eskiden "BASLAT" yazisi vardi ama
+  // alttaki talimat yazisiyla cakisiyordu (olculdu: 3 px ust uste biniyor,
+  // ekranda bitisik gorunuyordu). Yazi yerine klasik guc simgesi: dugme
+  // 40 px'ten 13 px'e indi ve talimata bol yer kaldi.
+  var GUC = [
+    '...#...',
+    '.#.#.#.',
+    '#..#..#',
+    '#.....#',
+    '#.....#',
+    '.#...#.',
+    '..###..'
+  ];
+
   var img = {}, yuklendi = {}, onbellek = {};
   Object.keys(KAYNAK).forEach(function (ad) {
     yuklendi[ad] = false;
@@ -81,12 +95,11 @@
       g.rect(ctx, 0, tby, v.W, 14, '#b8b8c4');
       g.rect(ctx, 0, tby, v.W, 1, P.white);                     // ust isik
       g.rect(ctx, 0, v.H - 1, v.W, 1, '#6a6a78');
-      // baslat butonu
-      g.rect(ctx, 3, tby + 2, 40, 10, '#c8c8d4');
-      g.rect(ctx, 3, tby + 2, 40, 1, P.white);
-      g.rect(ctx, 3, tby + 11, 40, 1, '#6a6a78');
-      g.rect(ctx, 6, tby + 4, 6, 6, P.blue);
-      f.text(ctx, 'BASLAT', 15, tby + 4, { color: '#20202c', scale: 1 });
+      // baslat dugmesi - guc simgesi
+      g.rect(ctx, 3, tby + 2, 13, 10, '#c8c8d4');
+      g.rect(ctx, 3, tby + 2, 13, 1, P.white);
+      g.rect(ctx, 3, tby + 11, 13, 1, '#6a6a78');
+      g.sprite(ctx, GUC, 6, tby + 3, 1, { '#': '#20202c' });
       // saat kutusu
       g.rect(ctx, v.W - 34, tby + 2, 31, 10, '#a8a8b4');
       f.text(ctx, '13:37', v.W - 32, tby + 4, { color: '#20202c', scale: 1 });
@@ -140,7 +153,7 @@
           });
       }
 
-      f.text(ctx, 'SURUKLE VE COPE BIRAK', 52, v.H - 10, {
+      f.text(ctx, 'SURUKLE VE COPE BIRAK', 21, v.H - 10, {
         color: '#20202c', scale: 1
       });
     }
