@@ -608,14 +608,9 @@
     if (kopuk) return PP.muzik.sus();
     if (state.phase === 'lobby' || state.phase === 'gameover') return PP.muzik.calis('lobi');
     if (state.bekle) return PP.muzik.sus();      // mac duraklamis
-    // Biri sampiyonluga 1 tur kala: tempo yukselsin
-    var enYuksek = 0;
-    for (var i = 0; i < state.players.length; i++) {
-      if (state.players[i].wins > enYuksek) enYuksek = state.players[i].wins;
-    }
-    var hedef = state.hedef || state.needed;
-    var turBasiEnFazla = Math.max(1, state.players.length - 1);
-    PP.muzik.calis(enYuksek >= hedef - turBasiEnFazla ? 'gerilim' : 'oyun');
+    // Gerilim muzigi sunucunun ilan ettigi final turuna bagli: ekranda
+    // "FINAL TURU" yazarken muzik de tempo yukseltsin.
+    PP.muzik.calis(state.final ? 'gerilim' : 'oyun');
   }
 
   function onSync() {
@@ -1148,8 +1143,19 @@
       });
     }
 
-    // Kacinci turdayiz + oyunlar hizlandiysa bunu belli et
-    if (state.tur) {
+    // Ust satir: normalde kacinci turda oldugumuz, final turunda ise
+    // yanip sonen uyari. Ikisi ayni yeri kullanir - ekranin ortasi geri
+    // sayim rakaminin, oraya serit koymak uzerine biniyordu.
+    if (state.final) {
+      var fp = Math.floor(time * 6) % 2 === 0;
+      var ft = 'FINAL TURU - PUANLAR X2';
+      var fw = f.width(ft, 2) + 16;
+      g.rect(ctx, Math.round((W - fw) / 2), 4, fw, 20, fp ? '#c04a3a' : '#7d2b20');
+      g.rect(ctx, Math.round((W - fw) / 2), 4, fw, 1, fp ? '#e0705c' : '#c04a3a');
+      f.text(ctx, ft, W / 2, 7, {
+        color: fp ? '#fff45c' : P.yellow, scale: 2, align: 'center'
+      });
+    } else if (state.tur) {
       f.text(ctx, 'TUR ' + state.tur, W / 2, 14, {
         color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
       });
@@ -1200,6 +1206,12 @@
 
     if (state.result && state.result.text) {
       f.text(ctx, state.result.text, W / 2, 112, { color: P.light, scale: 1, align: 'center' });
+    }
+    // Puanlar neden iki kat arttiysa sebebi ekranda kalsin
+    if (state.final) {
+      f.text(ctx, 'FINAL TURU - PUANLAR X2', W / 2, 122, {
+        color: P.yellow, scale: 1, align: 'center', shadow: P.black
+      });
     }
 
     // skor tablosu

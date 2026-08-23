@@ -20,6 +20,7 @@ class Game {
     this.result = null;
     this.winner = null;
     this.notice = null;
+    this.final = false;    // bu tur FINAL TURU mu (puanlar iki katina cikar)
     this.dirty = true;
     this.refresh = 0;
   }
@@ -106,6 +107,7 @@ class Game {
     this.result = null;
     this.winner = null;
     this.notice = notice;
+    this.final = false;
     for (const p of this.room.players) { p.ready = false; p.wins = 0; }
     this.tur = 0;
     this.dirty = true;
@@ -137,6 +139,8 @@ class Game {
 
   nextRound() {
     this.tur++;
+    // Bayrak tur BASINDA sabitlenir: tur ortasinda degisip puani sasirtmasin
+    this.final = this.finalTuru;
     this.mg = this.pickMinigame();
     // Mini oyun kendi hizini bu seviyeye gore ayarlar.
     this.inst = this.mg.create(this.room.players.map((p) => p.id), this.seviye(), this.hafiza);
@@ -161,6 +165,19 @@ class Game {
     return this.room.winsNeeded * (n - 1);
   }
 
+  // Biri TEK TURDA sampiyonlugu alabilecek duruma geldiyse sonraki tur
+  // "final turu" olur: puanlar iki katina cikar. Boylece geride kalanlarin
+  // son bir sansi olur ve mac tek tarafli bitmez.
+  //
+  // Kosul saglandigi surece her tur final turudur; bu bilerek boyle, cunku
+  // "1 tur kala" durumu devam ettigi muddetce gerilim de devam etmeli.
+  get finalTuru() {
+    const n = Math.max(2, this.room.players.length);
+    const enYuksek = Math.max(0, ...this.room.players.map((p) => p.wins));
+    // enYuksek > 0: mac daha baslamadan final turu ilan edilmesin
+    return enYuksek > 0 && enYuksek + (n - 1) >= this.hedefPuan;
+  }
+
   // Turda kacinci gelen kac puan alir:
   //   n kisilik turda onunde k kisi olan (n - 1 - k) puan alir
   //   2 kisi -> 1 / 0          (eski sistemle birebir ayni)
@@ -175,9 +192,11 @@ class Game {
     const gruplar = this.inst.derece ? this.inst.derece() : null;
     if (!gruplar || gruplar.length <= 1) return;
 
+    // Final turunda herkes iki kat puan alir
+    const carpan = this.final ? 2 : 1;
     let onunde = 0;
     for (const grup of gruplar) {
-      const puan = Math.max(0, n - 1 - onunde);
+      const puan = Math.max(0, n - 1 - onunde) * carpan;
       if (puan > 0) {
         for (const p of oyuncular) {
           if (grup.indexOf(p.id) >= 0) p.wins += puan;
@@ -283,6 +302,7 @@ class Game {
       result: this.result,
       winner: this.winner,
       notice: this.notice,
+      final: this.final,                // bu tur puanlar iki katina cikiyor mu
       needed: this.room.winsNeeded,     // lobideki ayar (tur cinsinden)
       hedef: this.hedefPuan,            // sampiyonluk icin gereken PUAN
       tur: this.tur,
