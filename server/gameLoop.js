@@ -399,13 +399,23 @@ class Game {
 
   botTick(dt) {
     if (this.phase !== 'play' || !this.inst || !this.mg) return;
+    // Ezber gerektiren oyunlarda (Hafiza Dizisi, Kablo Kesme) bot da ekrani
+    // IZLEMEK zorunda: gosterilen sembolleri kacirmamak icin botIzle her
+    // karede cagrilir. Hamle ise her zamanki araliklarla yapilir.
+    const izleyen = !!this.inst.botIzle;
     let snap = null;
+
     for (const p of this.room.players) {
       if (!p.bot) continue;
       p.botBekle -= dt;
-      if (p.botBekle > 0) continue;
-      p.botBekle = this.botAraligi(this.mg.controls);
+      const hamleZamani = p.botBekle <= 0;
+      if (!izleyen && !hamleZamani) continue;
+
       if (snap === null) snap = this.inst.snap ? this.inst.snap() : {};
+      if (izleyen) this.inst.botIzle(p.id, snap);
+      if (!hamleZamani) continue;
+
+      p.botBekle = this.botAraligi(this.mg.controls);
       this.botHamle(p, snap);
     }
   }

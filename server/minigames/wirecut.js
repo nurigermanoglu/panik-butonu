@@ -77,6 +77,7 @@ module.exports = {
       t: 0,
       on, off, gosterim,
       showing: true,
+      botHafiza: {},
 
       // Gosterim sirasinda kacinci rengin ekranda oldugu (-1 = bosluk ani)
       gosterilen() {
@@ -87,6 +88,45 @@ module.exports = {
         const idx = Math.floor(rel / adim);
         if (idx >= this.order.length) return -1;
         return rel - idx * adim <= this.on ? idx : -1;
+      },
+
+      // ---- bu oyuna ozel bot ----
+      // Genel bot rastgele noktalara dokunuyordu ve sirayi neredeyse hic
+      // tamamlayamiyordu (olculdu: 5 kablodan ortalama 1.2). Buradaki bot
+      // insan gibi davranir: gosterim sirasinda renkleri izler, sonra
+      // ezberinden keser.
+      //
+      // Yalnizca snap ciktisini kullanir - kesim sirasini (this.order)
+      // okumaz, zaten o istemciye hic gonderilmiyor.
+      botIzle(pid, snap) {
+        const h = this.botHafiza[pid] || (this.botHafiza[pid] = { dizi: [], onceki: null });
+        if (!snap.showing) return;
+        if (snap.cur && snap.cur !== h.onceki) h.dizi.push(snap.cur);
+        h.onceki = snap.cur;
+      },
+
+      botHamle(pid, snap, zorluk) {
+        if (snap.showing) return;              // once ezberle
+        const me = snap.pl[pid];
+        if (!me || me.pen > 0) return;         // makas sikisik
+        if (me.p >= snap.n) return;            // sirayi bitirdi
+        const h = this.botHafiza[pid];
+        if (!h) return;
+
+        const dogruRenk = h.dizi[me.p];
+        if (!dogruRenk) return;
+
+        // Zorluk = hafizanin guvenilirligi. Yanlis kesim makasi sikistirir
+        // ve sirayi basa sarar - yani hata pahali.
+        const HATIRLAMA = [0.5, 0.8, 1];
+        const oran = HATIRLAMA[zorluk] !== undefined ? HATIRLAMA[zorluk] : 0.8;
+        const renk = Math.random() <= oran
+          ? dogruRenk
+          : snap.wires[Math.floor(Math.random() * snap.wires.length)].col;
+
+        const kablo = snap.wires.find((w) => w.col === renk);
+        if (!kablo) return;
+        this.input(pid, 'grab', { x: kablo.x, y: (snap.top + snap.bot) / 2 });
       },
 
       input(pid, a, d) {
