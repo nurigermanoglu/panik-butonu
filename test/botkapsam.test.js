@@ -175,3 +175,66 @@ describe('Zor bot gercekten iyi oynuyor', () => {
       'zor bot dosyalarin ancak %' + Math.round(ort * 100) + "'ini siliyor");
   });
 });
+
+// Surukle-birak oyunlarinda (Dosya Silme, Sekil Yerlestir, Puzzle) bot gorevi
+// HER zorlukta tamamliyor; fark yalnizca bitirme suresine yansiyor. Yani o
+// sure dogrudan "insanin kazanma sansi" demek.
+//
+// Bot hamle araligina birakilinca zor bot Puzzle'i 0.4, Sekil Yerlestir'i 0.8,
+// Dosya Silme'yi 1.6 saniyede bitiriyordu - oyun, insan ekrana dokunmadan
+// bitiyordu. server/minigames/elhizi.js her surukleme icin bir insan eli
+// suresi harciyor. Bu testler o modelin kaldirilmasini/bozulmasini yakalar.
+describe('Surukle-birak: bot insan eli hizinda oynuyor', () => {
+  function bitirmeSuresi(mg, zorluk, seviye, deneme) {
+    let toplam = 0;
+    for (let i = 0; i < deneme; i++) {
+      const oda = new Room('T');
+      oda.add(sahteConn(), 'PASIF', 'c0');
+      const bot = oda.botEkle();
+      oda.botZorluk = zorluk;
+      oda.game.mg = mg;
+      oda.game.inst = mg.create(oda.players.map((p) => p.id), seviye, {});
+      oda.game.phase = 'play';
+      const inst = oda.game.inst;
+      let kalan = inst.sure || mg.duration;
+      while (kalan > 0 && !inst.done()) {
+        oda.game.botTick(DT);
+        inst.update(DT);
+        kalan -= DT;
+      }
+      toplam += inst.pl[bot.id].lastAt;
+    }
+    return toplam / deneme;
+  }
+
+  // Alt sinir: insanin ekrana dokunup en az bir hamle yapabilecegi sure.
+  // Ust sinir: botun hala ciddi bir rakip olmasi.
+  const BEKLENEN = [
+    { id: 'puzzle', enAz: 2.2, enFazla: 5.5, parca: 3 },
+    { id: 'shapesort', enAz: 3.0, enFazla: 6.5, parca: 5 },
+    { id: 'filedelete', enAz: 4.5, enFazla: 9.0, parca: 9 },
+  ];
+
+  for (const b of BEKLENEN) {
+    test(b.id + ' - zor bot ' + b.enAz + '-' + b.enFazla + ' sn arasinda bitiriyor', () => {
+      const mg = MINIGAMES.find((m) => m.id === b.id);
+      const sure = bitirmeSuresi(mg, 2, 0.5, 30);
+      assert.ok(sure >= b.enAz,
+        b.id + ': zor bot ' + sure.toFixed(1) + ' sn - insan ekrana dokunamadan bitiyor');
+      assert.ok(sure <= b.enFazla,
+        b.id + ': zor bot ' + sure.toFixed(1) + ' sn - bu kadar yavas bir bot rakip sayilmaz');
+    });
+  }
+
+  test('zorluk bitirme suresine yansiyor', () => {
+    // Bu uc oyunda skor tavana vurdugu icin zorlugun TEK gorunur etkisi
+    // sure. Sira bozulursa zorluk secimi anlamsizlasir.
+    for (const b of BEKLENEN) {
+      const mg = MINIGAMES.find((m) => m.id === b.id);
+      const orta = bitirmeSuresi(mg, 1, 0.5, 25);
+      const zor = bitirmeSuresi(mg, 2, 0.5, 25);
+      assert.ok(zor < orta,
+        b.id + ': zor bot ' + zor.toFixed(1) + ' sn, orta bot ' + orta.toFixed(1) + ' sn');
+    }
+  });
+});

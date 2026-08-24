@@ -12,11 +12,14 @@ for (let r = 0; r < 3; r++) {
 }
 
 const { dereceler } = require('./siralama');
+const { elHazir } = require('./elhizi');
 const TRASH = { x: 244, y: 88, w: 58, h: 70 };   // birakma bolgesi (comert)
 const FILE_W = 30, FILE_H = 24;
 const FILE_COUNT = 7;
 const GRAB_R = 22;
 const DURATION = 12;
+// Cop kutusu tek ve belli: surukleme disinda dusunulecek bir sey yok.
+const DUSUNME = 0;
 
 module.exports = {
   id: 'filedelete',
@@ -120,6 +123,8 @@ module.exports = {
       botHamle(pid, snap, zorluk) {
         const me = snap.pl[pid];
         if (!me) return;
+        // Her surukleme bir insan eli suresi harcar (bkz. elhizi.js)
+        if (!elHazir(this, pid, zorluk, DUSUNME)) return;
 
         const kalanlar = [];
         for (let i = 0; i < me.f.length; i++) if (me.f[i].st === 0) kalanlar.push(me.f[i]);
@@ -138,8 +143,8 @@ module.exports = {
 
         // Zorluk = elinin ne kadar titredigi. Kolay bot dosyayi kaciriyor
         // ya da cop kutusunun disina birakiyor.
-        const SAPMA = [34, 13, 0];      // piksel (yakalama yaricapi 22)
-        const sapma = SAPMA[zorluk] !== undefined ? SAPMA[zorluk] : 6;
+        const SAPMA = [20, 7, 0];       // piksel (yakalama yaricapi 22)
+        const sapma = SAPMA[zorluk] !== undefined ? SAPMA[zorluk] : SAPMA[1];
         const kay = () => (Math.random() * 2 - 1) * sapma;
 
         this.input(pid, 'grab', { x: hedef.x + kay(), y: hedef.y + kay() });

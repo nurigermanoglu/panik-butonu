@@ -227,7 +227,7 @@ hiç oynamayan bir oyuncunun aldığı sonuç — karşılaştırma noktası:
 | Hafıza Dizisi | sembol / 4 | 0 | 1.6 | 2.9 | **4.0** |
 | Köstebek Avı | köstebek / 19 | 0 | 11.8 | 18.0 | **18.6** |
 | Sıcak Patates | kurtuldu | %60 | ✓ | ✓ | **✓** |
-| Dosya Silme | dosya / 9 | 0 | 5.0 | 9.0 | **9.0** |
+| Dosya Silme | dosya / 9 | 0 | 4.7 | 9.0 | **9.0** |
 | Kablo Kesme | kablo / 5 | 0 | 3.6 | 5.0 | **5.0** |
 | Şekil Yerleştir | şekil / 5 | 0 | 5.0 | 5.0 | **5.0** |
 | Puzzle | parça / 3 | 0 | 3.0 | 3.0 | **3.0** |
@@ -235,9 +235,9 @@ hiç oynamayan bir oyuncunun aldığı sonuç — karşılaştırma noktası:
 | Düşenleri Yakala | skor | 1.3 | 4.1 | 10.7 | **17.8** |
 | Ters Emir | doğru / 8 | 0 | 4.2 | 7.3 | **7.8** |
 
-Şekil Yerleştir ve Puzzle'da üç seviye de görevi tamamlıyor; fark **bitirme
-süresine** yansıyor (şekilde 5.4 → 1.7 → 0.8 sn, puzzle'da 2.3 → 0.9 → 0.4 sn),
-yani yarışta zor bot kazanıyor.
+Sürükle-bırak oyunlarında (Dosya Silme, Şekil Yerleştir, Puzzle) üç seviye de
+görevi tamamlıyor; fark **bitirme süresine** yansıyor — bkz. aşağıdaki
+"botun el hızı".
 
 Karşılaştırma için insan simülasyonu (Düşenleri Yakala): acemi 6.5, orta 11.1,
 usta 16.2 puan. Yani **ZOR bot usta bir insan kadar** oynuyor.
@@ -263,6 +263,39 @@ sürükle-bırak oyunlarında bot görevi zaten tamamlıyor, tempoyu artırmak s
 bitirme süresini kısaltıyor. Ölçüldü: 0.3 çarpanında Puzzle **0.2 saniyede**
 bitiyordu — bu zorluk değil, oyunun insan ekrana dokunmadan bitmesi demek.
 Zorluk oyunun kendi bot mantığından verildi.
+
+#### Botun el hızı (sürükle-bırak oyunları)
+
+Dosya Silme, Şekil Yerleştir ve Puzzle'da bot görevi **her zorlukta**
+tamamlıyor; fark yalnızca bitirme süresine yansıyor ve `derece()` eşitliği
+onunla bozuyor. Yani o süre doğrudan **insanın kazanma şansı** demek.
+
+Bot hamle aralığına bırakılınca zor bot Puzzle'ı **0.4**, Şekil Yerleştir'i
+**0.8**, Dosya Silme'yi **1.6** saniyede bitiriyordu. Oyun, insan ekrana
+dokunmadan bitiyordu. Hamle aralığını yavaşlatmak da çözüm değil: aynı çarpan
+bütün oyunlarda geçerli ve Engelden Kaç'ta botun hızlı olması *gerekiyor*.
+
+[server/minigames/elhizi.js](server/minigames/elhizi.js) her sürükleme için bir
+**insan eli süresi** harcatıyor:
+
+```
+temel süre (uzan - tut - taşı - bırak)  +  oyunun düşünme payı
+```
+
+Düşünme payı oyunun kendisinden gelir: çöp kutusu tek ve belli olduğu için
+Dosya Silme'de düşünülecek bir şey yok (0), şekil-yuva eşleşmesi bir bakışta
+görülüyor (0.13 sn), Puzzle'da parçanın hangi boşluğa ait olduğunu bulmak
+gerçekten zaman alıyor (0.5 sn).
+
+| Oyun | Parça | KOLAY | ORTA | ZOR | ZOR'da parça başına |
+|---|---|---|---|---|---|
+| Puzzle | 3 | 8.6 sn | 5.0 sn | **3.2 sn** | 1.07 sn |
+| Şekil Yerleştir | 5 | 9.7 sn (3.5/5) | 6.9 sn | **4.0 sn** | 0.80 sn |
+| Dosya Silme | 9 | (4.7/9) | 9.7 sn | **6.2 sn** | 0.69 sn |
+
+Zor bot artık **hızlı bir insan** kadar: hâlâ ciddi bir rakip ama tempolu
+oynayan biri onu geçebiliyor. Bu süre bir **alt sınır**; kolay botta hamle
+aralığı zaten daha uzun olabiliyor, o zaman aralık geçerli oluyor.
 
 [test/botkapsam.test.js](test/botkapsam.test.js) bunu kalıcı olarak koruyor:
 mini oyun listesini olduğu gibi gezip her oyunda botun hiç oynamayan bir rakibi
@@ -408,6 +441,8 @@ server/
   room.js         Oda ve oyuncu yönetimi
   gameLoop.js     Durum makinesi: lobi → geri sayım → oyun → sonuç → şampiyon
   minigames/      Her mini oyunun kuralları
+                    siralama.js  ortak derece hesabı
+                    elhizi.js    sürükle-bırak oyunlarında botun el hızı
 test/
   yardimci.js     Ortak kurulum (sahte bağlantı, oda kurma, zaman ilerletme)
   *.test.js       Testler (npm test)
@@ -458,7 +493,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 226 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 230 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|

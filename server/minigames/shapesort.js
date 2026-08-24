@@ -4,6 +4,7 @@
 // Yuva sirasi ve sekillerin baslangic yerleri bir kez karistirilir, HERKES ayni duzeni oynar.
 
 const { dereceler } = require('./siralama');
+const { elHazir } = require('./elhizi');
 const TIPLER = ['kare', 'ucgen', 'daire', 'arti', 'yildiz'];
 const SLOT_Y = 64;
 const HOME_Y = 142;
@@ -11,6 +12,8 @@ const XS = [38, 100, 160, 222, 282];
 const GRAB_R = 19;      // sekiller buyudu, tutma alani da buyudu
 const DROP_R = 21;
 const DURATION = 14;
+// Sekil-yuva eslesmesi bir bakista goruluyor: kucuk bir dusunme payi.
+const DUSUNME = 0.13;
 
 function karistir(a) {
   const r = a.slice();
@@ -126,6 +129,8 @@ module.exports = {
       botHamle(pid, snap, zorluk) {
         const me = snap.pl[pid];
         if (!me) return;
+        // Her surukleme bir insan eli suresi harcar (bkz. elhizi.js)
+        if (!elHazir(this, pid, zorluk, DUSUNME)) return;
 
         const bekleyen = me.sh.filter((q) => q.st === 0);
         if (!bekleyen.length) return;

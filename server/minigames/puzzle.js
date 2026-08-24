@@ -5,6 +5,7 @@
 // HERKES ayni bulmacayi oynar. Ilerleme oyuncu basina ayri tutulur.
 
 const { dereceler } = require('./siralama');
+const { elHazir } = require('./elhizi');
 const COLS = 4, ROWS = 4;
 const CW = 30, CH = 34;                  // hucre boyutu (resim orani ~0.90 korunur)
 const GX = 20, GY = 32;                  // izgara sol ust kosesi (resim solda, buyuk)
@@ -14,6 +15,9 @@ const MISSING = 3;
 const GRAB_R = 18;
 const DROP_R = 20;
 const DURATION = 14;
+// Parcanin hangi bosluga ait oldugunu bulmak gercekten zaman aliyor:
+// uc oyunun icinde en yuksek dusunme payi burada.
+const DUSUNME = 0.5;
 const IMAGE_COUNT = 2;
 
 // Eksik kare olarak sadece resmin DOLU kismindaki kareler secilir; boylece her parca
@@ -159,6 +163,8 @@ module.exports = {
       botHamle(pid, snap, zorluk) {
         const me = snap.pl[pid];
         if (!me) return;
+        // Her surukleme bir insan eli suresi harcar (bkz. elhizi.js)
+        if (!elHazir(this, pid, zorluk, DUSUNME)) return;
 
         const bekleyen = me.p.filter((q) => q.st === 0);
         if (!bekleyen.length) return;
