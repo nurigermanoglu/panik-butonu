@@ -1148,8 +1148,17 @@
         g.arrow(ctx, par[1], k.x + 6, k.y + 8, 1, '#000000');
       });
     }
-    // Oklarin ne yaptigi belli olsun
-    f.text(ctx, 'HEDEF: ' + (state.hedef || state.needed) + ' PUAN',
+    // Oklarin ne yaptigi belli olsun.
+    //
+    // Burada IKI ayri sayi var ve karistirilmalari kolay:
+    //   TUR  = lobideki ayar, oklarla degisir
+    //   PUAN = maci bitiren esik = TUR x (kisi - 1)
+    // Sadece PUAN yazildiginda bot eklemek bu sayiyi degistirdigi icin
+    // "bot butonu hedefi de oynatiyor" gibi gorunuyordu. Ikisi birden
+    // yazilinca hangi butonun neyi degistirdigi belli oluyor.
+    var turAyar = state.needed || 1;
+    var puanHedef = state.hedef || turAyar;
+    f.text(ctx, 'HEDEF: ' + turAyar + ' TUR = ' + puanHedef + ' PUAN',
       sagOrta, LOBI.hazir.y + LOBI.hazir.h + 2, {
       color: '#0a1826', scale: 1, align: 'center', shadow: HALE
     });
