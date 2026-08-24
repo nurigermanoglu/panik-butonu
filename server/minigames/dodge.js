@@ -151,45 +151,98 @@ module.exports = {
       },
 
       // ---- bu oyuna ozel bot ----
-      // Rastgele serit degistiren genel bot kendini engele sokuyordu: hic
-      // oynamayandan bile kotu sonuc aliyordu. Bu bot yaklasan satira bakip
-      // acik serite gecer.
+      // Rastgele serit degistiren genel bot kendini engele sokuyordu.
+      //
+      // Bu botun bilmesi gereken asil sey su: serit degisimi ANLIK DEGIL,
+      // suzulerek olur ve suzulurken oyuncu IKI SERIDI BIRDEN kaplar. Yani
+      // "acik serite kac" yetmez - kacisin satir gelmeden BITMIS olmasi
+      // gerekir. Bot bu yuzden her satir icin bandi kaplayacagi zaman
+      // araligini hesaplar ve:
+      //   1. satir su anda bandindaysa hic kimildamaz (kayma olum olur)
+      //   2. degilse, yetisebilecegi acik seritler arasindan secim yapar
+      //   3. secerken BIR SONRAKI satiri da gozetir - yoksa kactigi serit
+      //      hemen kapanip kose kapmacaya dusuyor
+      //
+      // Yalnizca snap ciktisini kullanir - istemcinin de gordugu bilgiyi.
       botHamle(pid, snap, zorluk) {
         const me = snap.pl[pid];
         if (!me || !me.a) return;
 
+        const sw = snap.sw || 7.5;                 // serit/sn
+        const serit = Math.round(me.h);            // hedeflenen serit
+        const PAY = 0.04;                          // kucuk guvenlik payi (sn)
+
+        // Her satirin oyuncu bandini kaplayacagi [t0, t1] araligi
+        const engeller = [];
+        for (const r of snap.rows) {
+          const v = Math.max(1, r.v);
+          const t0 = (snap.py - (r.y + r.h)) / v;  // bandima girmesine kalan
+          const t1 = (snap.py + snap.ph - r.y) / v; // bandimi terk etmesine kalan
+          if (t1 <= 0) continue;                   // tamamen gecti
+          engeller.push({ k: r.k, t0: t0, t1: t1 });
+        }
+        if (!engeller.length) return;
+        engeller.sort((a, b) => a.t0 - b.t0);
+
+        // (1) Satir su anda bandimda: kimildamak beni yan seride sokar,
+        //     orasi kapali olabilir. Oldugum yerde kal.
+        if (engeller[0].t0 <= 0) return;
+
+        const ilk = engeller[0];
+        const sonraki = engeller[1] || null;
+        const acik = (e, l) => e.k.indexOf(l) < 0;
+        // Suzulme SU ANKI konumdan baslar (hedeften degil): yariyolda
+        // yon degistirirken gercek mesafe budur.
+        const varis = (l) => Math.abs(l - me.k) / sw;
+
+        // Yetisebilecegim ve ilk satirda acik olan seritler
+        const adaylar = [];
+        for (let l = 0; l < snap.lanes; l++) {
+          if (!acik(ilk, l)) continue;
+          if (varis(l) + PAY > ilk.t0) continue;
+          adaylar.push(l);
+        }
+
+        let hedef;
+        if (adaylar.length) {
+          // Ikinci satiri da gozeterek puanla: kucuk puan = iyi
+          const puan = (l) => {
+            let p = Math.abs(l - serit) * 0.1;     // gereksiz kosma cezasi
+            if (sonraki) {
+              if (acik(sonraki, l)) p -= 1;
+              else {
+                // Burasi ikinci satirda kapali: oradan kacabilir miyim?
+                let kacilir = false;
+                for (let m = 0; m < snap.lanes; m++) {
+                  if (acik(sonraki, m) && Math.abs(m - l) / sw + PAY <= sonraki.t0) {
+                    kacilir = true; break;
+                  }
+                }
+                if (kacilir) p -= 0.4;
+              }
+            }
+            return p;
+          };
+          hedef = adaylar[0];
+          for (const l of adaylar) if (puan(l) < puan(hedef)) hedef = l;
+        } else {
+          // Hicbirine yetisemiyorum: yine de en yakin acik serite kos.
+          // (Desen her zaman gecilebilir uretildigi icin buraya ancak bot
+          //  gec kalinca dusulur - bos durmaktansa denemek daha iyi.)
+          let enYakin = -1;
+          for (let l = 0; l < snap.lanes; l++) {
+            if (!acik(ilk, l)) continue;
+            if (enYakin < 0 || Math.abs(l - me.k) < Math.abs(enYakin - me.k)) enYakin = l;
+          }
+          if (enYakin < 0) return;
+          hedef = enYakin;
+        }
+
+        // Zorluk = dogru karari verme orani. Kolay bot sasirip rastgele kacar.
         const ISABET = [0.6, 0.85, 1];
         const isabet = ISABET[zorluk] !== undefined ? ISABET[zorluk] : 0.85;
-        const serit = Math.round(me.h);        // hedeflenen serit
-
-        // Serit degisimi ANLIK degil, suzulerek olur. Hedefe varmadan yeni
-        // karar verilirse bot iki serit arasinda kalip ikisinden de carpar -
-        // olculdu: zor bot (sik hamle yaptigi icin) kolaydan bile kotuydu.
-        if (Math.abs(me.k - me.h) > 0.15) return;
-
-        // Oyuncuya en yakin, henuz TAMAMEN gecmemis satir.
-        // "uzaklik < 0 ise atla" demek hataliydi: oyuncunun hizasina girmis
-        // ama henuz gecmemis satir yok sayiliyor, bot bir sonrakine gore
-        // kacip mevcut engele carpiyordu.
-        let yakin = null, enKisa = Infinity;
-        for (const r of snap.rows) {
-          if (r.y > snap.py + snap.ph) continue;      // tamamen gecti
-          const uzaklik = Math.max(0, snap.py - (r.y + r.h));
-          const sure = uzaklik / Math.max(1, r.v);
-          if (sure < enKisa) { enKisa = sure; yakin = r; }
-        }
-        if (!yakin) return;
-        if (yakin.k.indexOf(serit) < 0) return; // seridim zaten acik
-
-        // Kapali olmayan seritlerden en yakinina gec
-        const acik = [];
-        for (let l = 0; l < snap.lanes; l++) if (yakin.k.indexOf(l) < 0) acik.push(l);
-        if (!acik.length) return;
-        let hedef = acik[0];
-        for (const l of acik) {
-          if (Math.abs(l - serit) < Math.abs(hedef - serit)) hedef = l;
-        }
         if (Math.random() > isabet) hedef = Math.floor(Math.random() * snap.lanes);
+
         if (hedef === serit) return;
         this.input(pid, 'dir', hedef < serit ? 'left' : 'right');
       },

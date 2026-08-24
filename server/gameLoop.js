@@ -306,7 +306,10 @@ class Game {
     let temel;
     switch (controls) {
       case 'action': temel = 0.15 + Math.random() * 0.2; break;
-      case 'lr': temel = 0.3 + Math.random() * 0.4; break;
+      // Serit oyunlarinda (Engelden Kac, Dusenleri Yakala) insan surekli
+      // tepki verebiliyor. 0.3-0.7 sn cok yavasti: zor bot bile Engelden
+      // Kac'ta sahanin yarisinda oluyordu (14 sn'nin 7'si).
+      case 'lr': temel = 0.1 + Math.random() * 0.14; break;
       case 'dpad': temel = 0.25 + Math.random() * 0.35; break;
       default: temel = 0.2 + Math.random() * 0.25; break;    // pointer
     }

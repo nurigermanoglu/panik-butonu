@@ -74,7 +74,7 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 | **Engelden Kaç** | 14 sn | Subway Surfers tarzı 3 şeritli koşu: **sol/sağ** ile şerit değiştir. Zıplama yok — her engel tam bir duvar, tek kurtuluş doğru şeride geçmek. Herkes birebir aynı deseni oynar ve desen her zaman geçilebilir üretilir. Kazanan: hayatta kalan → daha uzun koşan |
 | **Hafıza Dizisi** | 14 sn | Gösterilen ok dizisini ilk doğru tekrarlayan kazanır |
 | **Sıcak Patates** | ~30 sn | Bomba rastgele birinde başlar, tuşa basınca rastgele başkasına geçer. Fitil el değiştirse de yanmaya devam eder; patladığında elinde tutan elenir. Tek kişi kalana kadar sürer |
-| **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim. Köstebeğe vurunca kısa süre sersemlemiş hâli (`img/kostebek_vur.png`) görünüp kaybolur |
+| **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim. Köstebeğe vurunca kısa süre sersemlemiş hâli (`img/kostebek_vur.png`) görünüp kaybolur. **Rakiplerin vuruşları** kendi renklerinde kısa bir yıldız olarak vurdukları deliğin üstünde belirir — herkesin vurma hakkı ayrı olduğu için yoksa rakibin oynayıp oynamadığı hiç görünmüyordu |
 | **Dosya Silme** | 12 sn | Eski bir bilgisayar masaüstünde 7 klasörü çöp kutusuna sürükle. Hepsini en hızlı silen kazanır |
 | **Kablo Kesme** | ~13.6 sn | İki aşamalı: önce renkler tek tek gösterilir (kablolar henüz yok), sonra kablolar açılır ve sırayı **ezberden** kesmen gerekir — sıra bir daha gösterilmez. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır **ve sıra başa sarar**: kesilen kablolar onarılır, baştan başlarsın. Sırayı ilk bitiren kazanır; kimse bitiremezse **en çok ilerleyebilen** kazanır |
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
@@ -203,8 +203,8 @@ botHamle(pid, snap, zorluk)           // hamle araliklariyla; 0 kolay, 1 orta, 2
 Bot yalnızca `snap()` çıktısını kullanmalı — yani istemcinin de gördüğü bilgiyi.
 Oyunun iç değişkenlerine bakan bir bot "her şeyi bilen" bir rakip olurdu.
 
-9 oyun kendi bot mantığını kullanıyor; kalan 4'ünde (At Yarışı, Refleks, Sıcak
-Patates, Dosya Silme) genel davranış zaten yeterli.
+10 oyun kendi bot mantığını kullanıyor; kalan 3'ünde (At Yarışı, Refleks, Sıcak
+Patates) genel davranış zaten yeterli.
 
 **Ezber gerektirenler** (Hafıza Dizisi, Kablo Kesme) için bot da insan gibi
 *ekranı izliyor*: `botIzle` her karede çağrıldığı için gösterilen sembolleri
@@ -223,24 +223,46 @@ hiç oynamayan bir oyuncunun aldığı sonuç — karşılaştırma noktası:
 |---|---|---|---|---|---|
 | At Yarışı | yol / 100 | 0 | 35 | 73 | **100** |
 | Refleks Düellosu | basabildi | 0 | ✓ | ✓ | **✓** |
-| Engelden Kaç | yaşam sn | 3.5 | 5.3 | 6.3 | **9.5** |
+| Engelden Kaç | yaşam sn | 3.5 | 4.4 | 6.4 | **12.9** |
 | Hafıza Dizisi | sembol / 4 | 0 | 1.6 | 2.9 | **4.0** |
-| Köstebek Avı | skor | 0 | 11.0 | 14.9 | **15.4** |
+| Köstebek Avı | köstebek / 19 | 0 | 11.8 | 18.0 | **18.6** |
 | Sıcak Patates | kurtuldu | %60 | ✓ | ✓ | **✓** |
-| Dosya Silme | dosya / 7 | 0 | 3.4 | 5.2 | **6.2** |
+| Dosya Silme | dosya / 9 | 0 | 5.0 | 9.0 | **9.0** |
 | Kablo Kesme | kablo / 5 | 0 | 3.6 | 5.0 | **5.0** |
 | Şekil Yerleştir | şekil / 5 | 0 | 5.0 | 5.0 | **5.0** |
 | Puzzle | parça / 3 | 0 | 3.0 | 3.0 | **3.0** |
 | Zemin Çöküyor | yaşam sn | 6.6 | 11.6 | 13.6 | **14.0** |
-| Düşenleri Yakala | skor | 1.3 | 3.9 | 6.9 | **11.9** |
-| Ters Emir | skor / 8 | 0 | 3.5 | 6.7 | **7.6** |
+| Düşenleri Yakala | skor | 1.3 | 4.1 | 10.7 | **17.8** |
+| Ters Emir | doğru / 8 | 0 | 4.2 | 7.3 | **7.8** |
 
 Şekil Yerleştir ve Puzzle'da üç seviye de görevi tamamlıyor; fark **bitirme
 süresine** yansıyor (şekilde 5.4 → 1.7 → 0.8 sn, puzzle'da 2.3 → 0.9 → 0.4 sn),
 yani yarışta zor bot kazanıyor.
 
 Karşılaştırma için insan simülasyonu (Düşenleri Yakala): acemi 6.5, orta 11.1,
-usta 16.2 puan. Yani **ZOR bot orta seviye bir insan kadar** oynuyor.
+usta 16.2 puan. Yani **ZOR bot usta bir insan kadar** oynuyor.
+
+#### Zor bot neden bir kez elden geçirildi
+
+İlk hâlinde zor bot **Engelden Kaç'ta 14 saniyelik sahanın ancak 7 saniyesini**
+yaşıyordu, yani turun yarısında ölüyordu. İki ayrı sorun vardı:
+
+1. **Botun modeli eksikti.** Şerit değişimi anlık değil, süzülerek oluyor ve
+   süzülürken oyuncu *iki şeridi birden* kaplıyor. "Açık şeride kaç" yetmiyor —
+   kaçışın satır gelmeden **bitmiş** olması gerekiyor. Bot artık her satır için
+   şeridi kaplayacağı zaman aralığını hesaplıyor, satır üstündeyken hiç
+   kımıldamıyor ve bir sonraki satırı da gözeterek şerit seçiyor (yoksa
+   kaçtığı şerit hemen kapanıp köşe kapmacaya düşüyordu).
+2. **Karar sıklığı yetmiyordu.** `lr` şemasında botun hamle aralığı 0.3-0.7 sn
+   idi; insan ise sürekli tepki verebiliyor. 0.1-0.24 sn'ye indirildi.
+
+İkisi birlikte zor botu 6.9 → 12.9 saniyeye çıkardı (%92 hayatta kalma).
+
+Küresel tempo çarpanını daha da düşürmek cazipti ama **yanlış olurdu**:
+sürükle-bırak oyunlarında bot görevi zaten tamamlıyor, tempoyu artırmak sadece
+bitirme süresini kısaltıyor. Ölçüldü: 0.3 çarpanında Puzzle **0.2 saniyede**
+bitiyordu — bu zorluk değil, oyunun insan ekrana dokunmadan bitmesi demek.
+Zorluk oyunun kendi bot mantığından verildi.
 
 [test/botkapsam.test.js](test/botkapsam.test.js) bunu kalıcı olarak koruyor:
 mini oyun listesini olduğu gibi gezip her oyunda botun hiç oynamayan bir rakibi
@@ -436,7 +458,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 223 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 226 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -444,7 +466,7 @@ yani yine `npm install` gerekmiyor. 223 test bir saniyede biter.
 | [test/minioyunlar.test.js](test/minioyunlar.test.js) | 13 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
 | [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
-| [test/botkapsam.test.js](test/botkapsam.test.js) | **Botun 13 oyunun hepsini oynayabildiği**: her oyunda pasif rakibi yenmesi, zorluğun ters dönmemesi |
+| [test/botkapsam.test.js](test/botkapsam.test.js) | **Botun 13 oyunun hepsini oynayabildiği**: her oyunda pasif rakibi yenmesi, zorluğun ters dönmemesi. Ayrıca **zor botun gerçekten iyi oynadığı** (Engelden Kaç'ta turun %86'sını ayakta geçirmesi gibi eşikler) — "oynuyor ama kötü oynuyor" durumunu yakalar |
 | [test/ezberbot.test.js](test/ezberbot.test.js) | Ezber oyunlarında bot: gösterimi izleyip diziyi doğru öğrenmesi, gösterim sırasında hamle yapmaması, zorluğa göre yanılması |
 | [test/bot.test.js](test/bot.test.js) | Botlar: ekleme/çıkarma sınırları, paket gönderilmemesi, tek başına maç başlatma, gerçekten oynayıp puan alması, refleks turunda erken basmaması |
 | [test/istatistik.test.js](test/istatistik.test.js) | Maç sonu istatistikleri: sayımlar, eşitlikte satırın atlanması, beraberlik durumları, yalnızca şampiyon ekranında yayınlanması |

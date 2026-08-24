@@ -151,7 +151,12 @@ module.exports = {
 
         // Bir esyanin yakalama cizgisine inmesine kalan sure
         const varis = (it) => (snap.yak - it.y) / Math.max(1, it.v);
-        const SERIT_SURE = 0.3;      // bir serit degistirmek yaklasik bu kadar surer
+        // Serit degisimi bu oyunda ANLIK (kayma yok); harcanan sure botun
+        // iki hamlesi arasindaki bekleme. Zor bot daha sik hamle yaptigi
+        // icin daha uzaktaki yildiza da yetisir - sabit 0.3 sn varsayimi
+        // onu gereksiz yere temkinli yapiyordu.
+        const SERIT = [0.35, 0.2, 0.09];
+        const SERIT_SURE = SERIT[zorluk] !== undefined ? SERIT[zorluk] : 0.2;
         const TEHLIKE = 1.1;         // bu sure icinde inen bomba tehlikeli sayilir
 
         const bombaVar = (lane) => snap.items.some((it) => {

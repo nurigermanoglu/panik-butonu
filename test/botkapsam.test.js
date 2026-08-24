@@ -86,8 +86,8 @@ describe('Oyuna ozel bot sunanlar', () => {
     // Bu oyunlarda genel davranis yetersizdi; ozel bot yazildi.
     // Liste degisirse (biri kaldirilirsa) haberimiz olsun.
     assert.deepStrictEqual(ozel.sort(), [
-      'collect', 'dodge', 'floor', 'memory', 'mole', 'puzzle', 'shapesort',
-      'tersemir', 'wirecut',
+      'collect', 'dodge', 'filedelete', 'floor', 'memory', 'mole', 'puzzle',
+      'shapesort', 'tersemir', 'wirecut',
     ]);
   });
 
@@ -101,13 +101,77 @@ describe('Oyuna ozel bot sunanlar', () => {
   });
 
   test('ozel bot sunmayanlar genel davranisla idare ediyor', () => {
-    // race, reflex, hotpotato, filedelete: kontrol semasina gore rastgele
+    // race, reflex, hotpotato: kontrol semasina gore rastgele
     // hamle yeterli. Yukaridaki kapsam testi bunu zaten dogruluyor.
     const genel = [];
     for (const mg of MINIGAMES) {
       const inst = mg.create(['p0', 'p1'], 0, {});
       if (!inst.botHamle) genel.push(mg.id);
     }
-    assert.deepStrictEqual(genel.sort(), ['filedelete', 'hotpotato', 'race', 'reflex']);
+    assert.deepStrictEqual(genel.sort(), ['hotpotato', 'race', 'reflex']);
+  });
+});
+
+// Yukaridaki testler "bot oynayabiliyor mu" sorusunu soruyor. Bu bolum
+// "ZOR bot gercekten iyi mi" sorusunu soruyor - cunku bot oynuyor ama kotu
+// oynuyor olabiliyordu: Engelden Kac'ta zor bot 14 saniyelik sahanin ancak
+// 7 saniyesini yasiyordu (yani turun yarisinda oluyordu).
+describe('Zor bot gercekten iyi oynuyor', () => {
+  // Botu gercek dongudeki gibi calistirir (botTick, hamle araliklari dahil).
+  function oyna(mg, zorluk, seviye) {
+    const oda = new Room('T');
+    oda.add(sahteConn(), 'PASIF', 'c0');
+    const bot = oda.botEkle();
+    oda.botZorluk = zorluk;
+    oda.game.mg = mg;
+    oda.game.inst = mg.create(oda.players.map((p) => p.id), seviye, {});
+    oda.game.phase = 'play';
+    const inst = oda.game.inst;
+    if (inst.start) inst.start();
+    let kalan = inst.sure || mg.duration;
+    while (kalan > 0 && !inst.done()) {
+      oda.game.botTick(DT);
+      inst.update(DT);
+      kalan -= DT;
+    }
+    return { inst, id: bot.id, sure: inst.sure || mg.duration };
+  }
+
+  function ortalama(mg, zorluk, seviye, deneme, olc) {
+    let t = 0;
+    for (let i = 0; i < deneme; i++) t += olc(oyna(mg, zorluk, seviye));
+    return t / deneme;
+  }
+
+  test('Engelden Kac - zor bot turun cogunu ayakta gecirir', () => {
+    const dodge = MINIGAMES.find((m) => m.id === 'dodge');
+    const yasam = (r) => (r.inst.pl[r.id].alive ? r.sure : r.inst.pl[r.id].deadAt);
+    // Desen "her zaman gecilebilir" uretiliyor; iyi oynayan bir bot sonuna
+    // kadar gitmeli. Esik 12 sn (turun %86'si): eski bot 11.4 sn'de kaliyordu,
+    // ondan onceki hali 6.7 sn'de. Esigi asagi cekersek o iki gerileme de
+    // testten gecerdi.
+    const ort = ortalama(dodge, 2, 0.5, 60, yasam);
+    assert.ok(ort >= 12,
+      'zor bot ortalama ' + ort.toFixed(1) + ' sn yasiyor - 14 sn sahada bu az');
+  });
+
+  test('Dusenleri Yakala - zor bot orta bottan belirgin onde', () => {
+    const collect = MINIGAMES.find((m) => m.id === 'collect');
+    const skor = (r) => r.inst.pl[r.id].score;
+    const orta = ortalama(collect, 1, 0.5, 60, skor);
+    const zor = ortalama(collect, 2, 0.5, 60, skor);
+    // Mutlak esik: usta bir insan simulasyonu 16.2 puan aliyor, zor bot da
+    // o civarda olmali. Sadece 'ortadan iyi' demek yetmiyordu - eski bot
+    // 13.3 puanla o kosulu da sagliyordu.
+    assert.ok(zor >= 15,
+      'zor bot ' + zor.toFixed(1) + ' puan aliyor (orta bot ' + orta.toFixed(1) + ')');
+  });
+
+  test('Dosya Silme - zor bot butun dosyalari siliyor', () => {
+    const fd = MINIGAMES.find((m) => m.id === 'filedelete');
+    const oran = (r) => r.inst.pl[r.id].score / r.inst.adet;
+    const ort = ortalama(fd, 2, 0.5, 40, oran);
+    assert.ok(ort >= 0.95,
+      'zor bot dosyalarin ancak %' + Math.round(ort * 100) + "'ini siliyor");
   });
 });

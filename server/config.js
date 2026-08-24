@@ -29,7 +29,12 @@ module.exports = {
   // kolay bot seyrek, zor bot sik hamle yapar.
   BOT_ZORLUK: 1,
   BOT_ZORLUK_ADLARI: ['KOLAY', 'ORTA', 'ZOR'],
-  // Hamle araligi carpani (buyuk = yavas bot)
+  // Hamle araligi carpani (buyuk = yavas bot).
+  // NOT: bunu ZOR icin daha da dusurmek cazip ama yanlis: surukle-birak
+  // oyunlarinda (Puzzle, Sekil Yerlestir) bot gorevi zaten tamamliyor,
+  // tempoyu artirmak yalnizca bitirme suresini insanin dokunamayacagi
+  // kadar kisaltiyor (olculdu: 0.3 carpaninda Puzzle 0.2 sn). Zorluk
+  // gereken yere, oyunun kendi bot mantigindan verilir.
   BOT_ZORLUK_TEMPO: [2.2, 1, 0.55],
 
   RECONNECT_GRACE: 15,

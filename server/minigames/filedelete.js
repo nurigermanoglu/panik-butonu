@@ -107,6 +107,45 @@ module.exports = {
         for (const id of this.ids) if (this.pl[id].flash > 0) this.pl[id].flash -= dt;
       },
 
+      // ---- bu oyuna ozel bot ----
+      // Genel isaretci botu rastgele bir noktaya dokunup cope birakmayi
+      // deniyordu: cogu dokunusta elinde dosya olmuyordu (olculdu: zor bot
+      // 7 dosyanin ancak 6.2'sini siliyordu ve suresi hep tavanda kaliyordu).
+      //
+      // Bu bot silinmemis en yakin dosyayi alip cop kutusuna birakir.
+      // Tek hamlede al-birak yapmasi kasitli: insanin bir surukleme hareketi
+      // de tek eylemdir, sureyi belirleyen hamleler ARASINDAKI bekleme.
+      //
+      // Yalnizca snap ciktisini kullanir - istemcinin de gordugu bilgiyi.
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me) return;
+
+        const kalanlar = [];
+        for (let i = 0; i < me.f.length; i++) if (me.f[i].st === 0) kalanlar.push(me.f[i]);
+        if (!kalanlar.length) return;
+
+        // Cop kutusunun ortasi
+        const cx = snap.trash.x + snap.trash.w / 2;
+        const cy = snap.trash.y + snap.trash.h / 2;
+
+        // Cope en yakin dosyadan basla: toplam surukleme yolu kisalir
+        let hedef = kalanlar[0], enYakin = Infinity;
+        for (const fl of kalanlar) {
+          const dx = fl.x - cx, dy = fl.y - cy, dd = dx * dx + dy * dy;
+          if (dd < enYakin) { enYakin = dd; hedef = fl; }
+        }
+
+        // Zorluk = elinin ne kadar titredigi. Kolay bot dosyayi kaciriyor
+        // ya da cop kutusunun disina birakiyor.
+        const SAPMA = [34, 13, 0];      // piksel (yakalama yaricapi 22)
+        const sapma = SAPMA[zorluk] !== undefined ? SAPMA[zorluk] : 6;
+        const kay = () => (Math.random() * 2 - 1) * sapma;
+
+        this.input(pid, 'grab', { x: hedef.x + kay(), y: hedef.y + kay() });
+        this.input(pid, 'drop', { x: cx + kay(), y: cy + kay() });
+      },
+
       // Herkes butun dosyalarini sildiyse tur erken bitsin
       done() {
         return this.ids.every((id) => this.pl[id].score >= this.adet);

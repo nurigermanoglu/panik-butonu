@@ -73,6 +73,15 @@
   var VURULAN_SURESI = 0.45;
   var vurulanlar = {};   // kostebek no -> gosterim bitis ani
 
+  // BASKALARININ vuruslari. Bu oyunda herkesin vurma hakki AYRI: senin
+  // ekranindaki kostebekler senin vurduklarina gore kalkip iniyor, yani
+  // rakiplerin ne yaptigi hicbir yerde gorunmuyordu - ustteki sayidan
+  // baska. Bot oynarken "hicbir sey yapmiyor" izlenimi bundan cikiyor.
+  // Burada her rakip vurusu, o oyuncunun renginde kisa bir halka olarak
+  // vurdugu deligin uzerinde belirir.
+  var RAKIP_SURESI = 0.5;
+  var rakipVurus = {};   // "oyuncuId:kostebekNo" -> { bit, h, renk }
+
   var TOPRAK_DIS = '#4a3729';    // yigi̇nin en dis halkasi
   var TOPRAK_ORTA = '#634833';
   var TOPRAK_UST = '#7a5a3e';    // isik alan ust yuzey
@@ -120,6 +129,30 @@
       }
       for (var vn in vurulanlar) {
         if (ben.hit.indexOf(+vn) < 0) delete vurulanlar[vn];
+      }
+
+      // Rakiplerin yeni vuruslarini defterime al (kendimi atlarim)
+      for (var ri = 0; ri < v.players.length; ri++) {
+        var rp = v.players[ri];
+        if (rp.id === v.you) continue;
+        var rd = st.pl[rp.id];
+        if (!rd || !rd.hit) continue;
+        for (var rh = 0; rh < rd.hit.length; rh++) {
+          var anahtar = rp.id + ':' + rd.hit[rh];
+          if (rakipVurus[anahtar] !== undefined) continue;
+          // Vurulan kostebegin hangi delikte oldugunu aktif listeden bul
+          var delikNo = -1;
+          for (var ra = 0; ra < st.act.length; ra++) {
+            if (st.act[ra].i === rd.hit[rh]) { delikNo = st.act[ra].h; break; }
+          }
+          if (delikNo < 0) continue;
+          rakipVurus[anahtar] = {
+            bit: v.time + RAKIP_SURESI, h: delikNo, renk: g.colorForSlot(rp.slot)
+          };
+        }
+      }
+      for (var rk in rakipVurus) {
+        if (v.time >= rakipVurus[rk].bit) delete rakipVurus[rk];
       }
 
       var i, h;
@@ -173,6 +206,25 @@
 
       // ---- deliklerin on dudagi ----
       for (i = 0; i < st.holes.length; i++) delikOn(ctx, st.holes[i]);
+
+      // ---- rakip vuruslari ----
+      // Kucuk, sonen bir halka: kimin vurdugu renginden belli olur.
+      for (var rv in rakipVurus) {
+        var rvo = rakipVurus[rv];
+        var rhole = st.holes[rvo.h];
+        if (!rhole) continue;
+        var kalanOran = Math.max(0, Math.min(1, (rvo.bit - v.time) / RAKIP_SURESI));
+        var cap = Math.round(9 + (1 - kalanOran) * 13);       // yildiz buyuyerek soner
+        var hx = Math.round(rhole.x), hy = Math.round(rhole.y - 10);
+        ctx.save();
+        ctx.globalAlpha = kalanOran;
+        // Once koyu hat, ustune renk: kostebegin uzerinde de okunakli kalsin
+        g.rect(ctx, hx - cap - 1, hy - 3, cap * 2 + 2, 6, P.black);
+        g.rect(ctx, hx - 3, hy - cap - 1, 6, cap * 2 + 2, P.black);
+        g.rect(ctx, hx - cap, hy - 2, cap * 2, 4, rvo.renk);      // yatay kol
+        g.rect(ctx, hx - 2, hy - cap, 4, cap * 2, rvo.renk);      // dikey kol
+        ctx.restore();
+      }
 
       // ---- cekic (normalde duz, vururken yildiz patlamali) ----
       if (v.ptr) {
