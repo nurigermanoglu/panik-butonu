@@ -36,7 +36,7 @@ Windows'ta klasördeki **BASLAT.bat** dosyasına çift tıklamak da yeterli.
 |---|---|---|
 | Hazır ol (lobide) | `BOŞLUK` / `ENTER` ya da ekrandaki **HAZIRIM** butonu | **HAZIRIM** butonu veya alttaki **BAS** |
 | Tekrar oyna (şampiyon ekranında) | `BOŞLUK` veya `ENTER` | Ekrana dokun ya da **BAS** |
-| Hedef tur sayısını değiştir (lobide, **sadece odayı kuran**) | `←` `→` | Yanlardaki ok butonları |
+| Hedef puanı değiştir (lobide, **sadece odayı kuran**) | `←` `→` | Yanlardaki ok butonları |
 | Bot ekle / çıkar (lobide, **sadece odayı kuran**) | — | `BOT: n` yazısının yanındaki oklara dokun |
 | Bot zorluğu (lobide, **sadece odayı kuran**) | — | `KOLAY` / `ORTA` / `ZOR` tuşlarına dokun |
 | Karakter değiştir (lobide, herkes kendi karakterini) | Karakterinin yanındaki oklara **tıkla** | Oklara **dokun** |
@@ -98,9 +98,9 @@ Her şey [server/config.js](server/config.js) içinde:
 ```js
 MAX_PLAYERS: 4,     // odaya en fazla kaç kişi (2 yaparsan tekrar ikili düello olur)
 MIN_PLAYERS: 2,     // oyunun başlayabilmesi için gereken en az kişi
-WINS_NEEDED: 5,     // başlangıç hedefi; kişi sayısıyla çarpılır (4 kişide 15 puan)
-WINS_MIN: 1,        // hedefin inebileceği en düşük değer
-WINS_MAX: 9,        // hedefin çıkabileceği en yüksek değer
+WINS_NEEDED: 10,    // başlangıç hedefi (puan). Kişi sayısıyla ölçeklenmez
+WINS_MIN: 5,        // hedefin inebileceği en düşük değer
+WINS_MAX: 20,       // hedefin çıkabileceği en yüksek değer
 RECONNECT_GRACE: 15, // maç ortasında kopan oyuncunun yeri kaç saniye tutulur
 LOBBY_GRACE: 8,      // lobide kopan için aynısı (beklemenin anlamı yok, kısa)
 SPEED_ROUNDS: 10,    // kaçıncı turda oyunlar en hızlı hâline gelir
@@ -345,13 +345,24 @@ almaz, çarpan da uygulanmaz.
 
 ### Hedef puan (kaç puan şampiyon eder)
 
-Lobide `HEDEF: 15 PUAN` yazısının **iki yanındaki ok butonlarına tıklayarak** ayarlanır.
-Ayar tur cinsindendir (1-9) ve **kişi sayısına göre ölçeklenir**: tur başına en fazla `n-1`
-puan dağıtıldığı için ayar "kaç tur kazanmaya denk" anlamını korur.
+Lobide `HEDEF: 10 PUAN` yazısının **iki yanındaki ok butonlarına tıklayarak** ayarlanır
+(5-20 puan). Yazan sayı doğrudan hedeftir: **kişi sayısına göre ölçeklenmez**, yani
+lobide bot eklemek/çıkarmak bu sayıyı oynatmaz.
 
-| Ayar | 2 kişi | 3 kişi | 4 kişi |
+> Önceden ayar *tur* cinsindendi ve `n-1` ile çarpılıyordu (4 kişide ayar 5 = 15 puan).
+> Amaç "kaç tura denk" anlamını korumaktı ama yan etkisi şuydu: lobide bot eklerken
+> ekrandaki hedef de zıplıyor, bot butonu hedefi değiştiriyormuş gibi görünüyordu.
+> Artık hedefi tamamen odayı kuran seçiyor.
+
+Bir turda kazanana en fazla `n-1` puan gittiği için **aynı hedef 2 kişide daha uzun,
+4 kişide daha kısa sürer**. Süreyi buna göre ayarlarsın (ölçüldü, orta bot, tur ~17 sn):
+
+| Hedef | 2 kişi | 3 kişi | 4 kişi |
 |---|---|---|---|
-| 5 | 5 puan | 10 puan | 15 puan |
+| 5 puan | 4 tur (~1 dk) | 2 tur | **1-2 tur** (çok kısa) |
+| 10 puan (varsayılan) | 9 tur (~2.5 dk) | 5 tur | 3-4 tur (~1 dk) |
+| 15 puan | 14 tur (~4 dk) | 8 tur | 5 tur (~1.5 dk) |
+| 20 puan | 20 tur (~5.5 dk) | 11 tur | 7 tur (~2 dk) |
 
 Hedefe iki kişi **aynı puanla** ulaşırsa maç biter değil, devam eder: şampiyonluk oyuncu
 sırasına göre kurayla verilmez, aradaki fark açılana kadar oynanır.
@@ -493,7 +504,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 230 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 231 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|

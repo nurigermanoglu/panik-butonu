@@ -166,12 +166,10 @@ class Game {
     if (this.inst.start) this.inst.start();
   }
 
-  // Hedef, odadaki kisi sayisina gore olceklenir. Tur basina en fazla (n-1)
-  // puan dagitildigi icin lobideki ayar "kac tur kazanmaya denk" anlamini
-  // korur:  2 kisi + ayar 5 -> 5 puan,  4 kisi + ayar 5 -> 15 puan.
+  // Hedef, lobide secilen sayinin TA KENDISI. Kisi sayisina gore
+  // olceklenmez: bot eklemek/cikarmak hedefi oynatmaz.
   get hedefPuan() {
-    const n = Math.max(2, this.room.players.length);
-    return this.room.winsNeeded * (n - 1);
+    return this.room.winsNeeded;
   }
 
   // Biri TEK TURDA sampiyonlugu alabilecek duruma geldiyse sonraki tur
@@ -537,7 +535,7 @@ class Game {
       istat: this.phase === 'gameover' ? this.istatListesi() : null,
       final: this.final,                // bu tur puanlar iki katina cikiyor mu
       botZor: this.room.botZorluk,      // 0 kolay, 1 orta, 2 zor
-      needed: this.room.winsNeeded,     // lobideki ayar (tur cinsinden)
+      needed: this.room.winsNeeded,     // lobideki ayar (= hedef puan)
       hedef: this.hedefPuan,            // sampiyonluk icin gereken PUAN
       tur: this.tur,
       seviye: Math.round(this.seviye() * 100) / 100,

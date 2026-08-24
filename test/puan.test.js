@@ -66,20 +66,33 @@ describe('Puan dagitimi', () => {
   });
 });
 
-describe('Hedef puan olcegi', () => {
-  test('ayar kisi sayisina gore olceklenir', () => {
-    for (const [kisi, beklenen] of [[2, 5], [3, 10], [4, 15]]) {
-      const { oda } = odaKur(kisi, { hedef: 5 });
-      assert.strictEqual(oda.game.hedefPuan, beklenen,
-        kisi + ' kisi icin hedef ' + beklenen + ' olmaliydi');
+describe('Hedef puan', () => {
+  // Hedef eskiden kisi sayisiyla carpiliyordu (ayar 5 -> 4 kiside 15 puan).
+  // Bunun yan etkisi suydu: lobide BOT eklemek ekrandaki hedefi oynatiyor,
+  // "bot butonu hedefi de degistiriyor" gibi gorunuyordu. Artik lobide
+  // secilen sayi dogrudan hedeftir.
+  test('kisi sayisi hedefi degistirmez', () => {
+    for (const kisi of [2, 3, 4]) {
+      const { oda } = odaKur(kisi, { hedef: 12 });
+      assert.strictEqual(oda.game.hedefPuan, 12,
+        kisi + ' kisilik odada hedef degismis olmamali');
     }
   });
 
+  test('bot eklemek hedefi oynatmaz', () => {
+    const { oda } = odaKur(1, { hedef: 12 });
+    const once = oda.game.snapshot().hedef;
+    oda.botEkle();
+    oda.botEkle();
+    assert.strictEqual(oda.game.snapshot().hedef, once,
+      'bot eklenince ekrandaki hedef degisti');
+  });
+
   test('hedef snapshotta yayinlanir', () => {
-    const { oda } = odaKur(4, { hedef: 5 });
+    const { oda } = odaKur(4, { hedef: 12 });
     const s = oda.game.snapshot();
-    assert.strictEqual(s.needed, 5, 'lobideki ayar');
-    assert.strictEqual(s.hedef, 15, 'puan hedefi');
+    assert.strictEqual(s.needed, 12, 'lobideki ayar');
+    assert.strictEqual(s.hedef, 12, 'puan hedefi ayarin ta kendisi');
   });
 });
 

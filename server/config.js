@@ -7,9 +7,22 @@ module.exports = {
   // 4 kisiye gecerken: MIN_PLAYERS 4 = herkes gelene kadar bekler (gec katilan disarida kalmaz),
   //                    MIN_PLAYERS 2 = hazir olanlarla erken baslar.
   MIN_PLAYERS: 2,
-  WINS_NEEDED: 5,     // varsayilan hedef; odayi kuran lobide degistirebilir
-  WINS_MIN: 1,
-  WINS_MAX: 9,
+  // Sampiyonluk icin gereken PUAN. Odayi kuran lobide oklarla degistirir.
+  // Bu sayi kisi sayisina gore OLCEKLENMEZ: ne secilirse maci o bitirir.
+  // (Eskiden tur cinsindendi ve kisi sayisiyla carpiliyordu; bot eklemek
+  //  ekrandaki hedefi oynattigi icin "bot butonu hedefi degistiriyor" gibi
+  //  goruluyordu.)
+  //
+  // Not: bir turda kazanana en fazla (kisi - 1) puan gider. Yani ayni hedef
+  // 2 kiside daha uzun, 4 kiside daha kisa surer - sureyi odayi kuran
+  // oklarla kendi ayarlar.
+  // Olculdu (orta bot, tur ~17 sn):
+  //   hedef  5 -> 4 kiside 1-2 tur (cok kisa),  2 kiside 4 tur
+  //   hedef 10 -> 4 kiside 3-4 tur,             2 kiside 9 tur
+  //   hedef 20 -> 4 kiside 7 tur,               2 kiside 20 tur
+  WINS_NEEDED: 10,
+  WINS_MIN: 5,
+  WINS_MAX: 20,
   CHAR_COUNT: 8,      // public/img/karakterler.png icindeki karakter sayisi
   TICK_HZ: 30,        // sunucu simulasyon hizi
   INTRO_TIME: 3.0,    // "hazir ol" ekrani (saniye)

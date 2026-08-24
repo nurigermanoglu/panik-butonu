@@ -48,7 +48,7 @@ describe('Final turu kosulu', () => {
   });
 
   test('tek turda hedefe ulasilabiliyorsa final turu', () => {
-    const { oda, oyuncular } = turKur(4, 5);     // hedef 15, tur basi en fazla 3
+    const { oda, oyuncular } = turKur(4, 15);    // hedef 15, tur basi en fazla 3
     oyuncular[0].wins = 11;
     assert.strictEqual(oda.game.finalTuru, false, '11 + 3 = 14 < 15');
     oyuncular[0].wins = 12;
