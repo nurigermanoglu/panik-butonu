@@ -1,138 +1,178 @@
-/* KABLO KESME - ekran cizimi (once ezberleme, sonra kesme) */
+/* KABLO KESME - ekran cizimi
+ *
+ * Oyunun tek kurali var ve ekranda gorunmesi gereken tek sey o: kivilcim
+ * MAKAS BANDINA girdiginde kes. O yuzden band ekranin en belirgin ogesi;
+ * kivilcim yaklastikca band da tepki veriyor (parliyor), yani oyuncu
+ * saati degil ekrani izleyerek zamanliyor.
+ *
+ * Renk tek basina isaret degil: bandin iki yaninda makas disleri var ve
+ * kivilcim bandin icindeyken beyaz cekirdekli cizilir - renk ayirt
+ * edemeyen biri de "simdi" anini gorebilir.
+ */
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
 
+  // Bomba gorseli - Kostebek Avi / Sicak Patates / Dusenleri Yakala ile ayni
+  var BOMBA = { src: 'img/bomba.png', kirp: { x: 62, y: 69, w: 483, h: 383 }, w: 30, h: 24 };
+  var bombaImg = new Image(), bombaYuklendi = false, bombaOnbellek = null;
+  bombaImg.onload = function () { bombaYuklendi = true; };
+  bombaImg.src = BOMBA.src;
+
+  function bombaHazir() {
+    if (!bombaYuklendi) return null;
+    var ic = (PP.res && PP.res.olcek) || 1;
+    if (!bombaOnbellek || bombaOnbellek._ic !== ic) {
+      var cv = document.createElement('canvas');
+      cv.width = BOMBA.w * ic; cv.height = BOMBA.h * ic;
+      var c2 = cv.getContext('2d');
+      c2.imageSmoothingEnabled = true;
+      if ('imageSmoothingQuality' in c2) c2.imageSmoothingQuality = 'high';
+      c2.drawImage(bombaImg, BOMBA.kirp.x, BOMBA.kirp.y, BOMBA.kirp.w, BOMBA.kirp.h,
+        0, 0, BOMBA.w * ic, BOMBA.h * ic);
+      PP.gfx.pixelArt(cv, { renk: 10, hat: '#0b0b0f' });
+      cv._ic = ic;
+      bombaOnbellek = cv;
+    }
+    return bombaOnbellek;
+  }
+
+  // Makas (kapali) - basit pixel silueti
   var MAKAS = [
-    '#.....#',
-    '.#...#.',
-    '..#.#..',
-    '...#...',
-    '..###..',
-    '.#...#.',
-    '.#...#.',
-    '..###..'
+    '.#.....#.',
+    '.##...##.',
+    '..##.##..',
+    '...###...',
+    '....#....',
+    '...###...',
+    '..#...#..',
+    '.#.....#.',
+    '.#.....#.'
   ];
-
-  // ---- 1. asama: renk sirasi gosteriliyor ----
-  // Kablolar HENUZ CIZILMEZ; ekranda tek bir buyuk renk kutusu olur.
-  function ezberEkrani(ctx, st, v) {
-    f.text(ctx, 'EZBERLE', v.W / 2, v.top + 6, {
-      color: P.yellow, scale: 2, align: 'center', shadow: P.black
-    });
-
-    var bw = 92, bh = 62, bx = Math.round((v.W - bw) / 2), by = v.top + 34;
-    if (st.cur) {
-      // Kablonun kendisiyle ayni dil: renk + sol kenarda parlama, sag kenarda golge
-      g.rect(ctx, bx - 3, by - 3, bw + 6, bh + 6, P.black);
-      g.rect(ctx, bx, by, bw, bh, st.cur);
-      g.rect(ctx, bx, by, 10, bh, P.white);
-      g.rect(ctx, bx + bw - 4, by, 4, bh, 'rgba(0,0,0,0.35)');
-    } else {
-      // Renkler arasi bosluk: kutu bos durur ki iki ayni renk ust uste
-      // gelince bile "iki ayri sinyal" oldugu anlasilsin
-      g.frame(ctx, bx, by, bw, bh, P.dark, P.black);
-    }
-
-    // Kacinci renkteyiz: n tane nokta, gosterilenler dolu
-    var np = 10, gap = 6, toplam = st.n * np + (st.n - 1) * gap;
-    var px = Math.round((v.W - toplam) / 2), py = by + bh + 12;
-    for (var i = 0; i < st.n; i++) {
-      var gecti = st.curIdx >= 0 ? i <= st.curIdx : false;
-      g.frame(ctx, px + i * (np + gap), py, np, np, gecti ? P.light : P.dark, P.black);
-    }
-
-    f.text(ctx, 'SIRAYI AKLINDA TUT', v.W / 2, py + np + 8, {
-      color: P.gray, scale: 1, align: 'center'
-    });
-  }
-
-  // ---- 2. asama ust seridi ----
-  // Hedef sira ARTIK GOSTERILMEZ (oyunun tamami o yuzden var). Burada sadece
-  // oyuncunun KENDI kestikleri duruyor - zaten kendisi kesti, bilgi sizmiyor.
-  function ilerlemeSeridi(ctx, st, v, ben) {
-    f.text(ctx, 'KESTIN:', 6, v.top + 3, { color: P.light, scale: 1 });
-    for (var i = 0; i < st.n; i++) {
-      var bx = 58 + i * 22;
-      var kesildiMi = i < ben.cut.length;
-      var renk = kesildiMi ? (st.wires[ben.cut[i]] || {}).col : null;
-      var siradaki = i === ben.p;
-      g.frame(ctx, bx, v.top + 1, 16, 11, renk || P.dark, siradaki ? P.white : P.black);
-      if (siradaki) {
-        f.text(ctx, '?', bx + 8, v.top + 3, { color: P.white, scale: 1, align: 'center' });
-      }
-    }
-  }
 
   PP.MG = PP.MG || {};
   PP.MG.wirecut = {
     draw: function (ctx, st, v) {
-      var ben = st.pl[v.you] || { p: 0, pen: 0, cut: [] };
-      var sikisik = ben.pen > 0;
+      var ben = st.pl[v.you] || { s: 0, pen: 0, fl: 0, kes: [] };
+      var gec = v.gecikme || 0;
+      var i, k;
 
-      g.rect(ctx, 0, 0, v.W, v.H, sikisik ? '#3a1a20' : '#141419');
-
-      if (st.showing) {
-        ezberEkrani(ctx, st, v);
-        return;                       // kablolar daha acilmadi
+      // ---- zemin ----
+      g.doku(ctx, 0, 0, v.W, v.H, 'metal');
+      if (ben.fl) {
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        g.rect(ctx, 0, v.top, v.W, v.H - v.top, ben.fl === 1 ? P.green : P.red);
+        ctx.restore();
       }
-
-      ilerlemeSeridi(ctx, st, v, ben);
 
       // ---- kablolar ----
-      for (var k = 0; k < st.wires.length; k++) {
-        var w = st.wires[k];
-        var kesildi = ben.cut.indexOf(k) >= 0;
+      for (i = 0; i < st.wires.length; i++) {
+        var wx = Math.round(st.wires[i].x);
+        g.rect(ctx, wx - 3, st.top, 6, st.bot - st.top, '#0b0b16');       // hat
+        g.rect(ctx, wx - 2, st.top, 4, st.bot - st.top, st.wires[i].col);
+        g.rect(ctx, wx - 2, st.top, 1, st.bot - st.top, '#ffffff22');     // isik
+        // Ust ucta kelepce
+        g.rect(ctx, wx - 5, st.top - 4, 10, 5, '#2a2852');
+        g.rect(ctx, wx - 4, st.top - 3, 8, 3, '#5b56a0');
+      }
 
-        // tutucu plakalar
-        g.rect(ctx, w.x - 12, st.top - 7, 24, 7, P.gray);
-        g.rect(ctx, w.x - 12, st.bot, 24, 7, P.gray);
+      // ---- bomba (kablolarin ucu) ----
+      // Bomba ekranin en altina oturur; kablolar icine giriyor gibi durur.
+      // (Kablolarin bitis cizgisi st.bot, bomba onun uzerine binerek cizilir.)
+      var bres = bombaHazir();
+      var bx = Math.round(v.W / 2 - BOMBA.w / 2), by = v.H - BOMBA.h;
+      g.rect(ctx, 0, st.bot, v.W, v.H - st.bot, '#1a1830');
+      g.rect(ctx, 0, st.bot, v.W, 1, '#6b64c0');
+      if (bres) ctx.drawImage(bres, bx, by, BOMBA.w, BOMBA.h);
+      else { g.rect(ctx, bx, by, BOMBA.w, BOMBA.h, P.dark); g.rect(ctx, bx + 2, by + 2, BOMBA.w - 4, BOMBA.h - 4, '#3a3560'); }
 
-        if (!kesildi) {
-          g.rect(ctx, w.x - 5, st.top, 10, st.bot - st.top, w.col);
-          g.rect(ctx, w.x - 5, st.top, 3, st.bot - st.top, P.white);   // parlama
-          g.rect(ctx, w.x + 4, st.top, 1, st.bot - st.top, P.black);   // golge kenar
-        } else {
-          // kopmus: ustten ve alttan sarkan iki parca
-          var orta = (st.top + st.bot) / 2;
-          g.rect(ctx, w.x - 5, st.top, 10, orta - st.top - 16, w.col);
-          g.rect(ctx, w.x - 5, orta + 16, 10, st.bot - orta - 16, w.col);
-          g.rect(ctx, w.x - 9, orta - 19, 9, 5, w.col);
-          g.rect(ctx, w.x + 1, orta + 14, 9, 5, w.col);
-          g.rect(ctx, w.x - 7, orta - 2, 14, 3, P.dark);               // kivilcim izi
+      // ---- makas bandi ----
+      // Bandda kivilcim varsa band canlanir: oyuncu "simdi" anini buradan okur
+      var bandda = false;
+      for (i = 0; i < st.k.length; i++) {
+        k = st.k[i];
+        var ky = k.y + (k.v || 0) * gec;
+        if (ky >= st.ky && ky <= st.ky + st.kh && ben.kes.indexOf(k.i) < 0) bandda = true;
+      }
+      var bandRenk = bandda ? '#ffd34d' : '#4a4590';
+      ctx.save();
+      ctx.globalAlpha = bandda ? 0.3 : 0.16;
+      g.rect(ctx, 0, st.ky, v.W, st.kh, bandRenk);
+      ctx.restore();
+      g.rect(ctx, 0, st.ky, v.W, 1, bandRenk);
+      g.rect(ctx, 0, st.ky + st.kh - 1, v.W, 1, bandRenk);
+
+      // Bandin iki yaninda makas disleri - bandin ne oldugu yazisiz anlasilsin
+      for (var s = 0; s < 2; s++) {
+        var sx = s === 0 ? 2 : v.W - 11;
+        g.sprite(ctx, MAKAS, sx, st.ky + Math.round(st.kh / 2) - 4, 1,
+          { '#': bandda ? P.yellow : '#7a73d0' });
+      }
+
+      // ---- kivilcimlar ----
+      for (i = 0; i < st.k.length; i++) {
+        k = st.k[i];
+        if (ben.kes.indexOf(k.i) >= 0) continue;           // bunu ben kestim
+        // Paketler arasinda konumu hizla suzerek ilerlet -> akici inis
+        var y = k.y + (k.v || 0) * gec;
+        if (y > st.bot) continue;
+        var x = Math.round(st.wires[k.w].x);
+        var icerde = y >= st.ky && y <= st.ky + st.kh;
+
+        // Kuyruk: kivilcimin arkasinda sonen iz
+        for (var t = 1; t <= 4; t++) {
+          var ty = Math.round(y - t * 3);
+          if (ty < st.top) break;
+          ctx.save();
+          ctx.globalAlpha = 0.5 - t * 0.1;
+          g.rect(ctx, x - 2, ty, 4, 2, st.wires[k.w].col);
+          ctx.restore();
         }
-        // Siradaki kabloyu isaretleyen yanip sonen cizgi KALDIRILDI:
-        // cevabi ekranda gostermek ezber oyununu anlamsiz kilardi.
+        // Cekirdek: bandin icindeyken BEYAZ (renkten bagimsiz isaret)
+        var cy = Math.round(y);
+        g.rect(ctx, x - 4, cy - 2, 8, 5, '#000000');
+        g.rect(ctx, x - 3, cy - 1, 6, 3, icerde ? '#ffffff' : st.wires[k.w].col);
+        if (icerde) {
+          // Bandda: etrafina kivilcim sacar
+          var p2 = Math.floor(v.time * 20) % 2 === 0 ? 2 : 3;
+          g.rect(ctx, x - 4 - p2, cy, 2, 1, P.yellow);
+          g.rect(ctx, x + 3 + p2, cy, 2, 1, P.yellow);
+        }
       }
 
-      // ---- makas / uyari ----
-      if (sikisik) {
-        f.text(ctx, 'YANLIS KABLO!', v.W / 2, v.H / 2 - 24, {
-          color: P.red, scale: 3, align: 'center', shadow: P.black
-        });
-        // Basa sardigini soylemek sart: ekranda kablolar bir anda onarilmis
-        // gorunuyor, sebebi yazilmazsa oyuncu ne oldugunu anlamiyor.
-        f.text(ctx, 'SIRA BASA DONDU', v.W / 2, v.H / 2 + 4, {
-          color: P.yellow, scale: 2, align: 'center', shadow: P.black
-        });
-        f.text(ctx, ben.pen.toFixed(1) + ' SN', v.W / 2, v.H / 2 + 24, {
-          color: P.white, scale: 2, align: 'center', shadow: P.black
-        });
-      } else if (v.ptr) {
-        g.sprite(ctx, MAKAS, v.ptr.x - 3, v.ptr.y - 4, 2, { '#': v.ptr.down ? P.yellow : P.light });
+      // ---- makas imleci ----
+      if (v.ptr) {
+        var sikisik = ben.pen > 0;
+        var mx = Math.round(v.ptr.x) - 4, my = Math.round(v.ptr.y) - 4;
+        var titre = sikisik ? Math.round(Math.sin(v.time * 40) * 1) : 0;
+        g.sprite(ctx, MAKAS, mx + titre, my, 1, { '#': sikisik ? P.red : '#e8e6ff' });
       }
 
-      // ---- ilerleme ----
+      // ---- skorlar ----
       var n = v.players.length, slotW = v.W / n;
-      for (var m = 0; m < n; m++) {
-        var p = v.players[m];
+      for (i = 0; i < n; i++) {
+        var p = v.players[i];
         var pd = st.pl[p.id];
-        var skor = ' ' + (pd ? pd.p : 0) + '/' + st.n;
+        var skor = ' ' + (pd ? pd.s : 0);
         var isim = f.sigdir(p.name, slotW - 4 - f.width(skor, 1), 1);
-        f.text(ctx, isim + skor,
-          Math.round(slotW * m + slotW / 2), v.H - 9, {
-            color: g.colorForSlot(p.slot), scale: 1, align: 'center', shadow: P.black
-          });
+        f.text(ctx, isim + skor, Math.round(slotW * i + slotW / 2), v.top + 2, {
+          color: g.colorForSlot(p.slot), scale: 1, align: 'center', shadow: P.black
+        });
+      }
+
+      // ---- durum yazisi ----
+      // Sol alt kose: ust satir isimlere, ekranin ortasi bombaya ait.
+      // Uc yerin de kalabaliklasmamasi icin yazi kenara alindi.
+      if (ben.pen > 0) {
+        var yanip = Math.floor(v.time * 10) % 2 === 0;
+        f.text(ctx, 'MAKAS SIKISTI!', 4, v.H - 9, {
+          color: yanip ? P.red : '#ff9a8f', scale: 1, align: 'left', shadow: P.black
+        });
+      } else {
+        f.text(ctx, bandda ? 'SIMDI KES!' : 'BANDDA KES', 4, v.H - 9, {
+          color: bandda ? P.yellow : P.gray, scale: 1, align: 'left', shadow: P.black
+        });
       }
     }
   };

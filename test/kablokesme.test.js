@@ -1,178 +1,322 @@
 'use strict';
-// KABLO KESME - iki asamali ezber oyunu.
-//   1) gosterim: renkler tek tek gosterilir, kablolar henuz kesilemez
-//   2) kesme   : sira EZBERDEN kesilir; yanlis kesim basa sarar
+// KABLO KESME (zamanlama)
+//
+// Oyun yenilendi: eskiden "renk sirasini izle, ezberden kes" idi ve Hafiza
+// Dizisi ile ayni turdu; ustelik turun ucte biri gosterim asamasinda,
+// yani oyuncunun hicbir sey yapamadigi bir bekleyisle geciyordu.
+// Yeni hali bir ZAMANLAMA oyunu: kivilcim makas bandindayken kes.
+//
+// En kritik iddia AYNI KALDI, sadece nesnesi degisti: tur kaybetmek SANSA
+// degil oyuncunun kendi zamanlamasina bagli olmali. Bunu "kusursuz oyuncu"
+// simulasyonuyla olcuyoruz - her kivilcimi bandin ortasinda kesen biri
+// uretilen hicbir programda tek bir kivilcim bile kacirmamali.
 
 const { test, describe } = require('node:test');
 const assert = require('node:assert');
-const { DT, ilerlet } = require('./yardimci');
-const wc = require('../server/minigames/wirecut');
+const { DT } = require('./yardimci');
+const wirecut = require('../server/minigames/wirecut');
 
-function yeni(kisi) {
-  const ids = [];
-  for (let i = 0; i < (kisi || 2); i++) ids.push('p' + i);
-  return wc.create(ids, 0);
-}
-function kesmeye(inst) { ilerlet(inst, inst.gosterim + 0.1); }
-function dokun(inst, pid, wireIdx) {
-  inst.input(pid, 'grab', { x: inst.wires[wireIdx].x, y: 100 });
-}
-// Su anki adimda YANLIS olan, henuz kesilmemis bir kablo bul.
-// (Son adimda kalan tek kablo zaten dogru olandir - orada yanilmak mumkun degil.)
-function yanlisKablo(inst, pid) {
-  const me = inst.pl[pid];
-  for (let i = me.prog + 1; i < inst.order.length; i++) {
-    if (me.cut.indexOf(inst.order[i]) < 0) return inst.order[i];
-  }
-  return -1;
+// Bandin ortasi - kusursuz oyuncunun nisan noktasi
+function orta(inst) {
+  const s = inst.snap();
+  return s.ky + s.kh / 2;
 }
 
-describe('Gosterim asamasi', () => {
-  test('tur gosterimle baslar ve kablolar kesilemez', () => {
-    const inst = yeni();
-    assert.strictEqual(inst.snap().showing, true);
-    for (let i = 0; i < 60; i++) {
-      dokun(inst, 'p0', inst.order[0]);        // DOGRU kablo bile sayilmamali
-      inst.update(DT);
-    }
-    assert.strictEqual(inst.pl.p0.prog, 0, 'gosterim sirasinda kesim sayildi');
-    assert.strictEqual(inst.pl.p0.pen, 0, 'gosterim sirasinda ceza verildi');
-  });
-
-  test('gosterim bitince kablolar acilir', () => {
-    const inst = yeni();
-    kesmeye(inst);
-    assert.strictEqual(inst.snap().showing, false);
-    dokun(inst, 'p0', inst.order[0]);
-    assert.strictEqual(inst.pl.p0.prog, 1);
-  });
-
-  test('renkler sirayla ve birer kez gosterilir', () => {
-    const inst = yeni();
-    const dizi = [];
-    let son = -1;
-    for (let i = 0; i < Math.round(inst.gosterim / DT) + 2; i++) {
-      const gi = inst.gosterilen();
-      if (gi >= 0 && gi !== son) { dizi.push(gi); son = gi; }
-      if (gi < 0) son = -1;
-      inst.update(DT);
-    }
-    assert.deepStrictEqual(dizi, [0, 1, 2, 3, 4]);
-  });
-
-  test('ezberleme suresi kesme suresinden calmaz', () => {
-    const yavas = wc.create(['p0'], 0);
-    const hizli = wc.create(['p0'], 1);
-    assert.ok(hizli.gosterim < yavas.gosterim, 'gosterim hizlanmali');
-    assert.ok(Math.abs((yavas.sure - yavas.gosterim) - 9) < 0.01,
-      'seviye 0 kesme suresi 9 sn olmali');
-    assert.ok(hizli.sure < yavas.sure, 'tur toplamda kisalmali');
-  });
-});
-
-describe('Sira gizliligi', () => {
-  test('paketler hicbir asamada tum sirayi tasimaz', () => {
-    // Sira istemciye gitseydi konsolu acan biri cevabi okur, ezberlemenin
-    // anlami kalmazdi.
-    for (const seviye of [0, 1]) {
-      const inst = wc.create(['p0'], seviye);
-      const gorulen = [];
-      for (let i = 0; i < Math.round((inst.sure + 0.5) / DT); i++) {
-        const s = inst.snap();
-        assert.ok(!('order' in s), 'snap order alanini gonderiyor');
-        if (s.cur) gorulen.push(s.cur);
-        inst.update(DT);
+// Her kivilcimi bandin ortasinda kesen oyuncu
+function kusursuzOyna(seviye) {
+  const inst = wirecut.create(['p0'], seviye, {});
+  const o = orta(inst);
+  let kalan = inst.sure;
+  while (kalan > 0) {
+    if (inst.pl.p0.pen <= 0) {
+      for (const k of inst.aktifler()) {
+        if (inst.pl.p0.kesilen[k.i]) continue;
+        if (Math.abs(k.y - o) > inst.snap().kh / 2 - 2) continue;
+        inst.input('p0', 'grab', { x: inst.wires[k.w].x, y: o });
       }
-      assert.strictEqual(new Set(gorulen).size, 5, 'bes rengin hepsi gosterilmeli');
+    }
+    inst.update(DT);
+    kalan -= DT;
+  }
+  return inst;
+}
+
+describe('Program adaleti', () => {
+  test('kusursuz oyuncu hicbir kivilcimi kacirmaz', () => {
+    // 300 desen. Bir tanesinde bile kacirma varsa program gecilemez
+    // uretiliyor demektir ve oyun sansa baglanir.
+    for (let n = 0; n < 300; n++) {
+      const inst = kusursuzOyna(Math.random());
+      const me = inst.pl.p0;
+      assert.strictEqual(me.kesti, inst.kivilcimlar.length,
+        'kusursuz oyuncu ' + me.kesti + '/' + inst.kivilcimlar.length + ' kesebildi');
+      assert.strictEqual(me.bosa, 0, 'kusursuz oyuncu makasi sikistirdi');
     }
   });
-});
 
-describe('Basa sarma', () => {
-  test('yanlis kesim ilerlemeyi sifirlar ve kablolari onarir', () => {
-    const inst = yeni();
-    kesmeye(inst);
-    dokun(inst, 'p0', inst.order[0]);
-    dokun(inst, 'p0', inst.order[1]);
-    assert.strictEqual(inst.pl.p0.prog, 2);
-
-    dokun(inst, 'p0', yanlisKablo(inst, 'p0'));
-    assert.strictEqual(inst.pl.p0.prog, 0, 'ilerleme sifirlanmali');
-    assert.deepStrictEqual(inst.pl.p0.cut, [], 'kesilenler onarilmali');
-    assert.strictEqual(inst.pl.p0.enIyi, 2, 'ulasilan en iyi korunmali');
-    assert.strictEqual(inst.pl.p0.sifir, 1);
-    assert.ok(inst.pl.p0.pen > 0, 'makas da sikismali');
+  test('iki kivilcimin band penceresi cakismaz', () => {
+    // Cakisirsa oyuncu ikisinden birini secmek zorunda kalir ve tavana
+    // ulasmak imkansizlasir. Aralarinda tepki payi da olmali.
+    for (let n = 0; n < 300; n++) {
+      const inst = wirecut.create(['p0'], Math.random(), {});
+      const k = inst.kivilcimlar;
+      for (let i = 1; i < k.length; i++) {
+        assert.ok(k[i].girer > k[i - 1].cikar,
+          'pencereler cakisiyor: ' + k[i - 1].cikar.toFixed(2) + ' -> ' + k[i].girer.toFixed(2));
+      }
+    }
   });
 
-  test('basa sardiktan sonra bastan kesip bitirebilir', () => {
-    const inst = yeni();
-    kesmeye(inst);
-    dokun(inst, 'p0', inst.order[0]);
-    dokun(inst, 'p0', yanlisKablo(inst, 'p0'));
-    ilerlet(inst, inst.ceza + 0.1);
-    // Onarilan kablolar tekrar kesilebilmeli, yoksa sira asla tamamlanamazdi
-    for (const w of inst.order) { dokun(inst, 'p0', w); inst.update(DT); }
-    assert.strictEqual(inst.pl.p0.prog, 5);
-    assert.ok(inst.done());
-    assert.deepStrictEqual(inst.winners(), ['p0']);
-    assert.strictEqual(inst.text(), 'BOMBA ETKISIZ!');
+  test('ayni kablodan ard arda kivilcim gelmez', () => {
+    for (let n = 0; n < 300; n++) {
+      const k = wirecut.create(['p0'], Math.random(), {}).kivilcimlar;
+      for (let i = 1; i < k.length; i++) {
+        assert.notStrictEqual(k[i].w, k[i - 1].w, 'ayni kablo ust uste geldi');
+      }
+    }
   });
 
-  test('ceza sirasinda kesim islemez', () => {
-    const inst = yeni();
-    kesmeye(inst);
-    dokun(inst, 'p0', yanlisKablo(inst, 'p0'));
-    dokun(inst, 'p0', inst.order[0]);
-    assert.strictEqual(inst.pl.p0.prog, 0, 'ceza sirasinda dogru kablo da islememeli');
-    ilerlet(inst, inst.ceza + 0.1);
-    dokun(inst, 'p0', inst.order[0]);
-    assert.strictEqual(inst.pl.p0.prog, 1, 'ceza bitince tekrar kesebilmeli');
+  test('turda olu zaman yok: ilk kivilcim erken gelir', () => {
+    // Eski oyunun asil sorunu turun ucte birinin izlemekle gecmesiydi.
+    for (let n = 0; n < 100; n++) {
+      const inst = wirecut.create(['p0'], Math.random(), {});
+      assert.ok(inst.kivilcimlar[0].girer <= 2.0,
+        'ilk kivilcim ' + inst.kivilcimlar[0].girer.toFixed(1) + ' sn sonra geliyor');
+    }
   });
 
-  test('son adimda yanilmak mumkun degil', () => {
-    const inst = yeni();
-    kesmeye(inst);
-    for (let i = 0; i < 4; i++) dokun(inst, 'p0', inst.order[i]);
-    assert.strictEqual(yanlisKablo(inst, 'p0'), -1, 'kesilmemis yanlis kablo kalmamali');
+  test('herkes ayni programi oynar', () => {
+    const inst = wirecut.create(['p0', 'p1', 'p2', 'p3'], 0.5, {});
+    // Tek bir program var; oyuncuya gore uretilmiyor
+    assert.ok(Array.isArray(inst.kivilcimlar));
+    assert.ok(inst.kivilcimlar.length > 0);
+    const s = inst.snap();
+    assert.ok(Array.isArray(s.k), 'kivilcimlar herkese ayni listede gonderiliyor');
   });
 });
 
-describe('Kazanan secimi', () => {
-  test('kimse bitiremezse en cok ILERLEYEBILEN kazanir', () => {
-    const inst = yeni();
-    kesmeye(inst);
-    for (let i = 0; i < 3; i++) dokun(inst, 'p0', inst.order[i]);
-    dokun(inst, 'p0', yanlisKablo(inst, 'p0'));      // p0 basa sardi: prog 0, enIyi 3
-    dokun(inst, 'p1', inst.order[0]);                // p1 sadece 1 kablo kesti
+describe('Kesme kurallari', () => {
+  // inst'i, verilen kivilcim bandin ortasina gelene kadar ilerletir
+  function bandaGetir(inst, idx) {
+    for (let i = 0; i < 3000; i++) {
+      const k = inst.aktifler().find((x) => x.i === idx);
+      if (k && k.y >= orta(inst)) return k;
+      inst.update(DT);
+    }
+    return null;
+  }
 
-    // Anlik ilerlemeye bakilsaydi p1 (1) > p0 (0) cikardi; yani cok daha
-    // ileri giden oyuncu kaybederdi.
-    assert.deepStrictEqual(inst.winners(), ['p0']);
-    assert.strictEqual(inst.text(), '3 / 5 KABLO');
+  test('bandda kesmek puan verir', () => {
+    const inst = wirecut.create(['p0'], 0, {});
+    const k = bandaGetir(inst, 0);
+    assert.ok(k, 'kivilcim banda gelmedi');
+    inst.input('p0', 'grab', { x: inst.wires[k.w].x, y: k.y });
+    assert.strictEqual(inst.pl.p0.score, 1);
+    assert.strictEqual(inst.pl.p0.bosa, 0);
   });
 
-  test('herkes sifirlansa bile tur haksiz yere berabere kalmaz', () => {
-    const inst = yeni();
-    kesmeye(inst);
-    for (let i = 0; i < 3; i++) dokun(inst, 'p0', inst.order[i]);
-    for (let i = 0; i < 2; i++) dokun(inst, 'p1', inst.order[i]);
-    dokun(inst, 'p0', yanlisKablo(inst, 'p0'));
-    dokun(inst, 'p1', yanlisKablo(inst, 'p1'));
-    assert.strictEqual(inst.pl.p0.prog, 0);
-    assert.strictEqual(inst.pl.p1.prog, 0);
-    assert.deepStrictEqual(inst.winners(), ['p0'], '3 > 2 oldugu icin p0');
+  test('band disinda kesmek makasi sikistirir', () => {
+    const inst = wirecut.create(['p0'], 0, {});
+    // Kivilcim daha dogmadan, dogru kabloya dokun
+    const w = inst.kivilcimlar[0].w;
+    inst.input('p0', 'grab', { x: inst.wires[w].x, y: inst.snap().ky + 5 });
+    assert.strictEqual(inst.pl.p0.score, 0, 'erken dokunusa puan verildi');
+    assert.ok(inst.pl.p0.pen > 0, 'makas sikismadi');
+    assert.strictEqual(inst.pl.p0.bosa, 1);
   });
 
-  test('esit ilerleyenler ve hic kesmeyenler berabere', () => {
-    const esit = yeni();
-    kesmeye(esit);
-    dokun(esit, 'p0', esit.order[0]);
-    dokun(esit, 'p1', esit.order[0]);
-    assert.deepStrictEqual(esit.winners(), []);
+  test('yanlis kabloya dokunmak makasi sikistirir', () => {
+    const inst = wirecut.create(['p0'], 0, {});
+    const k = bandaGetir(inst, 0);
+    const yanlis = (k.w + 2) % inst.wires.length;
+    inst.input('p0', 'grab', { x: inst.wires[yanlis].x, y: k.y });
+    assert.strictEqual(inst.pl.p0.score, 0);
+    assert.ok(inst.pl.p0.pen > 0);
+  });
 
-    const bos = yeni();
-    kesmeye(bos);
-    assert.deepStrictEqual(bos.winners(), []);
-    assert.strictEqual(bos.text(), 'KIMSE BITIREMEDI!');
+  test('makas sikisikken kesim islemez', () => {
+    const inst = wirecut.create(['p0'], 0, {});
+    // ONCE kivilcimi banda getir: bandaGetir zamani ilerletiyor ve ceza
+    // eriyor, sirayi ters kurarsak test kendi kendini bozar.
+    const k = bandaGetir(inst, 0);
+    inst.pl.p0.pen = 1;
+    inst.input('p0', 'grab', { x: inst.wires[k.w].x, y: k.y });
+    assert.strictEqual(inst.pl.p0.score, 0, 'sikisik makasla kesti');
+  });
+
+  test('ayni kivilcim iki kez kesilemez', () => {
+    // Yoksa tek bir kivilcimdan puan yagardi
+    const inst = wirecut.create(['p0'], 0, {});
+    const k = bandaGetir(inst, 0);
+    inst.input('p0', 'grab', { x: inst.wires[k.w].x, y: k.y });
+    assert.strictEqual(inst.pl.p0.score, 1);
+    inst.input('p0', 'grab', { x: inst.wires[k.w].x, y: k.y });
+    assert.strictEqual(inst.pl.p0.score, 1, 'ayni kivilcim tekrar kesildi');
+    assert.ok(inst.pl.p0.pen > 0, 'ikinci dokunus sikisma yaratmali');
+  });
+
+  test('surekli dokunmak ise yaramaz', () => {
+    // Oyunun tek stratejik dayanagi bu: mash eden, sikisik makasla
+    // siradaki kivilcimi da kacirir.
+    const mash = wirecut.create(['p0'], 0, {});
+    let kalan = mash.sure;
+    while (kalan > 0) {
+      for (const w of mash.wires) mash.input('p0', 'grab', { x: w.x, y: mash.snap().ky + 5 });
+      mash.update(DT);
+      kalan -= DT;
+    }
+    const kusursuz = kusursuzOyna(0);
+    assert.ok(mash.pl.p0.score < kusursuz.pl.p0.score * 0.5,
+      'mash eden ' + mash.pl.p0.score + ', kusursuz ' + kusursuz.pl.p0.score);
+  });
+
+  test('kacan kivilcim sayiliyor', () => {
+    const inst = wirecut.create(['p0'], 0, {});
+    let kalan = inst.sure;
+    while (kalan > 0) { inst.update(DT); kalan -= DT; }
+    assert.strictEqual(inst.pl.p0.score, 0);
+    assert.strictEqual(inst.pl.p0.kacti, inst.kivilcimlar.length);
+  });
+});
+
+describe('Sonuc', () => {
+  test('cok kesen kazanir', () => {
+    const inst = wirecut.create(['iyi', 'pasif'], 0, {});
+    const o = orta(inst);
+    let kalan = inst.sure;
+    while (kalan > 0) {
+      if (inst.pl.iyi.pen <= 0) {
+        for (const k of inst.aktifler()) {
+          if (inst.pl.iyi.kesilen[k.i]) continue;
+          if (Math.abs(k.y - o) > inst.snap().kh / 2 - 2) continue;
+          inst.input('iyi', 'grab', { x: inst.wires[k.w].x, y: o });
+        }
+      }
+      inst.update(DT);
+      kalan -= DT;
+    }
+    assert.deepStrictEqual(inst.winners(), ['iyi']);
+    assert.deepStrictEqual(inst.derece(), [['iyi'], ['pasif']]);
+  });
+
+  test('kimse kesemezse kazanan yok', () => {
+    const inst = wirecut.create(['p0', 'p1'], 0, {});
+    let kalan = inst.sure;
+    while (kalan > 0) { inst.update(DT); kalan -= DT; }
+    assert.deepStrictEqual(inst.winners(), []);
+    assert.strictEqual(inst.text(), 'KIMSE KESEMEDI!');
+  });
+
+  test('esit kesenler berabere', () => {
+    const inst = wirecut.create(['p0', 'p1'], 0, {});
+    const o = orta(inst);
+    let kalan = inst.sure;
+    while (kalan > 0) {
+      for (const k of inst.aktifler()) {
+        if (Math.abs(k.y - o) > inst.snap().kh / 2 - 2) continue;
+        for (const id of ['p0', 'p1']) {
+          if (!inst.pl[id].kesilen[k.i] && inst.pl[id].pen <= 0) {
+            inst.input(id, 'grab', { x: inst.wires[k.w].x, y: o });
+          }
+        }
+      }
+      inst.update(DT);
+      kalan -= DT;
+    }
+    assert.deepStrictEqual(inst.winners(), [], 'esitken kazanan ilan edildi');
+    assert.strictEqual(inst.derece().length, 1, 'ikisi de ayni derece grubunda olmali');
+  });
+});
+
+describe('Istemciye ne gonderiliyor', () => {
+  test('gelecek kivilcimlar pakete sizmaz', () => {
+    // Paketi okuyan biri siradaki kivilcimin hangi kablodan gelecegini
+    // ogrenemesin: snap yalnizca EKRANDA olanlari tasir.
+    const inst = wirecut.create(['p0'], 0, {});
+    for (let i = 0; i < 200; i++) {
+      const s = inst.snap();
+      // Olcut PROGRAMIN kendisi: pakete giren her kivilcim gercekten
+      // DOGMUS ve henuz bombaya varmamis olmali. (Bunu aktifler() ile
+      // karsilastirmak tautolojik olurdu - ikisi ayni kaynaktan geliyor.)
+      for (const k of s.k) {
+        const prog = inst.kivilcimlar[k.i];
+        assert.ok(inst.t >= prog.dogus,
+          'daha dogmamis kivilcim pakete kondu (t=' + inst.t.toFixed(2) +
+          ', dogus=' + prog.dogus.toFixed(2) + ')');
+        assert.ok(k.y <= s.bot + 1, 'bombayi gecmis kivilcim hala pakette');
+      }
+      const metin = JSON.stringify(s);
+      assert.ok(metin.indexOf('kivilcimlar') < 0, 'program listesi sizmis');
+      assert.ok(metin.indexOf('dogus') < 0, 'kivilcimlarin dogum ani sizmis');
+      inst.update(DT);
+    }
+  });
+
+  test('kestigim kivilcim pakette isaretli', () => {
+    const inst = wirecut.create(['p0', 'p1'], 0, {});
+    let k = null;
+    for (let i = 0; i < 3000 && !k; i++) {
+      const a = inst.aktifler().find((x) => x.y >= orta(inst));
+      if (a) k = a; else inst.update(DT);
+    }
+    inst.input('p0', 'grab', { x: inst.wires[k.w].x, y: k.y });
+    const s = inst.snap();
+    assert.ok(s.pl.p0.kes.indexOf(k.i) >= 0, 'kesilen kivilcim isaretlenmemis');
+    assert.strictEqual(s.pl.p1.kes.indexOf(k.i), -1, 'baskasinin kesimi bana yazilmis');
+  });
+});
+
+describe('Bot', () => {
+  const { sahteConn } = require('./yardimci');
+  const { Room } = require('../server/room');
+
+  function botOynat(zorluk, seviye) {
+    const oda = new Room('T');
+    oda.add(sahteConn(), 'PASIF', 'c0');
+    const bot = oda.botEkle();
+    oda.botZorluk = zorluk;
+    oda.game.mg = wirecut;
+    oda.game.inst = wirecut.create(oda.players.map((p) => p.id), seviye, {});
+    oda.game.phase = 'play';
+    const inst = oda.game.inst;
+    let kalan = inst.sure;
+    while (kalan > 0) { oda.game.botTick(DT); inst.update(DT); kalan -= DT; }
+    return { me: inst.pl[bot.id], toplam: inst.kivilcimlar.length };
+  }
+
+  function ortalama(zorluk, deneme) {
+    let skor = 0, bosa = 0, toplam = 0;
+    for (let i = 0; i < deneme; i++) {
+      const r = botOynat(zorluk, 0.5);
+      skor += r.me.score; bosa += r.me.bosa; toplam = r.toplam;
+    }
+    return { skor: skor / deneme, bosa: bosa / deneme, toplam };
+  }
+
+  test('zor bot zamanlamayi gozetiyor', () => {
+    // Bu oyunda zorluk "ne kadar sik dokunuyor"dan degil ZAMANLAMADAN
+    // gelmeli. Zamanlamayi gozetmeyen bir bot bandin disina dokunur ve
+    // makasi surekli sikistirir - dusuk sikisma sayisi bu iddiayi tutar.
+    const zor = ortalama(2, 40);
+    assert.ok(zor.bosa <= 2,
+      'zor bot tur basina ' + zor.bosa.toFixed(1) + ' kez makasi sikistiriyor');
+    assert.ok(zor.skor >= zor.toplam * 0.8,
+      'zor bot ' + zor.skor.toFixed(1) + '/' + zor.toplam + ' kesebiliyor');
+  });
+
+  test('zorluk basamaklari ayrisiyor', () => {
+    const kolay = ortalama(0, 40), orta = ortalama(1, 40), zor = ortalama(2, 40);
+    assert.ok(orta.skor > kolay.skor * 1.5,
+      'kolay ' + kolay.skor.toFixed(1) + ' -> orta ' + orta.skor.toFixed(1));
+    assert.ok(zor.skor > orta.skor,
+      'orta ' + orta.skor.toFixed(1) + ' -> zor ' + zor.skor.toFixed(1));
+  });
+
+  test('zor bot kusursuz degil: insan onu gecebilir', () => {
+    // Tavan sabit ve beraberlik cozucu yok; kusursuz bot insani en fazla
+    // berabere birakirdi.
+    const zor = ortalama(2, 60);
+    assert.ok(zor.skor < zor.toplam,
+      'zor bot her turu kusursuz bitiriyor (' + zor.skor.toFixed(1) + '/' + zor.toplam + ')');
   });
 });

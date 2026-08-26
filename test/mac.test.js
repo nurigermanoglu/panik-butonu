@@ -120,39 +120,44 @@ describe('Sampiyon ekrani', () => {
 });
 
 describe('Kablo kesme turu uctan uca', () => {
-  test('gosterim -> kesme -> sonuc sirasiyla isliyor', () => {
+  test('kivilcimlar iniyor, bandda kesilen kazaniyor', () => {
+    // Oyun artik zamanlama tabanli: gosterim asamasi yok, tur ilk saniyeden
+    // itibaren oynaniyor. Burada tum zincir (intro -> play -> result)
+    // gercek oda dongusunde calisiyor mu ona bakiyoruz.
     const { oda, oyuncular } = odaKur(4, { hedef: 1 });
     for (const p of oyuncular) oda.game.setReady(p, true);
 
     // Torbadan rastgele oyun geldigi icin turu elle kablo kesmeye ceviriyoruz
     oda.game.mg = wc;
-    oda.game.inst = wc.create(oyuncular.map((p) => p.id), 0, {});
+    oda.game.inst = wc.create(oyuncular.map((q) => q.id), 0, {});
     oda.game.phase = 'intro';
     oda.game.timer = 3;
 
-    const asamalar = [];
-    let onceki = null, tik = 0;
+    let tik = 0, kivilcimGorduk = false;
     while (oda.game.phase !== 'result' && tik < 30 * 40) {
       oda.tick(DT);
       tik++;
-      const s = oda.game.snapshot();
-      if (s.phase === 'play' && s.st) {
-        const asama = s.st.showing ? 'GOSTERIM' : 'KESME';
-        if (asama !== onceki) { asamalar.push(asama); onceki = asama; }
-        if (!s.st.showing) {
-          const inst = oda.game.inst;
-          const sirada = inst.order[inst.pl.p0.prog];
-          if (sirada !== undefined) {
-            oda.game.handleInput(oyuncular[0], 'grab', { x: inst.wires[sirada].x, y: 100 });
+      const s2 = oda.game.snapshot();
+      if (s2.phase === 'play' && s2.st) {
+        if (s2.st.k.length) kivilcimGorduk = true;
+        // p0 kusursuz oynar: bandin ortasindaki kivilcimi keser
+        const inst = oda.game.inst;
+        const orta = s2.st.ky + s2.st.kh / 2;
+        if (inst.pl.p0.pen <= 0) {
+          for (const k of inst.aktifler()) {
+            if (inst.pl.p0.kesilen[k.i]) continue;
+            if (Math.abs(k.y - orta) > s2.st.kh / 2 - 2) continue;
+            oda.game.handleInput(oyuncular[0], 'grab', { x: inst.wires[k.w].x, y: orta });
           }
         }
       }
     }
 
-    assert.deepStrictEqual(asamalar, ['GOSTERIM', 'KESME']);
+    assert.ok(kivilcimGorduk, 'hic kivilcim ekrana gelmedi');
     assert.strictEqual(oda.game.phase, 'result');
-    assert.deepStrictEqual(oda.game.result.winners, ['p0'], 'sirayi kesen kazanmali');
-    assert.ok(JSON.stringify(oda.game.snapshot()).indexOf('"order"') < 0,
-      'yayinlanan paket sirayi sizdiriyor');
+    assert.deepStrictEqual(oda.game.result.winners, ['p0'], 'kesen kazanmali');
+    // Gelecek kivilcimlar yayinlanan pakete sizmamali
+    const paket = JSON.stringify(oda.game.snapshot());
+    assert.ok(paket.indexOf('"dogus"') < 0, 'kivilcim programi sizdirildi');
   });
 });

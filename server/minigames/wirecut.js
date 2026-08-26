@@ -1,236 +1,314 @@
 'use strict';
-// KABLO KESME - once renk sirasi tek tek gosterilir, sonra kablolar acilir ve
-// sira EZBERDEN kesilir. Yanlis kabloya dokunursan makas sikisir.
+// KABLO KESME - kablolardan asagi AKIM kivilcimlari iniyor. Kivilcim makas
+// bandina girdigi anda o kabloya dokunup kes.
 //
-// Tur iki asamalidir:
-//   1) GOSTERIM  - kablolar gorunmez; renkler sirayla ekranda belirir
-//   2) KESME     - kablolar acilir, ezberlenen sirayla kesilir
+//   dokunmatik / fare -> kabloyu kes (kivilcim bandin icindeyken)
 //
-// Yanlis kablo = makas sikisir VE panel BASA SARAR: kesilenler onarilir, sira
-// bastan baslar. Boylece deneme yanilma ile cozmek anlamsizlasir, sirayi
-// gercekten ezberleyen kazanir.
+// NEDEN BOYLE: eski hali "renk sirasini izle, sonra ezberden kes" idi ve
+// Hafiza Dizisi ile AYNI TURDU (13 oyunun ikisi ezber). Ustelik turun
+// ucte biri gosterim asamasinda geciyordu - o sure boyunca oyuncunun
+// yapacagi hicbir sey yoktu. Ikisi de sikiciydi.
 //
-// Kablo renkleri ve kesim sirasi bir kez uretilir, HERKES aynisini oynar.
-// Her oyuncunun ilerlemesi ve cezasi ayri takip edilir. Sirayi ilk bitiren kazanir.
+// Yeni hali ZAMANLAMA oyunu: hicbir sey gizli degil, hicbir sey
+// ezberlenmiyor, ilk saniyeden son saniyeye kadar elin uzerinde.
+// Elimizdeki oyunlar arasinda surekli zamanlama isteyen baska oyun yok
+// (Refleks Duellosu tek atislik).
 //
-// ONEMLI: sira istemciye HICBIR ZAMAN toplu gonderilmez - snap yalnizca O AN
-// gosterilen rengi tasir. Yoksa oyunu bilen biri konsoldan cevabi okuyabilirdi
-// ve ezberlemenin bir anlami kalmazdi.
+// PUAN: kesilen kivilcim +1. Kacan kivilcim 0. Bosa dokunus puan
+// kaybettirmez ama MAKASI SIKISTIRIR - asil ceza kaybedilen zamandir.
+// Boylece "her kabloya surekli dokun" ise yaramaz: sikisik makasla
+// siradaki kivilcimi da kacirirsin.
+//
+// ADALET:
+//   - Kivilcim programi tur basinda BIR KEZ uretilir, herkes aynisini oynar.
+//   - Iki kivilcimin band penceresi HIC CAKISMAZ ve aralarinda tepki payi
+//     birakilir: kusursuz oynayan biri teorik olarak HEPSINI kesebilir.
+//     (Engelden Kac'taki "desen her zaman gecilebilir" garantisiyle ayni
+//      fikir - kaybetmek sansa degil zamanlamaya bagli olsun.)
+//   - Kesme hakki oyuncu basina ayri: kimse kimsenin kivilcimini calmaz.
 
 const { dereceler } = require('./siralama');
+
 const RENKLER = ['#41a6f6', '#ffcd75', '#a7f070', '#b13e53', '#b55088'];
 const WIRE_COUNT = 5;
-const BAND = 28;           // kablonun dokunma yaricapi (yatayda)
-const PENALTY = 1.2;       // makas sikisma cezasi (saniye)
-const CUT_TIME = 9;        // kablolar acildiktan SONRAKI kesme suresi
-const LEAD_IN = 0.6;       // gosterim baslamadan once bekleme
-const ON_TIME = 0.55;      // her rengin ekranda kalma suresi
-const OFF_TIME = 0.25;     // renkler arasi bosluk
-const TOP_Y = 46;          // kablolarin ust ucu
-const BOT_Y = 168;         // kablolarin alt ucu
+const BAND = 28;             // kablonun dokunma yaricapi (yatayda)
+const TOP_Y = 40;            // kablolarin ust ucu (kivilcim buradan cikar)
+const BOT_Y = 170;           // kablolarin alt ucu (bomba burada)
+const KESME_Y = 116;         // makas bandinin ust kenari
+const KESME_H = 34;          // bandin kalinligi -> pencere = KESME_H / hiz
+const SIKISMA = 0.5;         // bosa dokununca makasin sikisma suresi (sn)
+const DURATION = 14;
+
+const HIZ_BAS = 48;          // ilk kivilcimlarin hizi (birim/sn)
+const HIZ_SON = 80;          // son kivilcimlarin hizi
+const HIZLANMA = 10;         // kacinci kivilcimda en yuksek hiza cikilir
+const ARA = 0.3;             // iki pencere arasinda birakilan tepki payi
+
+// Kivilcim programi. Pencereler (bandda gecirilen sure) cakismaz.
+function programUret(sv, sure) {
+  const kivilcimlar = [];
+  let pencereBas = 1.6;              // ilk pencerenin acilma ani
+  let oncekiKablo = -1;
+
+  for (;;) {
+    const oran = Math.min(1, kivilcimlar.length / HIZLANMA);
+    // Tur ilerledikce ve mac hizlandikca kivilcimlar hizlanir = pencere daralir
+    const hiz = (HIZ_BAS + (HIZ_SON - HIZ_BAS) * oran) * (1 + 0.25 * sv);
+    const pencere = KESME_H / hiz;
+    if (pencereBas + pencere > sure - 0.3) break;
+
+    // Ayni kablodan ard arda gelmesin: elin bir yerde takilip kalmasin
+    let w;
+    do { w = Math.floor(Math.random() * WIRE_COUNT); } while (w === oncekiKablo);
+    oncekiKablo = w;
+
+    // Kivilcimin dogdugu an: bandin ust kenarina pencereBas aninda varmali
+    const dogus = pencereBas - (KESME_Y - TOP_Y) / hiz;
+    kivilcimlar.push({ w: w, v: hiz, dogus: dogus, girer: pencereBas, cikar: pencereBas + pencere });
+
+    // Bir sonraki pencere, bu pencere kapandiktan sonra + tepki payi
+    pencereBas += pencere + ARA * (1 - 0.3 * sv);
+  }
+  return kivilcimlar;
+}
 
 module.exports = {
   id: 'wirecut',
   name: 'KABLO KESME',
-  instruction: 'SIRAYI EZBERLE!',
+  instruction: 'KIVILCIMI BANDDA KES!',
   controls: 'pointer',
-  duration: LEAD_IN + WIRE_COUNT * (ON_TIME + OFF_TIME) + CUT_TIME,
+  duration: DURATION,
 
   create(playerIds, seviye) {
     const sv = Math.max(0, Math.min(1, seviye || 0));
-    // Turlar ilerledikce: gosterim hizlanir (%35'e kadar), kesme suresi kisalir
-    // ve yanlis kesince makasin sikisma cezasi agirlasir.
-    const on = ON_TIME * (1 - 0.35 * sv);
-    const off = OFF_TIME * (1 - 0.35 * sv);
-    const gosterim = LEAD_IN + WIRE_COUNT * (on + off);
-    // Kesme suresi gosterimin USTUNE eklenir: ezberleme asamasi, kesmeye
-    // ayrilan zamandan calmaz.
-    const sure = gosterim + CUT_TIME * (1 - 0.25 * sv);
-    const ceza = PENALTY * (1 + 0.4 * sv);
+    const sure = DURATION * (1 - 0.15 * sv);
+    const kivilcimlar = programUret(sv, sure);
 
-    // kablo konumlari
     const wires = [];
-    for (let i = 0; i < WIRE_COUNT; i++) {
-      wires.push({ x: 40 + i * 56, col: RENKLER[i] });
-    }
-    // kesim sirasi: karistirilmis permutasyon (herkes icin ayni)
-    const order = wires.map((_, i) => i);
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const t = order[i]; order[i] = order[j]; order[j] = t;
-    }
+    for (let i = 0; i < WIRE_COUNT; i++) wires.push({ x: 40 + i * 56, col: RENKLER[i] });
 
     const pl = {};
     for (const id of playerIds) {
-      // enIyi: basa sarmalar prog'u sifirladigi icin "en cok nereye kadar geldi"
-      //        ayri tutulur - kimse bitiremezse kazanan buna gore secilir.
-      // sifir: kac kez basa sardi (ekranda gosterilir)
-      pl[id] = { prog: 0, enIyi: 0, pen: 0, cut: [], bitAt: sure + 1, sifir: 0 };
+      pl[id] = { score: 0, kesti: 0, kacti: 0, bosa: 0, pen: 0, kesilen: {}, flash: 0, iyi: true };
     }
 
     return {
       ids: playerIds.slice(),
-      sure, ceza,
+      sure,
       wires,
-      order,
+      kivilcimlar,
       pl,
       t: 0,
-      on, off, gosterim,
-      showing: true,
-      botHafiza: {},
+      kapanan: 0,              // penceresi kapanmis kivilcim sayaci
 
-      // Gosterim sirasinda kacinci rengin ekranda oldugu (-1 = bosluk ani)
-      gosterilen() {
-        if (!this.showing) return -1;
-        const rel = this.t - LEAD_IN;
-        if (rel < 0) return -1;
-        const adim = this.on + this.off;
-        const idx = Math.floor(rel / adim);
-        if (idx >= this.order.length) return -1;
-        return rel - idx * adim <= this.on ? idx : -1;
-      },
-
-      // ---- bu oyuna ozel bot ----
-      // Genel bot rastgele noktalara dokunuyordu ve sirayi neredeyse hic
-      // tamamlayamiyordu (olculdu: 5 kablodan ortalama 1.2). Buradaki bot
-      // insan gibi davranir: gosterim sirasinda renkleri izler, sonra
-      // ezberinden keser.
-      //
-      // Yalnizca snap ciktisini kullanir - kesim sirasini (this.order)
-      // okumaz, zaten o istemciye hic gonderilmiyor.
-      botIzle(pid, snap) {
-        const h = this.botHafiza[pid] || (this.botHafiza[pid] = { dizi: [], onceki: null });
-        if (!snap.showing) return;
-        if (snap.cur && snap.cur !== h.onceki) h.dizi.push(snap.cur);
-        h.onceki = snap.cur;
-      },
-
-      botHamle(pid, snap, zorluk) {
-        if (snap.showing) return;              // once ezberle
-        const me = snap.pl[pid];
-        if (!me || me.pen > 0) return;         // makas sikisik
-        if (me.p >= snap.n) return;            // sirayi bitirdi
-        const h = this.botHafiza[pid];
-        if (!h) return;
-
-        const dogruRenk = h.dizi[me.p];
-        if (!dogruRenk) return;
-
-        // Zorluk = hafizanin guvenilirligi. Yanlis kesim makasi sikistirir
-        // ve sirayi basa sarar - yani hata pahali.
-        const HATIRLAMA = [0.5, 0.8, 1];
-        const oran = HATIRLAMA[zorluk] !== undefined ? HATIRLAMA[zorluk] : 0.8;
-        const renk = Math.random() <= oran
-          ? dogruRenk
-          : snap.wires[Math.floor(Math.random() * snap.wires.length)].col;
-
-        const kablo = snap.wires.find((w) => w.col === renk);
-        if (!kablo) return;
-        this.input(pid, 'grab', { x: kablo.x, y: (snap.top + snap.bot) / 2 });
+      // O an EKRANDA olan kivilcimlar (dogmus, henuz bombaya varmamis)
+      aktifler() {
+        const out = [];
+        for (let i = 0; i < this.kivilcimlar.length; i++) {
+          const k = this.kivilcimlar[i];
+          if (this.t < k.dogus) continue;
+          const y = TOP_Y + (this.t - k.dogus) * k.v;
+          if (y > BOT_Y) continue;
+          out.push({ i: i, w: k.w, y: y, v: k.v });
+        }
+        return out;
       },
 
       input(pid, a, d) {
-        if (a !== 'grab') return;                 // tek dokunus = kesme denemesi
-        if (this.showing) return;                 // once ezberle, sonra kes
+        if (a !== 'grab') return;                  // tek dokunus = kesme denemesi
         const me = this.pl[pid];
         if (!me || !d) return;
-        if (me.pen > 0) return;                   // makas sikisik
-        if (me.prog >= this.order.length) return;
+        if (me.pen > 0) return;                    // makas sikisik
         const x = Number(d.x), y = Number(d.y);
         if (!isFinite(x) || !isFinite(y)) return;
-        if (y < TOP_Y - 10 || y > BOT_Y + 10) return;
 
-        // hangi kabloya dokundu
+        // Hangi kabloya dokundu?
         let w = -1;
         for (let i = 0; i < this.wires.length; i++) {
           if (Math.abs(this.wires[i].x - x) <= BAND) { w = i; break; }
         }
-        if (w < 0) return;
-        if (me.cut.indexOf(w) >= 0) return;       // zaten kesilmis
 
-        if (w === this.order[me.prog]) {
-          me.cut.push(w);
-          me.prog++;
-          if (me.prog > me.enIyi) me.enIyi = me.prog;
-          if (me.prog >= this.order.length) me.bitAt = this.t;
+        // O kabloda, BANDIN ICINDE, henuz kesmedigim bir kivilcim var mi?
+        let hedef = -1;
+        if (w >= 0) {
+          for (const k of this.aktifler()) {
+            if (k.w !== w) continue;
+            if (me.kesilen[k.i]) continue;
+            if (k.y + 3 < KESME_Y || k.y - 3 > KESME_Y + KESME_H) continue;
+            hedef = k.i; break;
+          }
+        }
+
+        if (hedef >= 0) {
+          me.kesilen[hedef] = true;
+          me.score++;
+          me.kesti++;
+          me.flash = 0.2; me.iyi = true;
         } else {
-          // Yanlis kablo: makas sikisir ve sira BASA SARAR.
-          // Kesilenler onarilir - yoksa kesilmis kablolar tekrar kesilemedigi
-          // icin sira bir daha tamamlanamazdi.
-          me.pen = this.ceza;
-          me.prog = 0;
-          me.cut = [];
-          me.sifir++;
+          // Erken/gec dokundu ya da bos kabloya vurdu: makas sikisir.
+          // Puan kaybi yok - ceza kaybedilen zaman.
+          me.pen = SIKISMA;
+          me.bosa++;
+          me.flash = 0.3; me.iyi = false;
         }
       },
 
       update(dt) {
         this.t += dt;
-        if (this.showing && this.t >= this.gosterim) this.showing = false;
+
+        // Penceresi kapanan kivilcimlar: kesemeyenler icin "kacti"
+        while (this.kapanan < this.kivilcimlar.length &&
+               this.t > this.kivilcimlar[this.kapanan].cikar) {
+          const idx = this.kapanan;
+          for (const id of this.ids) {
+            if (!this.pl[id].kesilen[idx]) this.pl[id].kacti++;
+          }
+          this.kapanan++;
+        }
+
         for (const id of this.ids) {
-          if (this.pl[id].pen > 0) this.pl[id].pen -= dt;
+          const me = this.pl[id];
+          if (me.pen > 0) me.pen -= dt;
+          if (me.flash > 0) me.flash -= dt;
         }
       },
 
-      // biri sirayi tamamladiysa tur biter
-      done() {
-        return this.ids.some((id) => this.pl[id].prog >= this.order.length);
+      // ---- bu oyuna ozel bot ----
+      // Bot da insan gibi oynar ve zorluk INSANIN ZORLANDIGI yerlerden gelir:
+      //   TEPKI   - kivilcimi gorup karar verme suresi
+      //   EL_HIZI - elini bir kablodan digerine tasima hizi
+      //   NISAN   - bandin ortasini ne kadar hassas tutturdugu
+      //
+      // Is IKIYE bolunmus:
+      //   botHamle -> hangi kivilcimi hedefleyecegine karar verir (seyrek)
+      //   botIzle  -> eli varinca DOGRU ANDA keser (her karede)
+      // Boyle olmasinin sebebi olculdu: hamle araligi kolay botta 0.44-0.99 sn,
+      // bandin penceresi ise 0.43-0.71 sn. Kesme karari da hamle araligina
+      // birakilsaydi bot pencereye tesaduf eseri denk gelirdi ve zorluk
+      // "ne kadar sik dokunuyor"a inerdi - oysa bu bir ZAMANLAMA oyunu.
+      // Insan da boyle oynuyor: once "su kabloya gidiyorum" der, sonra eli
+      // dogru anda kapanir.
+      //
+      // Yalnizca snap ciktisini kullanir: programa (kivilcimlar) bakmaz.
+      botNiyet(pid) {
+        if (!this.botEl) this.botEl = {};
+        return this.botEl[pid] ||
+          (this.botEl[pid] = { kablo: 0, varis: 0, hedefI: -1, nisanY: 0, kacirdi: {} });
       },
 
-      // Sirayi bitirenler onde (erken bitiren ustte); bitiremeyenler arasinda
-      // ULASILAN EN IYI ilerleme belirleyici - basa sarma anlik ilerlemeyi
-      // sifirladigi icin ona bakilamaz.
+      // Ortaya en yakin, henuz kesilmemis ve bandi gecmemis kivilcim
+      botHedef(pid, snap, me) {
+        const el = this.botNiyet(pid);
+        const orta = snap.ky + snap.kh / 2;
+        let hedef = null, enYakin = Infinity;
+        for (const k of snap.k) {
+          if (me.kes.indexOf(k.i) >= 0) continue;
+          // Bir kez elini yanlis kapattigi kivilcimin pesine dusmez: makas
+          // sikisikken o pencere zaten kayboluyor, tekrar denemek insanin
+          // yapmayacagi bir sey olurdu.
+          if (el.kacirdi[k.i]) continue;
+          if (k.y > orta + snap.kh / 2) continue;      // bu kivilcim kacti
+          const fark = Math.abs(k.y - orta);
+          if (fark < enYakin) { enYakin = fark; hedef = k; }
+        }
+        return hedef;
+      },
+
+      botHamle(pid, snap, zorluk) {
+        const me = snap.pl[pid];
+        if (!me) return;
+        const hedef = this.botHedef(pid, snap, me);
+        if (!hedef) return;
+
+        const TEPKI = [0.22, 0.14, 0.06];           // saniye
+        const EL_HIZI = [6, 10, 20];                 // kablo/sn
+        // Zamanlama gurultusu: bandin YARISININ orani olarak. 1'den buyuk
+        // deger nisan noktasinin bandin DISINA dusebilecegi anlamina gelir -
+        // yani makas sikisir. Zor bota da kucuk bir pay birakildi: kusursuz
+        // olsaydi insan onu en fazla berabere tutabilirdi.
+        const GURULTU = [1.8, 1.35, 1.15];
+        const tepki = TEPKI[zorluk] !== undefined ? TEPKI[zorluk] : TEPKI[1];
+        const elHizi = EL_HIZI[zorluk] !== undefined ? EL_HIZI[zorluk] : EL_HIZI[1];
+        const gurultu = GURULTU[zorluk] !== undefined ? GURULTU[zorluk] : GURULTU[1];
+
+        const el = this.botNiyet(pid);
+        if (el.hedefI !== hedef.i) {
+          // Yeni hedef: eli o kabloya tasimak + gorup karar vermek zaman alir
+          el.varis = this.t + Math.abs(hedef.w - el.kablo) / elHizi + tepki;
+          el.kablo = hedef.w;
+          el.hedefI = hedef.i;
+          // Makasi kapatmayi hedefledigi Y. Bandin disina duserse sikisir.
+          const orta = snap.ky + snap.kh / 2;
+          el.nisanY = orta + (Math.random() * 2 - 1) * gurultu * (snap.kh / 2);
+        }
+      },
+
+      botIzle(pid, snap) {
+        const me = snap.pl[pid];
+        if (!me || me.pen > 0) return;              // makas sikisik
+        if (!this.botEl || !this.botEl[pid]) return;
+        const el = this.botEl[pid];
+        if (el.hedefI < 0 || this.t < el.varis) return;   // el henuz varmadi
+
+        const hedef = snap.k.find((k) => k.i === el.hedefI);
+        if (!hedef || me.kes.indexOf(hedef.i) >= 0) return;
+
+        // Kivilcim nisan noktasina ULASTIGI an makasi kapat. Kivilcim hep
+        // asagi indigi icin bu kosul her hedef icin tam bir kez saglanir.
+        if (hedef.y < el.nisanY) return;
+
+        const no = el.hedefI;
+        el.hedefI = -1;                              // bu kivilcim icin is bitti
+        this.input(pid, 'grab', { x: snap.wires[hedef.w].x, y: hedef.y });
+        // Sikistiysa bu kivilcimi kaybetti sayilir
+        if (this.pl[pid] && this.pl[pid].pen > 0) el.kacirdi[no] = true;
+      },
+
+      done() { return false; },                    // sure dolana kadar surer
+
       derece() {
-        return dereceler(this.ids, (id) => {
-          const me = this.pl[id];
-          return me.prog >= this.order.length ? me.bitAt : 1000 - me.enIyi;
-        });
+        return dereceler(this.ids, (id) => -this.pl[id].score);
       },
 
       winners() {
-        const bitiren = this.ids.filter((id) => this.pl[id].prog >= this.order.length);
-        if (bitiren.length) {
-          const enHizli = Math.min(...bitiren.map((id) => this.pl[id].bitAt));
-          const top = bitiren.filter((id) => this.pl[id].bitAt <= enHizli + 1e-6);
-          return top.length === this.ids.length ? [] : top;
-        }
-        // Basa sarma prog'u sifirladigi icin anlik degere bakilamaz: son anda
-        // yanlis kesen herkes 0'da kalir ve tur haksiz yere berabere biterdi.
-        const best = Math.max(...this.ids.map((id) => this.pl[id].enIyi));
+        const best = Math.max(...this.ids.map((id) => this.pl[id].score));
         if (best <= 0) return [];
-        const top2 = this.ids.filter((id) => this.pl[id].enIyi === best);
-        return top2.length === this.ids.length ? [] : top2;
+        const top = this.ids.filter((id) => this.pl[id].score === best);
+        return top.length === this.ids.length ? [] : top;
       },
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'KIMSE BITIREMEDI!';
-        if (this.pl[w[0]].prog >= this.order.length) return 'BOMBA ETKISIZ!';
-        return this.pl[w[0]].enIyi + ' / ' + this.order.length + ' KABLO';
+        if (!w.length) return 'KIMSE KESEMEDI!';
+        const me = this.pl[w[0]];
+        return me.kesti + ' / ' + this.kivilcimlar.length + ' KABLO' +
+          (me.bosa ? ' (' + me.bosa + ' SIKISMA)' : '');
       },
 
       snap() {
         const pl = {};
         for (const id of this.ids) {
           const me = this.pl[id];
+          // Sadece EKRANDAKI kivilcimlar icin "bunu kestim" bilgisi gerekiyor
+          const kes = [];
+          for (const k of this.aktifler()) if (me.kesilen[k.i]) kes.push(k.i);
           pl[id] = {
-            p: me.prog,
-            en: me.enIyi,
-            sifir: me.sifir,
-            pen: me.pen > 0 ? Math.round(me.pen * 10) / 10 : 0,
-            cut: me.cut.slice(),
+            s: me.score,
+            pen: me.pen > 0 ? Math.round(me.pen * 100) / 100 : 0,
+            fl: me.flash > 0 ? (me.iyi ? 1 : 2) : 0,
+            kes: kes,
           };
         }
-        const gi = this.gosterilen();
         return {
           top: TOP_Y, bot: BOT_Y, band: BAND,
+          ky: KESME_Y, kh: KESME_H,
           wires: this.wires,
-          n: this.order.length,
-          showing: this.showing,
-          // Sadece su an gosterilen renk gider; butun sira asla istemciye gitmez.
-          cur: gi >= 0 ? this.wires[this.order[gi]].col : null,
-          curIdx: gi,                                  // kacinci renk (0 tabanli)
-          pl,
+          n: this.kivilcimlar.length,
+          // v = hiz: istemci paketler arasinda kivilcimi suzerek akici cizer
+          k: this.aktifler().map((k) => ({
+            i: k.i, w: k.w, y: Math.round(k.y * 10) / 10, v: Math.round(k.v),
+          })),
+          pl: pl,
         };
       },
     };

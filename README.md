@@ -76,7 +76,7 @@ lobiye döner ve `ADIN AYRILDI` yazar.
 | **Sıcak Patates** | ~30 sn | Bomba rastgele birinde başlar, tuşa basınca rastgele başkasına geçer. Fitil el değiştirse de yanmaya devam eder; patladığında elinde tutan elenir. Tek kişi kalana kadar sürer |
 | **Köstebek Avı** | 13 sn | 7 toprak deliği (3 üst + 4 alt), deliklerden çıkan köstebeklere çekiçle vur (+1). Bombaya vurursan -2. Aynı delikten üst üste köstebek çıkmaz (bir delik boşaldıktan sonra en az 1 sn dinlenir). Köstebek ve bomba gerçek resim. Köstebeğe vurunca kısa süre sersemlemiş hâli (`img/kostebek_vur.png`) görünüp kaybolur. **Rakiplerin vuruşları** kendi renklerinde kısa bir yıldız olarak vurdukları deliğin üstünde belirir — herkesin vurma hakkı ayrı olduğu için yoksa rakibin oynayıp oynamadığı hiç görünmüyordu |
 | **Dosya Silme** | 12 sn | Eski bir bilgisayar masaüstünde 7 klasörü çöp kutusuna sürükle. Hepsini en hızlı silen kazanır |
-| **Kablo Kesme** | ~13.6 sn | İki aşamalı: önce renkler tek tek gösterilir (kablolar henüz yok), sonra kablolar açılır ve sırayı **ezberden** kesmen gerekir — sıra bir daha gösterilmez. Yanlış kabloya dokunursan makas 1.2 saniye sıkışır **ve sıra başa sarar**: kesilen kablolar onarılır, baştan başlarsın. Sırayı ilk bitiren kazanır; kimse bitiremezse **en çok ilerleyebilen** kazanır |
+| **Kablo Kesme** | 14 sn | Kablolardan aşağı **akım kıvılcımları** iniyor, altta bomba var. Kıvılcım ekranın ortasındaki **makas bandına** girdiği anda o kabloya dokun: doğru zamanlama +1. Erken/geç dokunursan ya da boş kabloya vurursan **makas 0.5 sn sıkışır** — puan kaybı yok ama sıkışık makasla sıradaki kıvılcımı da kaçırırsın, yani sürekli dokunmak işe yaramaz. En çok kesen kazanır |
 | **Şekil Yerleştir** | 14 sn | Ahşap oyuncak: 5 ahşap bloğu (kare, üçgen, daire, artı, yıldız) tahtadaki kendi deliklerine sürükle. Yanlış deliğe bırakırsan blok yerine döner |
 | **Düşenleri Yakala** | 13 sn | Herkes aynı sahada, 5 şeritte: yukarıdan düşen yıldızları topla (+1), bombalardan kaç (-2). **Sol/sağ** ile şerit değiştir. Bir eşyayı o şeritteki herkes alır. Aynı anda en fazla 2 eşya düşer, yani bombadan kaçacak yer hep vardır |
 | **Zemin Çöküyor** | 14 sn | **Herkes aynı** 6x6 ızgarada oynar: kareler tek tek çöker (önce yanıp söner, sonra kaybolur), yön tuşlarıyla kaçıp ayakta kalırsın. **Boşluğa adım atarsan da düşersin** — çökmüş kareler görünmez duvar değildir. Aynı kareye birden fazla oyuncu girebilir — kimse kimseyi engellemez. Desen **her zaman kaçılabilir** üretilir. Son ayakta kalan kazanır; herkes düşerse en geç düşen |
@@ -206,10 +206,16 @@ Oyunun iç değişkenlerine bakan bir bot "her şeyi bilen" bir rakip olurdu.
 10 oyun kendi bot mantığını kullanıyor; kalan 3'ünde (At Yarışı, Refleks, Sıcak
 Patates) genel davranış zaten yeterli.
 
-**Ezber gerektirenler** (Hafıza Dizisi, Kablo Kesme) için bot da insan gibi
-*ekranı izliyor*: `botIzle` her karede çağrıldığı için gösterilen sembolleri
-kaçırmıyor, sırayla aklında tutuyor, sonra tekrarlıyor. Zorluk burada hafızanın
-güvenilirliği oluyor.
+**Hafıza Dizisi** için bot da insan gibi *ekranı izliyor*: `botIzle` her karede
+çağrıldığı için gösterilen sembolleri kaçırmıyor, sırayla aklında tutuyor, sonra
+tekrarlıyor. Zorluk burada hafızanın güvenilirliği oluyor.
+
+**Kablo Kesme** `botIzle`'yi başka bir iş için kullanıyor: bu bir zamanlama oyunu
+ve karar iki parçaya bölünmüş — `botHamle` hangi kıvılcımı hedefleyeceğine karar
+veriyor (seyrek çağrılıyor), `botIzle` eli varınca **doğru anda** kesiyor (her
+karede). Ölçüldü: hamle aralığı kolay botta 0.44-0.99 sn, bandın penceresi ise
+0.43-0.71 sn — kesme kararı da hamle aralığına bırakılsaydı bot pencereye
+tesadüfen denk gelirdi ve zorluk "ne kadar sık dokunuyor"a inerdi.
 
 **Ters Emir**'de bot insanın yaptığı hatayı yapar: KOLAY bot yazıyı okuyup olduğu
 gibi basar, kırmızı olduğunu çoğu zaman fark etmez (%55 çevirme). ZOR bot %95
@@ -228,7 +234,7 @@ hiç oynamayan bir oyuncunun aldığı sonuç — karşılaştırma noktası:
 | Köstebek Avı | köstebek / 19 | 0 | 11.8 | 18.0 | **18.6** |
 | Sıcak Patates | kurtuldu | %60 | ✓ | ✓ | **✓** |
 | Dosya Silme | dosya / 9 | 0 | 4.7 | 9.0 | **9.0** |
-| Kablo Kesme | kablo / 5 | 0 | 3.6 | 5.0 | **5.0** |
+| Kablo Kesme | kıvılcım / 16 | 0 | 4.3 | 12.9 | **15.5** |
 | Şekil Yerleştir | şekil / 5 | 0 | 5.0 | 5.0 | **5.0** |
 | Puzzle | parça / 3 | 0 | 3.0 | 3.0 | **3.0** |
 | Zemin Çöküyor | yaşam sn | 6.6 | 11.6 | 13.6 | **14.0** |
@@ -504,16 +510,16 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 231 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 235 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
 | [test/oda.test.js](test/oda.test.js) | Kopan oyuncunun yerini cihaz anahtarıyla geri alması, aynı ismi yazan yabancının yeri kapamaması, sohbet kuralları |
 | [test/minioyunlar.test.js](test/minioyunlar.test.js) | 13 mini oyunun ortak arayüzü; hepsinin 2 ve 4 kişiyle, üç hız seviyesinde, bozuk paketler dahil rastgele girdi altında çökmeden bitmesi |
-| [test/kablokesme.test.js](test/kablokesme.test.js) | Ezberleme aşaması, sıranın istemciye sızmaması, yanlış kesimde başa sarma ve kazanan seçimi |
+| [test/kablokesme.test.js](test/kablokesme.test.js) | Kablo Kesme: programın adaleti (kusursuz oyuncu 300 desende tek kıvılcım kaçırmıyor), pencerelerin çakışmaması, kesme kuralları, sürekli dokunmanın işe yaramaması, gelecek kıvılcımların pakete sızmaması, botun zamanlama basamakları |
 | [test/mac.test.js](test/mac.test.js) | 2/3/4 kişilik tam maçların şampiyona ulaşması, kopan oyuncuda maçın duraklaması, şampiyon ekranı davranışı |
 | [test/botkapsam.test.js](test/botkapsam.test.js) | **Botun 13 oyunun hepsini oynayabildiği**: her oyunda pasif rakibi yenmesi, zorluğun ters dönmemesi. Ayrıca **zor botun gerçekten iyi oynadığı** (Engelden Kaç'ta turun %86'sını ayakta geçirmesi gibi eşikler) — "oynuyor ama kötü oynuyor" durumunu yakalar |
-| [test/ezberbot.test.js](test/ezberbot.test.js) | Ezber oyunlarında bot: gösterimi izleyip diziyi doğru öğrenmesi, gösterim sırasında hamle yapmaması, zorluğa göre yanılması |
+| [test/ezberbot.test.js](test/ezberbot.test.js) | Hafıza Dizisi'nde bot: gösterimi izleyip diziyi doğru öğrenmesi, gösterim sırasında hamle yapmaması, zorluğa göre yanılması |
 | [test/bot.test.js](test/bot.test.js) | Botlar: ekleme/çıkarma sınırları, paket gönderilmemesi, tek başına maç başlatma, gerçekten oynayıp puan alması, refleks turunda erken basmaması |
 | [test/istatistik.test.js](test/istatistik.test.js) | Maç sonu istatistikleri: sayımlar, eşitlikte satırın atlanması, beraberlik durumları, yalnızca şampiyon ekranında yayınlanması |
 | [test/final.test.js](test/final.test.js) | Final turu koşulu (küçük hedeflerde bile maç başında ilan edilmemesi), çift puan, bayrağın tur başında sabitlenmesi |
@@ -539,7 +545,7 @@ ve orada kalıyor. Geri sayım ekranında `TUR 7` ve `HIZ +%67` yazar.
 | Engelden Kaç | 16 engel sırası | **20 engel sırası**, %25 daha hızlı |
 | Sıcak Patates | normal fitil | **%35 daha kısa fitil** |
 | Ters Emir | 1.5 sn cevap süresi | **%22 daha dar pencere**, aralar da kısalır |
-| Kablo Kesme | 4.6 sn ezberleme + 9 sn kesme | **3.2 sn ezberleme + 6.8 sn kesme**, **1.68 sn ceza** |
+| Kablo Kesme | 15 kıvılcım, pencere 0.43-0.71 sn | **16 kıvılcım**, pencere **0.34-0.57 sn** |
 | Şekil Yerleştir / Puzzle | 14 sn | **10.1 sn** |
 | Zemin Çöküyor | 0.75 sn uyarı, 14 sn | **0.45 sn uyarı**, 11.2 sn, çökmeler sıklaşır |
 | Düşenleri Yakala | 108 birim/sn düşüş | **%35 daha hızlı**, eşyalar sıklaşır |
