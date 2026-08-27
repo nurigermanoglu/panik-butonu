@@ -570,7 +570,8 @@
     var ben = st.pl ? st.pl[youId] : null;
     var y = {};               // bu paketin degerleri (bir sonrakiyle karsilasmak icin)
 
-    // Skor + yanip sonme kullanan oyunlar (kostebek, dosya, sekil, puzzle)
+    // Skor + yanip sonme kullanan oyunlar. Ortak kalip: skor arttiysa "iyi"
+    // sesi, fl === 2 (kirmizi parlama) ilk kez geldiyse "kotu" sesi.
     if (ben && typeof ben.s === 'number') {
       y.s = ben.s; y.fl = ben.fl;
       var arttiMi = o.s !== undefined && ben.s > o.s;
@@ -578,12 +579,28 @@
       if (id === 'mole') { if (arttiMi) PP.sfx.vur(); if (kotuMu) PP.sfx.patla(); }
       else if (id === 'filedelete') { if (arttiMi) PP.sfx.sil(); }   // bu oyunda ceza yok
       else if (id === 'shapesort' || id === 'puzzle') { if (arttiMi) PP.sfx.otur(); if (kotuMu) PP.sfx.hata(); }
+      else if (id === 'collect') { if (arttiMi) PP.sfx.dogru(); if (kotuMu) PP.sfx.patla(); }
+      else if (id === 'tersemir') { if (arttiMi) PP.sfx.dogru(); if (kotuMu) PP.sfx.hata(); }
+      // Kablo Kesme: kesme sesi buradan gelir. (Oyun zamanlama tabanlina
+      // cevrilince snap'teki ilerleme alani 'p' yerine 's' oldu; asagida
+      // eski ada bakan kod kalmisti ve kesme sesi hic calmiyordu.)
+      else if (id === 'wirecut') { if (arttiMi) PP.sfx.kes(); }
     }
 
     if (id === 'wirecut' && ben) {
-      y.p = ben.p; y.pen = ben.pen;
-      if (o.p !== undefined && ben.p > o.p) PP.sfx.kes();
+      // Makasin sikismasi skordan bagimsiz: ayri takip edilir
+      y.pen = ben.pen;
       if (ben.pen > 0 && !(o.pen > 0)) PP.sfx.hata();
+    }
+    else if (id === 'floor' && ben) {
+      // Zemin Cokuyor: bosluga dusme ani (Engelden Kac'taki carpma gibi)
+      y.a = ben.a;
+      if (o.a === true && ben.a === false) PP.sfx.carp();
+    }
+    else if (id === 'reflex') {
+      // Isaretin ekranda belirdigi an: "simdi bas" sesi
+      y.sig = st.sig;
+      if (o.sig === false && st.sig === true) PP.sfx.go();
     }
     else if (id === 'race' && st.p) {
       y.p = st.p[youId];
