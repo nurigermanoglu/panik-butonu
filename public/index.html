@@ -8,7 +8,15 @@
 <!-- Ikon oyunun kendi paletiyle cizildi (bkz. #1a1c2c theme-color).
      32x32 PNG: modern tarayicilarin hepsi kabul ediyor, .ico gerekmiyor. -->
 <link rel="icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" href="favicon.png">
+<link rel="apple-touch-icon" href="ikon-192.png">
+<!-- Ana ekrana eklendiginde tam ekran ve YATAY acilsin: oyun 16:9,
+     telefonun yatay hali de oyle. Dikeyde tuval ekranin %24"unu,
+     yatayda %69"unu kapliyor (olculdu). -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Parti Panik">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -70,6 +78,11 @@
         </form>
       </aside>
     </div>
+
+    <!-- Dikey telefonda tuval ekranin %24"unu, yatayda %69"unu kapliyor.
+         Bu yuzden ipucu var; ama dikeyde de oynanabildigi icin
+         ENGELLEMIYOR, sadece bir seritle haber veriyor. -->
+    <div id="cevir" aria-hidden="true">TELEFONU YAN ÇEVİR — OYUN 3 KAT BÜYÜR</div>
 
     <div id="pad" data-scheme="none">
       <div class="grp" data-for="action">

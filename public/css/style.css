@@ -424,3 +424,72 @@ canvas {
   #menuErr { min-height: 0; }
   .help { display: none; }
 }
+
+/* ------------------------- YATAY TELEFON ------------------------- */
+/* Telefon yan cevrildiginde ekran 16:9'a cok yakin oluyor, yani tuvalin
+   kendi orani. Ama butonlar tuvalin ALTINDA yer kaptigi surece tuvale
+   kalan yukseklik yariya iniyordu (olculdu: 812x375 ekranda tuval 320x180,
+   yani ekranin %19'u).
+
+   Cozum: butonlar tuvalin ALTINA degil YANINA alinir. Tuval boylece tum
+   yuksekligi kullanir; 16:9 tuval 19.5:9 ekranda zaten yatayda yer
+   birakiyor, butonlar tam oraya oturuyor. Olculdu: %19 -> %66.
+
+   Kosul "yatay VE kisa": tablet/masaustu genis ekranlar bu daldan
+   etkilenmesin diye max-height siniri var. */
+@media (orientation: landscape) and (max-height: 500px) {
+  #game { flex-direction: row; }
+
+  #arena { padding: 0 0 0 4px; }
+
+  /* Butonlar sag kenarda tek sutun. flex-basis sabit: tuvalin ne kadar
+     yer bulacagi butonlara gore degil, butonlar tuvale gore ayarlansin. */
+  #pad {
+    flex: 0 0 auto;
+    width: 150px;
+    min-height: 0;
+    padding: 4px;
+    gap: 0;
+  }
+  /* Isaretci oyunlarinda buton yok: tum genislik tuvale kalsin */
+  #pad[data-scheme="pointer"],
+  #pad[data-scheme="none"] { width: 0; padding: 0; }
+
+  .pbtn { width: 62px; height: 62px; font-size: 20px; }
+  .pbtn.big { width: 130px; font-size: 22px; }
+
+  /* Sol/sag ikilisi yan yana kalsin - bas parmak alisik oldugu yerde bulur */
+  #pad .grp[data-for="lr"] { gap: 14px; }
+  #pad .grp[data-for="lobby"] { flex-direction: column; gap: 8px; }
+  #pad .grp.dpad { gap: 4px; }
+  #pad .grp.dpad .row { gap: 14px; }
+
+  /* Sohbet yatayda tuvalin uzerinde katman olarak kalir, yer kaplamasin */
+  #arena { flex-direction: row; }
+  #chat { position: absolute; top: 0; right: 4px; bottom: 4px; width: 200px; flex: none; }
+}
+
+/* Dikey telefonda "yan cevir" seridi.
+   Dikeyde de oynanabiliyor (tuval ekranin %24'u), o yuzden bu bir ENGEL
+   degil bir ipucu: oyunun ustune binmez, alt kenarda durur ve yalnizca
+   dokunmatik + dar + dikey ekranlarda gorunur. */
+#cevir { display: none; }
+
+@media (orientation: portrait) and (max-width: 560px) {
+  #cevir {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0 6px 4px;
+    padding: 5px 8px;
+    text-align: center;
+    font-size: 11px; letter-spacing: 1px;
+    color: #0e0d1c;
+    background: #ffd34d;
+    border: 3px solid #0e0d1c;
+    box-shadow: 0 3px 0 #c9601f;
+  }
+}
+/* Fare + klavyesi olan cihazda ipucunun anlami yok */
+@media (hover: hover) and (pointer: fine) {
+  #cevir { display: none !important; }
+}

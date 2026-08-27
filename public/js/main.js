@@ -754,7 +754,18 @@
     var tuvaleKalan = yanYana ? toplamW - sohbetPayi() - ARENA_BOSLUK : r.width;
 
     var scale = Math.min(tuvaleKalan / W, r.height / H);
-    var k = scale >= 1 ? Math.floor(scale) : scale;   // ekranda kac kat gorunecek
+    // Tam sayiya yuvarlamak bir oyun pikselini tam olarak k ekran pikseline
+    // oturtur, yani en keskin goruntuyu verir. Ama telefonda bunun bedeli
+    // agir: 812x375 yatay bir ekranda kullanilabilir olcek 1.87 iken taban
+    // 1'e dusuyor ve tuval ekranin yalnizca %19'unu kapliyordu - "oyunlar
+    // cok kucuk kaliyor" sikayetinin sebebi buydu.
+    //
+    // O yuzden yuvarlama yalnizca BOL yer varken yapiliyor: 2 kat ve
+    // uzerinde bir tam sayi zaten sigiyorsa keskinligi koru, sigmiyorsa
+    // ekrani doldur. Kucuk ekranda pixelated olcekleme bir miktar esit
+    // olmayan piksel uretir; bu, ekranin dortte ucunu bos birakmaktan
+    // cok daha iyi bir takas.
+    var k = Math.floor(scale) >= 2 ? Math.floor(scale) : scale;
     var tuvalW = Math.floor(W * k);
     cv.style.width = tuvalW + 'px';
     cv.style.height = Math.floor(H * k) + 'px';

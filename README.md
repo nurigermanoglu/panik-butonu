@@ -53,6 +53,36 @@ böylece oyun ekranı daha büyük olur.
 **Lobide yön tuşlarının / WASD'nin bir işlevi yoktur** — orada yapılacak tek şey hazır olmak,
 o da boşluk tuşu (veya ekrana dokunma) ile olur.
 
+### Telefonda oynamak
+
+**Telefonu yan çevir.** Oyun 16:9; telefonun yatay hâli de öyle. Ölçüldü
+(812x375 ekran, maç sırasında):
+
+| | Tuval | Ekranın ne kadarı |
+|---|---|---|
+| Dikey | 363x204 | %24 |
+| **Yatay** | **609x343** | **%69** |
+
+Yani yatayda oyun **3 kat büyük** görünüyor. Dikeyde de oynanabiliyor, o yüzden
+engelleyen bir ekran yok — sadece altta "telefonu yan çevir" şeridi çıkıyor.
+
+Yatayda dokunmatik butonlar tuvalin **altına değil yanına** alınır; böylece
+tuval tüm yüksekliği kullanır ve butonlar oyunun üstünü kapatmaz.
+
+#### Ana ekrana ekleme
+
+Tarayıcı menüsünden **Ana ekrana ekle** dendiğinde oyun ayrı bir uygulama gibi,
+**tam ekran ve yatay** açılır (adres çubuğu görünmez, o da yer kazandırır).
+[public/manifest.json](public/manifest.json) bunu tanımlar; ikonlar oyunun
+kendi paletiyle çizildi.
+
+> Ölçek neden bazen tam sayı değil: bir oyun pikselini tam olarak `k` ekran
+> pikseline oturtmak en keskin görüntüyü verir, ama telefonda bunun bedeli ağır.
+> Yatay ekranda kullanılabilir ölçek 1.90 iken tabana yuvarlama onu 1'e
+> düşürüyor ve tuval ekranın **%19'unda** kalıyordu. Artık yuvarlama yalnızca
+> 2 kat ve üzerinde yapılıyor: bol yer varken keskinlik korunuyor, dar ekranda
+> ekran dolduruluyor.
+
 ### Odadan çıkmak
 
 Üst çubuktaki kırmızı **← ÇIK** butonu ana menüye döndürür. Yanlışlıkla
@@ -466,6 +496,9 @@ test/
 public/
   index.html      Menü + oyun ekranı + dokunmatik butonlar
   favicon.png     Sekme ikonu (oyunun paletiyle çizilmiş 32x32 bomba)
+  manifest.json   Ana ekrana ekleme: tam ekran + yatay
+  ikon-192.png    Ana ekran ikonları (aynı desen, büyük boy)
+  ikon-512.png
   css/style.css
   js/font.js      Elle çizilmiş 5x7 pixel font (Türkçe harfler dahil)
   js/gfx.js       Palet ve sprite çizimi
@@ -511,7 +544,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 277 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 284 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -527,6 +560,7 @@ yani yine `npm install` gerekmiyor. 277 test bir saniyede biter.
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
 | [test/yakala.test.js](test/yakala.test.js) | Düşenleri Yakala: düşme programının adaleti (bombadan kaçış hep var), yakalama kuralları, sonuç seçimi |
 | [test/tersemir.test.js](test/tersemir.test.js) | Ters Emir: emir listesinin adaleti (ilk emir hep düz, aynı yön üst üste gelmez, üçten fazla ters yığılmaz), puanlama, bir emre tek cevap, sıradaki emrin istemciye sızmaması, botun zorluk basamakları |
+| [test/telefon.test.js](test/telefon.test.js) | Ana ekrana ekleme (manifest geçerli, yatay açılıyor, ikonlar gerçekten var) ve ölçekleme kuralının geri kaymaması |
 | [test/ses.test.js](test/ses.test.js) | Ses olaylarının snap ile sözleşmesi: ses kodunun okuduğu her alanın gerçekten `snap()`'te olması, hiçbir oyunun sessiz kalmaması, ses adlarının `sound.js`'de bulunması |
 | [test/zemin.test.js](test/zemin.test.js) | Zemin Çöküyor deseninin adaleti (kusursuz oyuncu 600 desende hiç ölmüyor), kuşatılma olmaması, hareket kuralları, ortak ızgara davranışı |
 
