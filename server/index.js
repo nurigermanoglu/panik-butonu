@@ -232,7 +232,7 @@ server.listen(cfg.PORT, () => {
     }
   }
   console.log('');
-  console.log('  PARTI PANIK sunucusu calisiyor!');
+  console.log('  PANIK BUTONU sunucusu calisiyor!');
   console.log('  --------------------------------');
   console.log('  Bu bilgisayar : http://localhost:' + cfg.PORT);
   for (const ip of lan) {

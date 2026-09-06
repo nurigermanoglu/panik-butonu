@@ -18,6 +18,9 @@
   var SOZLUK = {
     tr: {
       // ---- menu / genel ----
+      'menu.title': 'PANİK BUTONU',
+      'menu.baslik1': 'PANİK',
+      'menu.baslik2': 'BUTONU',
       'menu.hizli': 'HIZLI OYNA',
       'menu.slogan': '2-4 kişilik mini oyun düellosu',
       'menu.hizliIpucu': 'rastgele biriyle eşleş',
@@ -212,6 +215,9 @@
     },
 
     en: {
+      'menu.title': 'PANIC BUTTON',
+      'menu.baslik1': 'PANIC',
+      'menu.baslik2': 'BUTTON',
       'menu.hizli': 'QUICK PLAY',
       'menu.slogan': 'a mini-game duel for 2-4 players',
       'menu.hizliIpucu': 'match with a random player',

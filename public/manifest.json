@@ -1,6 +1,6 @@
 {
-  "name": "Parti Panik",
-  "short_name": "Parti Panik",
+  "name": "Panik Butonu",
+  "short_name": "Panik",
   "description": "2-4 kisilik hizli mini oyun partisi. Ayni odada ya da uzaktan.",
   "lang": "tr",
   "start_url": "./",

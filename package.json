@@ -1,5 +1,5 @@
 {
-  "name": "parti-panik",
+  "name": "panik-butonu",
   "version": "1.0.0",
   "description": "2-4 kisilik, tarayicidan oynanan pixel-art mini oyun partisi (WarioWare tarzi)",
   "main": "server/index.js",

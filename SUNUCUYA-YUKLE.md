@@ -16,7 +16,7 @@ Proje bunun için hazır: dış bağımlılığı yok, portu ortamdan okuyor,
 
 ### 2. Kodu GitHub'a yükle
 - GitHub'da sağ üstten **+** → **New repository**
-- İsim: `parti-panik` · **Public** seç · **Create repository**
+- İsim: `panik-butonu` · **Public** seç · **Create repository**
 - Açılan sayfada **uploading an existing file** bağlantısına tıkla
 - `oyuuuuun` klasörünün **içindekileri** (server, public, package.json, render.yaml…)
   sürükleyip bırak → **Commit changes**
@@ -25,7 +25,7 @@ Proje bunun için hazır: dış bağımlılığı yok, portu ortamdan okuyor,
 
 ### 3. Render'a bağla
 - [render.com](https://render.com) → **Get Started** → GitHub ile giriş yap
-- **New +** → **Web Service** → az önce açtığın `parti-panik` deposunu seç
+- **New +** → **Web Service** → az önce açtığın `panik-butonu` deposunu seç
 - Ayarlar kendiliğinden gelir (`render.yaml` sayesinde). Gelmezse:
   - Runtime: **Node**
   - Build Command: `npm install`
@@ -34,7 +34,7 @@ Proje bunun için hazır: dış bağımlılığı yok, portu ortamdan okuyor,
 - **Create Web Service** → 1-2 dakika bekle
 
 ### 4. Bitti
-Sana `https://parti-panik-xxxx.onrender.com` gibi bir adres verir.
+Sana `https://panik-butonu-xxxx.onrender.com` gibi bir adres verir.
 **Bu adres hep aynı kalır** ve bilgisayarın kapalıyken de çalışır.
 
 ---
