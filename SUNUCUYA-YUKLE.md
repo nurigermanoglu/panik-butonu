@@ -4,7 +4,7 @@
 > **Kaynak:** https://github.com/nurigermanoglu/panik-butonu
 >
 > Aşağıdaki adımlar bir kez uygulandı. Bundan sonra oyunu güncellemek için
-> tek komut yeter: 
+> tek komut yeter: `git push`
 
 Şu an oyun **senin bilgisayarında** çalışıyor; sen kapatınca link ölüyor.
 Oyunu internetteki bir sunucuya yüklersen bilgisayarın kapalıyken de açık kalır
