@@ -872,7 +872,7 @@
   var ZORLUK = [
     { ad: 'zorluk.kolay', renk: '#2fbf4f', isik: '#7fe89a', golge: '#1c7a33' },
     { ad: 'zorluk.orta', renk: '#ffd34d', isik: '#ffe9a0', golge: '#c79a1e' },
-    { ad: 'ZOR', renk: '#f45b69', isik: '#ff9aa4', golge: '#a82c39' }
+    { ad: 'zorluk.zor', renk: '#f45b69', isik: '#ff9aa4', golge: '#a82c39' }
   ];
 
   function zorlukButonlari() {
@@ -1055,8 +1055,15 @@
              vurgu ? '#fffcc4' : '#fff59b',
              vurgu ? '#e6c92e' : '#d8a800');
     if (yazi) {
-      f.text(ctx, yazi, k.x + k.w / 2, k.y + Math.round((k.h - 7 * olcek) / 2), {
-        color: '#000000', scale: olcek, align: 'center'
+      // Olcek SABIT verilirdi ve uzun bir yazi kutunun disina tasardi.
+      // Ingilizce eklenince gorunur oldu: "HAZIR" sigiyordu ama "READY"
+      // ve ozellikle "READY (CANCEL)" kutuyu asiyordu. Artik yazi
+      // sigmiyorsa olcek kuculur - kutu hep dolu ve temiz gorunur.
+      var ic = k.w - 10;                        // iki yandan kenar payi
+      var o = olcek;
+      while (o > 0.7 && f.width(yazi, o) > ic) o -= 0.1;
+      f.text(ctx, yazi, k.x + k.w / 2, k.y + Math.round((k.h - 7 * o) / 2), {
+        color: '#000000', scale: o, align: 'center'
       });
     }
   }
@@ -1138,7 +1145,7 @@
         }
         g.rect(ctx, bsol, ust + 2, 1, 32, 'rgba(4,26,44,0.6)');
         g.rect(ctx, bsag, ust + 2, 1, 32, 'rgba(4,26,44,0.6)');
-        f.text(ctx, 'BOS', LOBI.karakterX, ust + LOBI.isimY, {
+        f.text(ctx, t('lobi.bos'), LOBI.karakterX, ust + LOBI.isimY, {
           color: '#0a1826', scale: 1, align: 'center', shadow: HALE
         });
         continue;
@@ -1301,11 +1308,25 @@
     g.rect(ctx, 0, 0, W, H, '#fff8eb');
     ctx.restore();
 
-    // Oyun adi ve talimati parsomen levhada dursun
-    var pw = Math.max(f.width(oyunAdi(state.mg), 2), f.width(oyunEmri(state.mg), 2)) + 24;
+    // Oyun adi ve talimati parsomen levhada dursun.
+    //
+    // Olcek SABIT 2 idi ve levhanin genisligi yazidan hesaplaniyordu: uzun
+    // bir talimat levhayi tuvalden tasiriyordu. Ingilizce eklenince bu
+    // gorunur hale geldi ("CUT WHEN THE SPARK IS IN THE BAND!" 34 harf).
+    // Artik yazi sigmiyorsa OLCEK kuculuyor; levha hep ekranin icinde kalir
+    // ve bu, ileride eklenecek diller icin de kendiliginden calisir.
+    var iAd = oyunAdi(state.mg), iEmir = oyunEmri(state.mg);
+    var enGenis = W - 16;                       // levha icin kenar payi
+    var iOlcek = 2;
+    while (iOlcek > 0.8 &&
+           Math.max(f.width(iAd, iOlcek), f.width(iEmir, iOlcek)) + 24 > enGenis) {
+      iOlcek -= 0.1;
+    }
+    var pw = Math.min(enGenis,
+      Math.max(f.width(iAd, iOlcek), f.width(iEmir, iOlcek)) + 24);
     g.panel(ctx, Math.round((W - pw) / 2), 26, pw, 48);
-    f.text(ctx, oyunAdi(state.mg), W / 2, 34, { color: '#43434f', scale: 2, align: 'center' });
-    f.text(ctx, oyunEmri(state.mg), W / 2, 56, { color: '#c04a3a', scale: 2, align: 'center' });
+    f.text(ctx, iAd, W / 2, 34, { color: '#43434f', scale: iOlcek, align: 'center' });
+    f.text(ctx, iEmir, W / 2, 56, { color: '#c04a3a', scale: iOlcek, align: 'center' });
 
     var c = Math.max(0, Math.ceil(state.timer));
     if (c > 0) {
@@ -1334,7 +1355,7 @@
     if (state.seviye > 0) {
       var yanip = Math.floor(time * 6) % 2 === 0;
       // Kirmizi yazi koyu turuncu kareye karisiyordu: kendi acik seridine oturuyor.
-      var hz = 'HIZ +%' + Math.round(state.seviye * 100);
+      var hz = t('mac.hiz', { n: Math.round(state.seviye * 100) });
       var hw = f.width(hz, 2) + 14;
       g.rect(ctx, Math.round((W - hw) / 2), 146, hw, 18, 'rgba(10,24,38,0.92)');
       f.text(ctx, hz, W / 2, 148, {
@@ -1344,10 +1365,25 @@
     drawTopBar();
   }
 
+  var hataliCizimler = {};
+  function cizimHatasi(id, e) {
+    if (hataliCizimler[id]) return;
+    hataliCizimler[id] = true;
+    if (window.console) console.error("cizim hatasi: " + id, e);
+  }
+
   function drawPlay() {
     var mg = state.mg && PP.MG[state.mg.id];
-    if (mg && state.st) mg.draw(ctx, state.st, view());
-    else g.rect(ctx, 0, 0, W, H, P.bg);
+    if (mg && state.st) {
+      // Bir mini oyunun cizimi patlarsa TUM kare olurdu: ust bar, sonuc
+      // ekrani, hicbiri cizilmezdi. Oyunu ortada birakmaktansa o kareyi
+      // atla; hata konsola dusar.
+      ctx.save();
+      try { mg.draw(ctx, state.st, view()); }
+      catch (e) { cizimHatasi(state.mg.id, e); }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    } else g.rect(ctx, 0, 0, W, H, P.bg);
     drawTopBar();
   }
 

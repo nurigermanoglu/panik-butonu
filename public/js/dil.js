@@ -19,6 +19,13 @@
     tr: {
       // ---- menu / genel ----
       'menu.hizli': 'HIZLI OYNA',
+      'menu.slogan': '2-4 kişilik mini oyun düellosu',
+      'menu.hizliIpucu': 'rastgele biriyle eşleş',
+      'menu.kontroller': 'Kontroller:',
+      'menu.bas': '= bas',
+      'menu.hareket': '= hareket',
+      'menu.telefonIpucu': 'Telefonda ekrandaki butonları kullan.',
+      'ust.dilEtiket': 'Dil / Language',
       'menu.veya': 'VEYA ARKADAŞINLA',
       'menu.odaKur': 'ODA KUR',
       'menu.katil': 'KATIL',
@@ -45,6 +52,7 @@
 
       // ---- lobi ----
       'lobi.oyun': 'OYUN',
+      'lobi.bos': 'BOS',
       'lobi.hazir': 'HAZIR',
       'lobi.hazirIptal': 'HAZIR (İPTAL)',
       'lobi.enAzKisi': 'EN AZ {n} KİŞİ',
@@ -205,6 +213,13 @@
 
     en: {
       'menu.hizli': 'QUICK PLAY',
+      'menu.slogan': 'a mini-game duel for 2-4 players',
+      'menu.hizliIpucu': 'match with a random player',
+      'menu.kontroller': 'Controls:',
+      'menu.bas': '= tap',
+      'menu.hareket': '= move',
+      'menu.telefonIpucu': 'On a phone, use the on-screen buttons.',
+      'ust.dilEtiket': 'Dil / Language',
       'menu.veya': 'OR WITH FRIENDS',
       'menu.odaKur': 'CREATE ROOM',
       'menu.katil': 'JOIN',
@@ -230,6 +245,7 @@
       'pad.bas': 'TAP',
 
       'lobi.oyun': 'GAME',
+      'lobi.bos': 'EMPTY',
       'lobi.hazir': 'READY',
       'lobi.hazirIptal': 'READY (CANCEL)',
       'lobi.enAzKisi': 'NEED {n} PLAYERS',

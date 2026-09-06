@@ -59,8 +59,8 @@
     for (var dy = -ry; dy <= ry; dy++) {
       var y = cy + dy;
       if (y0 !== undefined && (y < y0 || y > y1)) continue;
-      var t = dy / ry;
-      var hw = Math.round(rx * Math.sqrt(Math.max(0, 1 - t * t)));
+      var oran = dy / ry;
+      var hw = Math.round(rx * Math.sqrt(Math.max(0, 1 - oran * oran)));
       if (hw <= 0) continue;
       g.rect(ctx, cx - hw, y, hw * 2, 1, renk);
     }

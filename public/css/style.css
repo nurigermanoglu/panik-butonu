@@ -223,6 +223,8 @@ html, body {
   position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
   background: var(--serit); padding: 3px 12px; color: #eef4fa;
   font-size: 12px; font-weight: 700; letter-spacing: 2px;
+  /* Ingilizce metin ("OR WITH FRIENDS") iki satira tasiyordu */
+  white-space: nowrap;
 }
 
 #menuErr {

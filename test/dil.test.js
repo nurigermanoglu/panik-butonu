@@ -174,3 +174,243 @@ describe('Yer tutucular', () => {
     D.sec('tr');
   });
 });
+
+describe('Ceviri atlanmamis', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const KOK = path.join(__dirname, '..', 'public');
+
+  // t('...') ile cagrilan HER anahtarin sozlukte karsiligi olmali.
+  // Bu testin sebebi somut: zorluk tuslari dizisinde 'KOLAY' ve 'ORTA'
+  // anahtara cevrilmis ama ucuncu satirdaki 'ZOR' atlanmisti. t('ZOR')
+  // sessizce 'ZOR' donduruyor (bulunamayan anahtar kendisine duser),
+  // yani oyun calisiyor ama buton Ingilizcede de Turkce kaliyordu.
+  test('istemcide cagrilan butun anahtarlar sozlukte var', () => {
+    const dosyalar = [path.join(KOK, 'js', 'main.js')];
+    const mgDizin = path.join(KOK, 'js', 'minigames');
+    for (const f of fs.readdirSync(mgDizin)) dosyalar.push(path.join(mgDizin, f));
+
+    const bilinmeyen = [];
+    for (const yol of dosyalar) {
+      // Yorum satirlarini at: aciklamalarda ornek olarak yazilan
+      // t('anahtar') cagrilari gercek cagri degil.
+      const kaynak = fs.readFileSync(yol, 'utf8')
+        .split('\n')
+        .map(function (satir) { return satir.replace(/\/\/.*/, ''); })
+        .join('\n');
+      const re = /\bt\(\s*'([^']+)'/g;
+      let m;
+      while ((m = re.exec(kaynak))) {
+        const a = m[1];
+        // Degisken ile kurulan anahtarlar ('yon.' + e.y gibi) elenir
+        if (a.slice(-1) === '.') continue;
+        D.sec('tr');
+        if (D.t(a) === a) bilinmeyen.push(path.basename(yol) + ': t(\'' + a + '\')');
+      }
+      // ZORLUK gibi dizilerde anahtar dogrudan yaziliyor: onlari da tara
+      const re2 = /\bad:\s*'([^']+)'/g;
+      while ((m = re2.exec(kaynak))) {
+        const a = m[1];
+        if (a.indexOf('.') < 0) continue;         // anahtar bicimi degilse gec
+        if (D.t(a) === a) bilinmeyen.push(path.basename(yol) + ': ad: \'' + a + '\'');
+      }
+    }
+    D.sec('tr');
+    assert.strictEqual(bilinmeyen.length, 0,
+      'sozlukte olmayan anahtarlar:\n  ' + bilinmeyen.join('\n  '));
+  });
+
+  // index.html'deki gorunur her yazi ya data-dil ile isaretli olmali ya da
+  // bilerek cevrilmeyenler listesinde. Kullanici menude uc Turkce satir
+  // buldu (slogan, hizli oyna ipucu, kontrol aciklamasi) - bu test onlari
+  // yakalar.
+  test('index.html\'de isaretsiz Turkce metin kalmamis', () => {
+    const h = fs.readFileSync(path.join(KOK, 'index.html'), 'utf8');
+    // Cevrilmesi GEREKMEYENLER: oyunun adi (marka), oklar, simgeler
+    const MUAF = ['PARTİ PANİK', 'PARTİ', 'PANİK', 'TR'];
+    const bulunan = [];
+    const re = />([^<>]{2,})</g;
+    let m;
+    while ((m = re.exec(h))) {
+      const yazi = m[1].replace(/&[a-z]+;|&#\d+;/g, '').replace(/\s+/g, ' ').trim();
+      if (!yazi) continue;
+      if (MUAF.indexOf(yazi) >= 0) continue;
+      // Turkce'ye ozgu harf ya da bilinen Turkce kelime iceriyor mu?
+      if (!/[çğıöşüÇĞİÖŞÜ]/.test(yazi) && !/\b(bas|hareket|kullan|kişilik|eşleş)\b/i.test(yazi)) continue;
+      // Bu metnin etiketinde data-dil var mi?
+      const oncesi = h.slice(Math.max(0, m.index - 300), m.index);
+      const etiket = oncesi.slice(oncesi.lastIndexOf('<'));
+      if (etiket.indexOf('data-dil') >= 0) continue;
+      bulunan.push(yazi.slice(0, 50));
+    }
+    assert.strictEqual(bulunan.length, 0,
+      'data-dil ile isaretlenmemis Turkce metin:\n  ' + bulunan.join('\n  '));
+  });
+
+  test('placeholder ve aria-label"lar isaretli', () => {
+    const h = fs.readFileSync(path.join(KOK, 'index.html'), 'utf8');
+    const bulunan = [];
+    const re = /<[^>]*\b(placeholder|aria-label)="([^"]+)"[^>]*>/g;
+    let m;
+    while ((m = re.exec(h))) {
+      const etiket = m[0];
+      const deger = m[2];
+      if (etiket.indexOf('data-dil-ph') >= 0 || etiket.indexOf('data-dil-al') >= 0) continue;
+      if (!/[çğıöşüÇĞİÖŞÜ]/.test(deger) && !/\b(Sesi|Mesaj|Sohbet|ADIN|KOD)\b/.test(deger)) continue;
+      bulunan.push(deger);
+    }
+    assert.strictEqual(bulunan.length, 0,
+      'isaretlenmemis placeholder/aria-label:\n  ' + bulunan.join('\n  '));
+  });
+});
+
+describe('Cizim kodu calisiyor', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+
+  // NEDEN: dil destegi eklenirken her cizim dosyasina "var t = ..." kisayolu
+  // konuldu. Uc dosyada bu kisayol yerel bir dongu degiskeniyle (for var t)
+  // GOLGELENDI ve cizim ortasinda "t is not a function" atti. Sonuc: At
+  // Yarisi'nda ilk kulvardan sonrasi hic cizilmedi, Kablo Kesme'de ekran
+  // yarim kaldi. Testler yesildi cunku hicbiri CIZIM kodunu calistirmiyordu.
+  //
+  // Bu test cizimi gercekten calistirir. Tuvali sahte bir 2D baglamla
+  // taklit ediyoruz: amac goruntuyu dogrulamak degil, kodun patlamadigini
+  // gormek.
+  function sahteBaglam() {
+    const hicbirSey = function () { return sahteBaglam.donen; };
+    const ctx = {
+      canvas: { width: 320, height: 180 },
+      globalAlpha: 1, fillStyle: '', font: '', textAlign: '', textBaseline: '',
+      imageSmoothingEnabled: false
+    };
+    for (const ad of ['save', 'restore', 'fillRect', 'clearRect', 'drawImage',
+      'beginPath', 'rect', 'clip', 'setTransform', 'translate', 'fill',
+      'createPattern', 'fillText', 'moveTo', 'lineTo', 'stroke', 'closePath',
+      'arc', 'scale']) ctx[ad] = hicbirSey;
+    ctx.measureText = function (s) {
+      return { width: String(s).length * 6, actualBoundingBoxAscent: 7 };
+    };
+    return ctx;
+  }
+
+  // Tarayici dosyalarini tek bir vm baglaminda yukle
+  function istemciYukle() {
+    const vm = require('node:vm');
+    const KOK = path.join(__dirname, '..', 'public', 'js');
+    const belge = {
+      documentElement: { setAttribute() {} },
+      querySelectorAll() { return []; },
+      createElement() {
+        return { width: 0, height: 0, getContext: () => sahteBaglam(), style: {} };
+      }
+    };
+    const kutu = {
+      window: {},
+      navigator: { language: 'tr' },
+      localStorage: { getItem() { return null; }, setItem() {} },
+      document: belge,
+      Image: function () { this.onload = null; this.onerror = null; },
+      performance: { now: () => 0 },
+      Math: Math, JSON: JSON, Date: Date, isFinite: isFinite, String: String,
+      Number: Number, Array: Array, Object: Object
+    };
+    vm.createContext(kutu);
+    for (const dosya of ['dil.js', 'font.js', 'gfx.js', 'chars.js']) {
+      vm.runInContext(fs.readFileSync(path.join(KOK, dosya), 'utf8'), kutu, { filename: dosya });
+    }
+    const mgDizin = path.join(KOK, 'minigames');
+    for (const dosya of fs.readdirSync(mgDizin)) {
+      vm.runInContext(fs.readFileSync(path.join(mgDizin, dosya), 'utf8'), kutu, { filename: dosya });
+    }
+    return kutu.window.PP;
+  }
+
+  const PPI = istemciYukle();
+  const DT = 1 / 30;
+
+  // Oyunu bastan sona oynatip yol boyunca birkac anin snap'ini toplar.
+  // Bitis ani ozellikle onemli: bildirilen iki hata da orada goruluyordu.
+  function anlar(mg, kisi) {
+    const ids = ['a', 'b', 'c', 'd'].slice(0, kisi);
+    const inst = mg.create(ids.slice(), 0.5, {});
+    if (inst.start) inst.start();
+    const out = [];
+    const sure = inst.sure || mg.duration;
+    for (let t = 0, n = 0; t < sure; t += DT, n++) {
+      for (const id of ids) {
+        try {
+          if (mg.controls === 'dpad' || mg.controls === 'lr') {
+            inst.input(id, 'dir', ['left', 'right', 'up', 'down'][n % 4]);
+          } else if (mg.controls === 'action') {
+            inst.input(id, 'press', 200, 0);
+          } else if (mg.controls === 'pointer') {
+            inst.input(id, 'grab', { x: 40 + (n * 37) % 240, y: 50 + (n * 29) % 110 });
+            inst.input(id, 'drop', { x: 40 + (n * 53) % 240, y: 50 + (n * 41) % 110 });
+          }
+        } catch (e) { /* yoksay */ }
+      }
+      inst.update(DT);
+      if (n % 40 === 0) out.push(inst.snap());
+      if (inst.done && inst.done()) break;
+    }
+    out.push(inst.snap());          // BITIS ani
+    return out;
+  }
+
+  const MG = require('../server/minigames');
+  for (const mg of MG) {
+    test(mg.id + ' - cizim hicbir anda patlamiyor', () => {
+      const ctx = sahteBaglam();
+      for (const kisi of [2, 4]) {
+        for (const st of anlar(mg, kisi)) {
+          const oyuncular = ['a', 'b', 'c', 'd'].slice(0, kisi).map((id, i) => ({
+            id: id, name: ['SEN', 'ROBOT', 'AYSE', 'MEHMET'][i], slot: i, char: i
+          }));
+          const v = {
+            W: 320, H: 180, top: 22, time: 5.1, players: oyuncular,
+            you: 'a', gecikme: 0, ptr: { x: 150, y: 110, down: false }
+          };
+          for (const dil of ['tr', 'en']) {
+            PPI.dil.sec(dil);
+            assert.doesNotThrow(
+              () => PPI.MG[mg.id].draw(ctx, st, v),
+              mg.id + ' (' + kisi + ' kisi, ' + dil + ') cizimi patladi'
+            );
+          }
+        }
+      }
+      PPI.dil.sec('tr');
+    });
+  }
+});
+
+describe('Cizimde sabit metin kalmamis', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+
+  // NEDEN: lobide bos oyuncu yuvasinin etiketi f.text(ctx, 'BOS', ...)
+  // seklinde dogrudan yazilmisti; Ingilizce oynarken de "BOS" gorunuyordu.
+  // Anahtar tarayan test bunu yakalayamadi cunku ortada t() cagrisi yoktu.
+  // Bu test cizim cagrilarinin ILK argumanina bakar.
+  //
+  // Dilden bagimsiz metinler (rakam, saat, isaret) muaf.
+  const MUAF = /^[\s0-9:.,+\-%×✓✗!?#*<>()[\]{}/\|]*$/;
+
+  const dosyalar = [path.join(__dirname, '..', 'public', 'js', 'main.js')];
+  const mgDizin = path.join(__dirname, '..', 'public', 'js', 'minigames');
+  for (const d of fs.readdirSync(mgDizin)) dosyalar.push(path.join(mgDizin, d));
+
+  for (const yol of dosyalar) {
+    test(path.basename(yol) + ' - f.text sabit metin almiyor', () => {
+      const satirlar = fs.readFileSync(yol, 'utf8').split(/\r?\n/);
+      const kotu = [];
+      for (let i = 0; i < satirlar.length; i++) {
+        const m = satirlar[i].replace(/\/\/.*/, '').match(/f\.text\(ctx,\s*'([^']*)'/);
+        if (m && !MUAF.test(m[1])) kotu.push('satir ' + (i + 1) + ': ' + m[1]);
+      }
+      assert.deepStrictEqual(kotu, [],
+        path.basename(yol) + ' icinde cevrilmemis sabit metin: ' + kotu.join(', '));
+    });
+  }
+});

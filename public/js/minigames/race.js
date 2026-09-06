@@ -71,9 +71,9 @@
 
         // toz bulutu
         if (kosuyor && pct > 0.01) {
-          for (var t = 1; t <= 3; t++) {
-            var tx = kx - t * 6 - Math.round(Math.sin(v.time * 12 + t) * 2);
-            g.rect(ctx, tx, ky + 5 - t, 3 - (t > 2 ? 1 : 0), 2, PIST_ACIK);
+          for (var tz = 1; tz <= 3; tz++) {
+            var tx = kx - tz * 6 - Math.round(Math.sin(v.time * 12 + tz) * 2);
+            g.rect(ctx, tx, ky + 5 - t, 3 - (tz > 2 ? 1 : 0), 2, PIST_ACIK);
           }
         }
 

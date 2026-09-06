@@ -123,11 +123,11 @@
         var icerde = y >= st.ky && y <= st.ky + st.kh;
 
         // Kuyruk: kivilcimin arkasinda sonen iz
-        for (var t = 1; t <= 4; t++) {
-          var ty = Math.round(y - t * 3);
+        for (var tk = 1; tk <= 4; tk++) {
+          var ty = Math.round(y - tk * 3);
           if (ty < st.top) break;
           ctx.save();
-          ctx.globalAlpha = 0.5 - t * 0.1;
+          ctx.globalAlpha = 0.5 - tk * 0.1;
           g.rect(ctx, x - 2, ty, 4, 2, st.wires[k.w].col);
           ctx.restore();
         }

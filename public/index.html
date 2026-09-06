@@ -33,19 +33,19 @@
     <button id="btnLeave" class="mini danger hidden" data-dil="ust.cik">&#8592; ÇIK</button>
     <!-- Dil dugmesi: TR ve EN arasinda gidip gelir. Secim localStorage'da
          saklanir, sunucuya gonderilmez - herkes kendi dilini gorur. -->
-    <button id="btnLang" class="mini" aria-label="Dil / Language">TR</button>
+    <button id="btnLang" class="mini" data-dil-al="ust.dilEtiket" aria-label="Dil / Language">TR</button>
     <button id="btnFull" class="mini" data-dil="ust.tamEkran">TAM EKRAN</button>
     <button id="btnMute" class="mini simge" data-dil-al="ust.sesKapat" aria-label="Sesi kapat" title="Ses açık"></button>
   </div>
 
   <div id="menu" class="screen">
     <h1>PARTİ<span>PANİK</span></h1>
-    <p class="tag">2-4 kişilik mini oyun düellosu</p>
+    <p class="tag" data-dil="menu.slogan">2-4 kişilik mini oyun düellosu</p>
 
     <input id="name" maxlength="10" placeholder="ADIN" data-dil-ph="menu.adin" autocomplete="off" spellcheck="false">
 
     <button id="btnQuick" class="mbtn quick" data-dil="menu.hizli">HIZLI OYNA</button>
-    <p class="quickhint">rastgele biriyle eşleş</p>
+    <p class="quickhint" data-dil="menu.hizliIpucu">rastgele biriyle eşleş</p>
 
     <div class="sep"><span data-dil="menu.veya">VEYA ARKADAŞINLA</span></div>
 
@@ -59,8 +59,11 @@
     <p id="menuErr"></p>
 
     <p class="help">
-      Kontroller: <b>BOŞLUK</b> = bas &nbsp;·&nbsp; <b>YÖN TUŞLARI</b> = hareket<br>
-      Telefonda ekrandaki butonları kullan.
+      <span data-dil="menu.kontroller">Kontroller:</span>
+      <b data-dil="menu.bosluk">BOŞLUK</b> <span data-dil="menu.bas">= bas</span>
+      &nbsp;·&nbsp;
+      <b data-dil="menu.yonTuslari">YÖN TUŞLARI</b> <span data-dil="menu.hareket">= hareket</span><br>
+      <span data-dil="menu.telefonIpucu">Telefonda ekrandaki butonları kullan.</span>
     </p>
   </div>
 
