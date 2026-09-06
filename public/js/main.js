@@ -797,22 +797,29 @@
     var toplamW = r.width;
     var tuvaleKalan = yanYana ? toplamW - sohbetPayi() - ARENA_BOSLUK : r.width;
 
-    var scale = Math.min(tuvaleKalan / W, r.height / H);
-    // Tam sayiya yuvarlamak bir oyun pikselini tam olarak k ekran pikseline
-    // oturtur, yani en keskin goruntuyu verir. Ama telefonda bunun bedeli
-    // agir: 812x375 yatay bir ekranda kullanilabilir olcek 1.87 iken taban
-    // 1'e dusuyor ve tuval ekranin yalnizca %19'unu kapliyordu - "oyunlar
-    // cok kucuk kaliyor" sikayetinin sebebi buydu.
-    //
-    // O yuzden yuvarlama yalnizca BOL yer varken yapiliyor: 2 kat ve
-    // uzerinde bir tam sayi zaten sigiyorsa keskinligi koru, sigmiyorsa
-    // ekrani doldur. Kucuk ekranda pixelated olcekleme bir miktar esit
-    // olmayan piksel uretir; bu, ekranin dortte ucunu bos birakmaktan
-    // cok daha iyi bir takas.
-    var k = Math.floor(scale) >= 2 ? Math.floor(scale) : scale;
-    var tuvalW = Math.floor(W * k);
-    cv.style.width = tuvalW + 'px';
-    cv.style.height = Math.floor(H * k) + 'px';
+    // Olcek CSS pikseline gore degil, CIHAZ pikseline gore tam sayiya
+    // oturtuluyor. Iki eski yaklasim da yaniltiyordu:
+    //   - CSS'te tam sayiya yuvarlamak: 812x375 yatay telefonda kullanilabilir
+    //     olcek 1.87 iken taban 1'e duser, tuval ekranin %19'unda kalirdi.
+    //   - CSS'te kirik olcek birakmak: ekran dolar ama bir oyun pikseli kimi
+    //     yerde 3 kimi yerde 2 cihaz pikseline duser; bloklar ve yazi duzensiz
+    //     gorunur. "Yatayda cok fazla piksel" sikayeti buydu.
+    // Telefonda devicePixelRatio 2-3 oldugu icin cihaz pikselinde bakinca
+    // ayni yere 5-6 gibi rahat bir TAM SAYI olcek sigiyor: hem ekran doluyor
+    // hem her oyun pikseli esit sayida cihaz pikseline oturuyor.
+    var dpr = window.devicePixelRatio || 1;
+    var cihazOlcek = Math.min(tuvaleKalan * dpr / W, r.height * dpr / H);
+    // 10 siniri: 4K ekranda tuvalin gereksiz buyumesini engeller.
+    var tam = Math.min(10, Math.floor(cihazOlcek));
+    // Yer gercekten darsa (tam sayi 1'de kalirsa) doldurmak daha iyi.
+    var esitPiksel = tam >= 2;
+    var k = esitPiksel ? tam / dpr : cihazOlcek / dpr;
+    // CSS genisligini YUVARLAMIYORUZ: kesirli birakinca tarayici tam olarak
+    // W*tam cihaz pikseline oturtur, yuvarlarsak bir piksel kayar ve
+    // esitligi bozardi.
+    var tuvalW = Math.round(W * k);
+    cv.style.width = (W * k) + 'px';
+    cv.style.height = (H * k) + 'px';
 
     // Tuval yerlestikten sonra ARTAN yer panele gider
     if (yanYana) {
@@ -827,7 +834,10 @@
     // Ic cozunurluk: ekrandaki kat sayisi kadar (en fazla 3x). Boylece bir oyun
     // karesi tam olarak k ekran pikseline denk gelir -> bloklar keskin kalir,
     // resimler ise o oranda daha detayli cizilir.
-    var ic = Math.max(1, Math.min(3, Math.round(k)));
+    // Tam sayi olcekte ic cozunurlugu cihaz olcegine esitliyoruz: boylece
+    // tuvalin arka tamponu ekranda 1:1 oturur, tarayici hic yeniden
+    // olceklemez. Kirik olcekte eski davranis (en fazla 3x) surer.
+    var ic = esitPiksel ? tam : Math.max(1, Math.min(3, Math.round(k)));
     if (cv.width !== W * ic) {
       cv.width = W * ic;
       cv.height = H * ic;

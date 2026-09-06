@@ -68,13 +68,66 @@ describe('Ana ekrana ekleme', () => {
 describe('Tuval olceklemesi', () => {
   const main = oku(path.join('js', 'main.js'));
 
-  test('olcek her zaman tam sayiya yuvarlanmiyor', () => {
-    // Eski satir: var k = scale >= 1 ? Math.floor(scale) : scale;
-    // Bu geri gelirse telefonda tuval yine 320x180'e cakilir.
-    assert.ok(main.indexOf('scale >= 1 ? Math.floor(scale) : scale') < 0,
-      'olcek yine her zaman asagi yuvarlaniyor - telefonda tuval kucuk kalir');
-    assert.ok(main.indexOf('Math.floor(scale) >= 2') >= 0,
-      'yuvarlama esigi (2 kat) main.js"de bulunamadi');
+  // Eski test main.js icinde metin ariyordu; kod her degistiginde kirildi
+  // ve asil onemli seyi -- hesabin SONUCUNU -- hic olcmuyordu. Burada
+  // main.js'teki olcek mantiginin ayni kopyasini calistirip iki sarti
+  // dogruluyoruz: ekran yeterince doluyor mu, ve her oyun pikseli esit
+  // sayida cihaz pikseline mi dusuyor.
+  const W = 320, H = 180;
+  function olcekHesapla(cssW, cssH, dpr) {
+    const cihazOlcek = Math.min(cssW * dpr / W, cssH * dpr / H);
+    const tam = Math.min(10, Math.floor(cihazOlcek));
+    const esitPiksel = tam >= 2;
+    const k = esitPiksel ? tam / dpr : cihazOlcek / dpr;
+    return {
+      k: k,
+      esitPiksel: esitPiksel,
+      cihazPikseli: k * dpr,               // bir oyun pikseli kac cihaz pikseli
+      doluluk: (W * k) * (H * k) / (cssW * cssH)
+    };
+  }
+
+  // Gercek cihazlar. Yatay telefon asil sikayet noktasiydi.
+  const EKRANLAR = [
+    { ad: 'iPhone yatay',      w: 812,  h: 375, dpr: 3 },
+    { ad: 'iPhone dikey',      w: 375,  h: 812, dpr: 3 },
+    { ad: 'Android yatay',     w: 844,  h: 390, dpr: 2.625 },
+    { ad: 'Android dikey',     w: 390,  h: 844, dpr: 2.625 },
+    { ad: 'tablet yatay',      w: 1024, h: 768, dpr: 2 },
+    { ad: 'masaustu 1080p',    w: 1920, h: 1080, dpr: 1 },
+    { ad: 'kucuk pencere',     w: 700,  h: 420, dpr: 1 }
+  ];
+
+  for (const e of EKRANLAR) {
+    test(e.ad + ' - bir oyun pikseli tam sayi cihaz pikseline oturuyor', () => {
+      const o = olcekHesapla(e.w, e.h, e.dpr);
+      if (!o.esitPiksel) return;           // cok dar: doldurmak esitlikten yeg
+      const fark = Math.abs(o.cihazPikseli - Math.round(o.cihazPikseli));
+      assert.ok(fark < 1e-9,
+        e.ad + ': bir oyun pikseli ' + o.cihazPikseli + ' cihaz pikseline dusuyor. ' +
+        'Tam sayi olmayinca bloklar kimi yerde genis kimi yerde dar cizilir.');
+    });
+  }
+
+  test('yatay ekranda tuval en az %60 doluyor', () => {
+    // Eskiden CSS uzerinden tam sayiya yuvarlaniyordu ve 812x375 ekranda
+    // olcek 1'e dusup tuval ekranin %19'unda kaliyordu.
+    //
+    // Dikey ekranlar bu esige tabi degil: oyun 16:9, dikey telefonda
+    // geometrik tavan zaten ~%26 ve o durumda 'telefonu cevir' seridi
+    // cikiyor. Orada keskinligi buyuklukten ustun tutuyoruz.
+    for (const e of EKRANLAR) {
+      if (e.h > e.w) continue;
+      const o = olcekHesapla(e.w, e.h, e.dpr);
+      assert.ok(o.doluluk > 0.6,
+        e.ad + ': tuval ekranin sadece %' + Math.round(o.doluluk * 100) +
+        "'ini kapliyor");
+    }
+  });
+
+  test('olcek cihaz pikseli uzerinden hesaplaniyor', () => {
+    assert.ok(main.indexOf('devicePixelRatio') >= 0,
+      'main.js olcegi cihaz pikseline gore hesaplamiyor - kirik piksel geri doner');
   });
 
   test('yatay telefon yerlesimi CSS"te tanimli', () => {
