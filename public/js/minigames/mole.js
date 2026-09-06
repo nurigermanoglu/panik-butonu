@@ -73,15 +73,6 @@
   var VURULAN_SURESI = 0.45;
   var vurulanlar = {};   // kostebek no -> gosterim bitis ani
 
-  // BASKALARININ vuruslari. Bu oyunda herkesin vurma hakki AYRI: senin
-  // ekranindaki kostebekler senin vurduklarina gore kalkip iniyor, yani
-  // rakiplerin ne yaptigi hicbir yerde gorunmuyordu - ustteki sayidan
-  // baska. Bot oynarken "hicbir sey yapmiyor" izlenimi bundan cikiyor.
-  // Burada her rakip vurusu, o oyuncunun renginde kisa bir carpma
-  // pirildamasi olarak vurdugu deligin uzerinde belirir.
-  var RAKIP_SURESI = 0.5;
-  var rakipVurus = {};   // "oyuncuId:kostebekNo" -> { bit, h, renk, kayma }
-
   var TOPRAK_DIS = '#4a3729';    // yigi̇nin en dis halkasi
   var TOPRAK_ORTA = '#634833';
   var TOPRAK_UST = '#7a5a3e';    // isik alan ust yuzey
@@ -129,33 +120,6 @@
       }
       for (var vn in vurulanlar) {
         if (ben.hit.indexOf(+vn) < 0) delete vurulanlar[vn];
-      }
-
-      // Rakiplerin yeni vuruslarini defterime al (kendimi atlarim)
-      for (var ri = 0; ri < v.players.length; ri++) {
-        var rp = v.players[ri];
-        if (rp.id === v.you) continue;
-        var rd = st.pl[rp.id];
-        if (!rd || !rd.hit) continue;
-        for (var rh = 0; rh < rd.hit.length; rh++) {
-          var anahtar = rp.id + ':' + rd.hit[rh];
-          if (rakipVurus[anahtar] !== undefined) continue;
-          // Vurulan kostebegin hangi delikte oldugunu aktif listeden bul
-          var delikNo = -1;
-          for (var ra = 0; ra < st.act.length; ra++) {
-            if (st.act[ra].i === rd.hit[rh]) { delikNo = st.act[ra].h; break; }
-          }
-          if (delikNo < 0) continue;
-          rakipVurus[anahtar] = {
-            bit: v.time + RAKIP_SURESI, h: delikNo, renk: g.colorForSlot(rp.slot),
-            // Slota gore sabit aci kaydirmasi: iki rakip ayni delige vursa bile
-            // kivilcimlari ust uste binmez
-            kayma: (rp.slot % 4) * (Math.PI / 12)
-          };
-        }
-      }
-      for (var rk in rakipVurus) {
-        if (v.time >= rakipVurus[rk].bit) delete rakipVurus[rk];
       }
 
       var i, h;
@@ -209,45 +173,6 @@
 
       // ---- deliklerin on dudagi ----
       for (i = 0; i < st.holes.length; i++) delikOn(ctx, st.holes[i]);
-
-      // ---- rakip vuruslari ----
-      // Rakibin vurdugu delikte kisa bir CARPMA PIRILTISI: disari dogru acilan
-      // ince kivilcimlar, oyuncunun renginde.
-      //
-      // Ilk deneme kocaman dolu bir arti isaretiydi (kollar 22 px, kalinlik 6):
-      // kostebegi tamamen kapatiyordu ve iki rakip ayni delige vurdugunda
-      // ust uste binip ekranda bir hata gibi duruyordu. Simdi:
-      //   - cok daha kucuk ve ince, kostebek altindan gorunuyor
-      //   - kollar ORTADAN degil disaridan basliyor, yani merkez acik kaliyor
-      //   - her oyuncunun kivilcimlari farkli acidan cikiyor (slot kaydirmasi),
-      //     boylece iki vurus ust uste binmiyor
-      for (var rv in rakipVurus) {
-        var rvo = rakipVurus[rv];
-        var rhole = st.holes[rvo.h];
-        if (!rhole) continue;
-        var kalanOran = Math.max(0, Math.min(1, (rvo.bit - v.time) / RAKIP_SURESI));
-        var ic = 5 + (1 - kalanOran) * 6;                   // ic yaricap: disari acilir
-        var uzunluk = 4;                                     // kivilcim boyu
-        var hx = Math.round(rhole.x), hy = Math.round(rhole.y - 8);
-        ctx.save();
-        ctx.globalAlpha = kalanOran;
-        for (var s = 0; s < 6; s++) {
-          // Slot kaydirmasi: farkli oyuncularin kivilcimlari ayni yere dusmesin
-          var aci = (s / 6) * Math.PI * 2 + rvo.kayma;
-          var dx = Math.cos(aci), dy = Math.sin(aci);
-          for (var u = 0; u < uzunluk; u++) {
-            var px = Math.round(hx + dx * (ic + u));
-            var py = Math.round(hy + dy * (ic + u));
-            g.rect(ctx, px - 1, py - 1, 3, 3, P.black);     // okunurluk icin koyu hat
-          }
-          for (var u2 = 0; u2 < uzunluk; u2++) {
-            var px2 = Math.round(hx + dx * (ic + u2));
-            var py2 = Math.round(hy + dy * (ic + u2));
-            g.rect(ctx, px2, py2, 1, 1, rvo.renk);
-          }
-        }
-        ctx.restore();
-      }
 
       // ---- cekic (normalde duz, vururken yildiz patlamali) ----
       if (v.ptr) {

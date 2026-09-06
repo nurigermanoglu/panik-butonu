@@ -137,10 +137,12 @@
         }
       }
 
-      // ---- sag panel basligi ve skorlar ----
-      f.text(ctx, 'PARCALAR', 252, st.gy - 8, {
-        color: P.light, scale: 1, align: 'center', shadow: P.black
-      });
+      // ---- skorlar ----
+      // Buradaki "PARCALAR" basligi kaldirildi: (252, gy-8) = (252, 24)
+      // noktasina cizilirken isim satiri da y=24'e cizildigi icin dort
+      // kisilik odada 4. oyuncunun adiyla ust uste biniyordu. Basligin
+      // altina alacak yer de yok (parcalar y=39'da basliyor) ve zaten
+      // bilgi katmiyordu - sagda alt alta duran uc parca kendini anlatiyor.
 
       // Diger oyunlarla ayni yerlesim: sabit adim (6 + j*108) 4. oyuncuyu
       // x=330'a atiyordu, tuval ise 320 genis - isim ekrandan tasiyordu.

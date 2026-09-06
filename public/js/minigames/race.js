@@ -80,12 +80,19 @@
 
         // isim ve yuzde
         f.text(ctx, p.name, BASLA_X + 6, ly + 2, { color: col, scale: 1, shadow: P.black });
-        f.text(ctx, Math.round(pct * 100) + '%', BITIS_X - 4, ly + 2, {
-          color: pct >= 1 ? P.yellow : P.white, scale: 1, align: 'right', shadow: P.black
-        });
+        // Bitis etiketi: kulvarin sag ucunda TEK yazi.
+        // Onceden yuzde hep cizilir, bitirene ayrica karakterin ustune
+        // "BITTI!" yazilirdi. Bitiste karakter zaten bitis cizgisinde
+        // oldugu icin iki yazi ust uste biniyor ve "100BITTI" gibi
+        // okunuyordu. Bitiren icin yuzde zaten %100; onun yerine
+        // dogrudan BITTI yaziliyor.
         if (pct >= 1) {
-          f.text(ctx, 'BITTI!', kx, ky - 14, {
-            color: P.yellow, scale: 1, align: 'center', shadow: P.black
+          f.text(ctx, 'BITTI!', BITIS_X - 4, ly + 2, {
+            color: P.yellow, scale: 1, align: 'right', shadow: P.black
+          });
+        } else {
+          f.text(ctx, Math.round(pct * 100) + '%', BITIS_X - 4, ly + 2, {
+            color: P.white, scale: 1, align: 'right', shadow: P.black
           });
         }
       }
