@@ -232,6 +232,8 @@ html, body {
   color: #ff9a8f; background: var(--serit); padding: 3px 10px;
 }
 #menuErr.shake { animation: shake .35s; }
+/* Hata yokken bos bir koyu kutu olarak duruyordu */
+#menuErr:empty { display: none; }
 @keyframes shake {
   0%,100% { transform: translateX(0); }
   25% { transform: translateX(-7px); }
@@ -246,6 +248,12 @@ html, body {
   max-width: min(340px, 86vw);
 }
 .help b { color: var(--sari); font-weight: 700; }
+
+/* Dokunmatik cihazda klavye kisayollarini yazmanin anlami yok:
+   telefonda BOSLUK/YON TUSLARI satiri sadece gurultu yapiyordu. */
+@media (hover: none) and (pointer: coarse) {
+  .help .klavye { display: none; }
+}
 
 /* ------------------------- OYUN ------------------------- */
 
