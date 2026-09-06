@@ -109,9 +109,9 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'BOMBA PATLAMADI!';
-        if (w.length === 1) return 'SON KURTULAN!';
-        return 'AYAKTA KALANLAR!';
+        if (!w.length) return { k: 'sonuc.hotpotato.patlamadi' };
+        if (w.length === 1) return { k: 'sonuc.hotpotato.sonKurtulan' };
+        return { k: 'sonuc.hotpotato.ayakta' };
       },
 
       snap() {

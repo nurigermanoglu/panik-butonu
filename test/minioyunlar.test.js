@@ -63,7 +63,13 @@ describe('Ortak mini oyun sozlesmesi', () => {
           for (const id of kazananlar) {
             assert.ok(ids.includes(id), mg.id + ': winners odada olmayan oyuncu dondurdu');
           }
-          assert.strictEqual(typeof inst.text(), 'string', mg.id + ': text metin dondurmeli');
+          // text() artik bitmis METIN degil ANAHTAR donuyor: { k, p }.
+          // Ceviri istemcide yapiliyor (bkz. public/js/dil.js), boylece
+          // ayni odadaki iki kisi farkli dilde oynayabiliyor.
+          const yazi = inst.text();
+          assert.strictEqual(typeof yazi, 'object', mg.id + ': text anahtar nesnesi dondurmeli');
+          assert.strictEqual(typeof yazi.k, 'string', mg.id + ': text.k eksik');
+          assert.ok(yazi.k.indexOf('sonuc.') === 0, mg.id + ': anahtar sonuc. ile baslamali');
         }
       }
     });

@@ -257,10 +257,10 @@ module.exports = {
       text() {
         const ayakta = this.ids.filter((id) => this.pl[id].alive);
         if (!this.winners().length) {
-          return ayakta.length ? 'HEPSI AYAKTA KALDI!' : 'AYNI ANDA DUSTULER!';
+          return { k: ayakta.length ? 'sonuc.floor.hepsiAyakta' : 'sonuc.floor.ayniAnda' };
         }
-        if (ayakta.length > 0) return 'AYAKTA KALAN!';
-        return 'EN GEC DUSEN!';
+        if (ayakta.length > 0) return { k: 'sonuc.floor.ayakta' };
+        return { k: 'sonuc.floor.enGec' };
       },
 
       snap() {

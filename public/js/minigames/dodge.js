@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   var ZEMIN = '#33333c';
   var CIZGI = '#454550';
@@ -110,7 +112,7 @@
         PP.chars.ciz(ctx, p.char, px, py + st.ph / 2, st.pw + 6, st.ph + 2, { dead: !me.a });
 
         if (!me.a) {
-          f.text(ctx, 'BITTI', ax + st.w / 2, ay + st.py - 14, {
+          f.text(ctx, t('ic.dodge.bitti'), ax + st.w / 2, ay + st.py - 14, {
             color: P.white, scale: 1, align: 'center', shadow: P.black
           });
         }
@@ -118,7 +120,7 @@
         if (i > 0) g.rect(ctx, Math.round(colW * i) - 1, v.top, 1, v.H - v.top, P.dark);
       }
 
-      f.text(ctx, 'SOL / SAG = SERIT DEGISTIR', v.W / 2, v.H - 8, {
+      f.text(ctx, t('ic.dodge.ipucu'), v.W / 2, v.H - 8, {
         color: P.light, scale: 1, align: 'center', shadow: P.black
       });
     }

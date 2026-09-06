@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   // Kare tonlari: saglam tas, uyari (yanip sonen), cokmus bosluk
   var TAS_UST = '#6f6ab0';
@@ -96,11 +98,11 @@
           scale: 1, shadow: P.black
         });
         if (!yasiyor) {
-          f.text(ctx, 'DUSTU', sx, sy + 7, { color: P.red, scale: 1, shadow: P.black });
+          f.text(ctx, t('ic.floor.dustu'), sx, sy + 7, { color: P.red, scale: 1, shadow: P.black });
         }
       }
 
-      f.text(ctx, 'YON TUSLARI = KAC', v.W / 2, v.H - 8, {
+      f.text(ctx, t('ic.floor.ipucu'), v.W / 2, v.H - 8, {
         color: P.light, scale: 1, align: 'center', shadow: P.black
       });
     }

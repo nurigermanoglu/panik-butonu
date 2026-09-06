@@ -177,9 +177,11 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'TAM BERABERE!';
+        if (!w.length) return { k: 'sonuc.berabere' };
         const s = this.pl[w[0]].score;
-        return s >= this.adet ? 'HEPSINI SILDI!' : s + ' / ' + this.adet + ' DOSYA';
+        return s >= this.adet
+          ? { k: 'sonuc.filedelete.hepsi' }
+          : { k: 'sonuc.filedelete.kismi', p: { n: s, t: this.adet } };
       },
 
       snap() {

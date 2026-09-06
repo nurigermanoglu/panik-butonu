@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   // Resimler: kirp = resmin icindeki cizimin kutusu (olculdu), w/h = oyunda cizilecek boyut
   // tut = resmin hangi noktasi parmagin ucuna gelecek (0-1 arasi oran)
@@ -199,7 +201,7 @@
         });
       }
 
-      f.text(ctx, 'BOMBAYA VURMA!', v.W / 2, v.H - 8, {
+      f.text(ctx, t('ic.mole.uyari'), v.W / 2, v.H - 8, {
         color: P.red, scale: 1, align: 'center', shadow: P.black
       });
     }

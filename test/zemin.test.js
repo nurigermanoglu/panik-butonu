@@ -200,7 +200,7 @@ describe('Sonuc', () => {
     inst.pl.p1.deadAt = 5;
     assert.deepStrictEqual(inst.winners(), ['p0']);
     assert.deepStrictEqual(inst.derece(), [['p0'], ['p1']]);
-    assert.strictEqual(inst.text(), 'AYAKTA KALAN!');
+    assert.strictEqual(inst.text().k, 'sonuc.floor.ayakta');
   });
 
   test('herkes duserse en gec dusen kazanir', () => {
@@ -209,14 +209,14 @@ describe('Sonuc', () => {
     inst.pl.p1.alive = false; inst.pl.p1.deadAt = 9;
     assert.deepStrictEqual(inst.winners(), ['p1']);
     assert.deepStrictEqual(inst.derece(), [['p1'], ['p0']]);
-    assert.strictEqual(inst.text(), 'EN GEC DUSEN!');
+    assert.strictEqual(inst.text().k, 'sonuc.floor.enGec');
     assert.ok(inst.done(), 'herkes dustuyse tur bitmeli');
   });
 
   test('hepsi ayakta kalirsa berabere', () => {
     const inst = floor.create(['p0', 'p1'], 0);
     assert.deepStrictEqual(inst.winners(), []);
-    assert.strictEqual(inst.text(), 'HEPSI AYAKTA KALDI!');
+    assert.strictEqual(inst.text().k, 'sonuc.floor.hepsiAyakta');
   });
 });
 

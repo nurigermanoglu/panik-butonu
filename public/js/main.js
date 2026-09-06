@@ -3,6 +3,24 @@
   'use strict';
 
   var W = 320, H = 180, TOP = 22;
+  // Mini oyunun adi ve emri sunucudan METIN olarak da geliyor, ama onlar
+  // tek dilde. Istemci id'den kendi dilindeki karsiligini bulur; anahtar
+  // yoksa sunucunun gonderdigine duser (yeni oyun eklenip ceviri
+  // unutulursa ekran bos kalmasin).
+  function oyunAdi(mg) {
+    if (!mg) return '';
+    var a = PP.dil.t('oyun.' + mg.id + '.ad');
+    return a === 'oyun.' + mg.id + '.ad' ? (mg.name || '') : a;
+  }
+  function oyunEmri(mg) {
+    if (!mg) return '';
+    var a = PP.dil.t('oyun.' + mg.id + '.emir');
+    return a === 'oyun.' + mg.id + '.emir' ? (mg.instruction || '') : a;
+  }
+  // Butun ekran yazilari buradan gecer: t('anahtar', {degerler}).
+  // Sunucudan gelen sonuc/istatistik yazilari da { k, p } seklinde gelir
+  // ve ayni fonksiyon onlari cevirir (bkz. js/dil.js).
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
   var g, f, P;
   var cv, ctx;
   var state = null;
@@ -87,7 +105,7 @@
     ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
       document.addEventListener(ev, function () {
         var tam = !!(document.fullscreenElement || document.webkitFullscreenElement);
-        $('btnFull').textContent = tam ? 'CIK' : 'TAM EKRAN';
+        $('btnFull').textContent = tam ? t('lobi.cik') : t('ust.tamEkran');
         setTimeout(resize, 120);
       });
     });
@@ -100,7 +118,7 @@
       var macta = state && (state.phase === 'intro' || state.phase === 'play' || state.phase === 'result');
       if (macta && performance.now() - cikisSoruldu > 3000) {
         cikisSoruldu = performance.now();
-        $('btnLeave').textContent = 'EMIN MISIN?';
+        $('btnLeave').textContent = t('lobi.eminMisin');
         $('btnLeave').classList.add('soruyor');
         setTimeout(cikisSifirla, 3000);
         return;
@@ -110,6 +128,12 @@
 
     $('btnMute').addEventListener('click', sesiDegistir);
     sesButonuTazele();
+
+    // Dil: HTML'deki sabit yazilar da acilista dogru dile cekilir
+    PP.dil.htmlTazele();
+    dilButonuTazele();
+    var dilBtn = $('btnLang');
+    if (dilBtn) dilBtn.addEventListener('click', diliDegistir);
 
     $('chatForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -329,8 +353,28 @@
     var kapali = PP.sfx.isMuted();
     var b = $('btnMute');
     b.innerHTML = sesSimgesi(kapali);
-    b.setAttribute('aria-label', kapali ? 'Sesi ac' : 'Sesi kapat');
-    b.setAttribute('title', kapali ? 'Ses kapali' : 'Ses acik');
+    b.setAttribute('aria-label', kapali ? t('ust.sesAc') : t('ust.sesKapat'));
+    b.setAttribute('title', kapali ? t('ust.sesKapali') : t('ust.sesAcik'));
+  }
+
+  // Dil dugmesi: TR <-> EN. Secim yalnizca BU tarayicida saklanir, sunucuya
+  // gonderilmez - ayni odadaki herkes kendi dilini gorur.
+  function dilButonuTazele() {
+    var b = $('btnLang');
+    if (!b) return;
+    // Butonun uzerinde SIRADAKI dil yazar: basinca ne olacagi belli olsun
+    var sonraki = PP.dil.kod === 'tr' ? 'en' : 'tr';
+    b.textContent = sonraki.toUpperCase();
+    b.setAttribute('title', PP.dil.kod === 'tr' ? 'Switch to English' : 'Türkçeye geç');
+  }
+
+  function diliDegistir() {
+    PP.sfx.unlock();
+    PP.sfx.click();
+    PP.dil.sec(PP.dil.kod === 'tr' ? 'en' : 'tr');
+    dilButonuTazele();
+    sesButonuTazele();          // aria-label/title yeni dilde
+    if (typeof resize === 'function') resize();
   }
 
   // Ses acma/kapama tek yerden cagirilir ki buton hep dogru simgeyi gostersin.
@@ -447,8 +491,8 @@
 
     PP.net.on('err', function (m) {
       // Geri oturma denemesi reddedildiyse (oda kapandi / sure doldu) menuye dus.
-      if (geriDonuyor) return menuyeDon(m.m || 'ODAYA DONULEMEDI');
-      showErr(m.m || 'HATA');
+      if (geriDonuyor) return menuyeDon(m.m || t('ag.donulemedi'));
+      showErr(m.m || t('ag.hata'));
     });
 
     // Odadan ciktiktan sonra yolda kalmis bir paket bizi tekrar oyun ekranina
@@ -473,9 +517,9 @@
       var kutu = $('chatMsg');
       if (!kutu.value.trim() && sonSohbetMetni) kutu.value = sonSohbetMetni;
       sohbetUyari(
-        m.k === 'hizli' ? 'COK HIZLI YAZIYORSUN, BIR AN BEKLE' :
-        m.k === 'bos' ? 'BOS MESAJ GONDERILEMEZ' :
-        'MESAJ GONDERILEMEDI'
+        m.k === 'hizli' ? t('sohbet.hizli') :
+        m.k === 'bos' ? t('sohbet.bos') :
+        t('sohbet.gitmedi')
       );
     });
 
@@ -826,8 +870,8 @@
   // Bot zorlugu tuslari - SADECE odayi kurana gorunur/calisir.
   // Uc tus yan yana: kolay (yesil), orta (sari), zor (kirmizi).
   var ZORLUK = [
-    { ad: 'KOLAY', renk: '#2fbf4f', isik: '#7fe89a', golge: '#1c7a33' },
-    { ad: 'ORTA', renk: '#ffd34d', isik: '#ffe9a0', golge: '#c79a1e' },
+    { ad: 'zorluk.kolay', renk: '#2fbf4f', isik: '#7fe89a', golge: '#1c7a33' },
+    { ad: 'zorluk.orta', renk: '#ffd34d', isik: '#ffe9a0', golge: '#c79a1e' },
     { ad: 'ZOR', renk: '#f45b69', isik: '#ff9aa4', golge: '#a82c39' }
   ];
 
@@ -901,15 +945,17 @@
   // dokunma alani da bu tek hesaptan gelir ki asla kaymasinlar.
   var SIMGE_W = 11, SIMGE_H = 13, SIMGE_ARA = 5;
 
-  var KOPYALANDI = 'KOPYALANDI';
+  // Dil degisince yeniden hesaplanmali: sabit degil FONKSIYON.
+  // (var olarak tutulsaydi yukleme anindaki dilde donup kalirdi.)
+  function kopyalandiYazisi() { return t('lobi.kopyalandi'); }
 
   function kodYerlesim() {
     if (!state) return null;
-    var yazi = 'KOD : ' + state.code;
+    var yazi = t('lobi.kod', { kod: state.code });
     // Yazi, ustundeki kutularla AYNI eksende ortalanir. Tus ise iki yazinin
     // genisinden hangisi buyukse onun disina sabitlenir; boylece yazi
     // 'KOPYALANDI' olurken tus yerinden kipirdamaz.
-    var kw = Math.max(f.width(yazi, 2), f.width(KOPYALANDI, 2));
+    var kw = Math.max(f.width(yazi, 2), f.width(kopyalandiYazisi(), 2));
     var orta = LOBI.sagX + LOBI.sagW / 2;
     var sx = Math.round(orta + kw / 2 + SIMGE_ARA);
     return {
@@ -1060,7 +1106,7 @@
 
   function drawTopBar() {
     g.rect(ctx, 0, 0, W, TOP, P.black);
-    if (state.mg) f.text(ctx, state.mg.name, 4, 4, { color: P.white, scale: 1 });
+    if (state.mg) f.text(ctx, oyunAdi(state.mg), 4, 4, { color: P.white, scale: 1 });
     drawScoreBars(4);
 
     var pct = 1;
@@ -1144,7 +1190,7 @@
 
     // 1) Baslik kutusu
     sariKutu(LOBI.baslik, null, 0);
-    f.text(ctx, 'OYUN', sagOrta, LOBI.baslik.y + 7, {
+    f.text(ctx, t('lobi.oyun'), sagOrta, LOBI.baslik.y + 7, {
       color: '#000000', scale: 5, align: 'center'
     });
 
@@ -1156,13 +1202,13 @@
         yumusakKutu(hb.x + 2, hb.y + 3, hb.w, hb.h, KUTU_GOLGE, KOSE_DIS);
         yumusakKutu(hb.x, hb.y, hb.w, hb.h, '#000000', KOSE_DIS);
         kabartma(hb.x + 3, hb.y + 3, hb.w - 6, hb.h - 6, '#cfa93c', '#e6c46a', '#a8801f');
-        f.text(ctx, 'EN AZ ' + state.min + ' KISI', hb.x + hb.w / 2, hb.y + 11, {
+        f.text(ctx, t('lobi.enAzKisi', { n: state.min }), hb.x + hb.w / 2, hb.y + 11, {
           color: '#402d00', scale: 1, align: 'center'
         });
       } else if (ben && ben.ready) {
-        sariKutu(hb, 'HAZIR (IPTAL)', 1, true);
+        sariKutu(hb, t('lobi.hazirIptal'), 1, true);
       } else {
-        sariKutu(hb, 'HAZIR', 3, Math.floor(time * 2) % 2 === 0);
+        sariKutu(hb, t('lobi.hazir'), 3, Math.floor(time * 2) % 2 === 0);
       }
     }
     var ho = hedefOklari();
@@ -1178,7 +1224,7 @@
     }
     // Oklarin ne yaptigi belli olsun. Hedef artik kisi sayisina gore
     // olceklenmiyor: burada yazan sayiyi yalnizca bu oklar degistirir.
-    f.text(ctx, 'HEDEF: ' + (state.hedef || state.needed) + ' PUAN',
+    f.text(ctx, t('lobi.hedef', { n: state.hedef || state.needed }),
       sagOrta, LOBI.hazir.y + LOBI.hazir.h + 2, {
       color: '#0a1826', scale: 1, align: 'center', shadow: HALE
     });
@@ -1195,7 +1241,7 @@
         g.arrow(ctx, par[1], k.x + 5, k.y + 3, 1, '#000000');
       });
     }
-    f.text(ctx, 'BOT: ' + botSayisi(), sagOrta, LOBI.botY, {
+    f.text(ctx, t('lobi.bot', { n: botSayisi() }), sagOrta, LOBI.botY, {
       color: '#0a1826', scale: 1, align: 'center', shadow: HALE
     });
 
@@ -1217,26 +1263,26 @@
           g.rect(ctx, k.x + 1, k.y + 1, k.w - 2, k.h - 2, z.renk);
           ctx.restore();
         }
-        f.text(ctx, z.ad, k.x + k.w / 2, k.y + 3, {
+        f.text(ctx, t(z.ad), k.x + k.w / 2, k.y + 3, {
           color: aktif ? '#0a1826' : 'rgba(10,24,38,0.55)', scale: 1, align: 'center'
         });
       }
     }
 
     // 4) CIK  (SES ust cubuktaki hoparlor simgesinde)
-    sariKutu(LOBI.cik, 'CIK', 2);
+    sariKutu(LOBI.cik, t('lobi.cik'), 2);
 
 
     // 5) KOD - yaninda kopyalama simgesi; satirin tamamina basilabilir
     var ky = kodYerlesim();
     var yeniKopya = time - kopyalandiAn < 1.4;
-    f.text(ctx, yeniKopya ? KOPYALANDI : ky.yazi, ky.orta, ky.y, {
+    f.text(ctx, yeniKopya ? kopyalandiYazisi() : ky.yazi, ky.orta, ky.y, {
       color: '#0a1826', scale: 2, align: 'center', shadow: HALE
     });
     kopyaSimgesi(ky.sx, ky.y, '#0a1826');            // tus her zaman gorunur
 
     if (state.acik && state.players.length < state.max) {
-      f.text(ctx, 'RAKIP ARANIYOR' + '.'.repeat(1 + Math.floor(time * 2) % 3), sagOrta, LOBI.altY, {
+      f.text(ctx, t('lobi.rakipAraniyor') + '.'.repeat(1 + Math.floor(time * 2) % 3), sagOrta, LOBI.altY, {
         color: '#0a1826', scale: 1, align: 'center', shadow: HALE
       });
     }
@@ -1256,10 +1302,10 @@
     ctx.restore();
 
     // Oyun adi ve talimati parsomen levhada dursun
-    var pw = Math.max(f.width(state.mg.name, 2), f.width(state.mg.instruction, 2)) + 24;
+    var pw = Math.max(f.width(oyunAdi(state.mg), 2), f.width(oyunEmri(state.mg), 2)) + 24;
     g.panel(ctx, Math.round((W - pw) / 2), 26, pw, 48);
-    f.text(ctx, state.mg.name, W / 2, 34, { color: '#43434f', scale: 2, align: 'center' });
-    f.text(ctx, state.mg.instruction, W / 2, 56, { color: '#c04a3a', scale: 2, align: 'center' });
+    f.text(ctx, oyunAdi(state.mg), W / 2, 34, { color: '#43434f', scale: 2, align: 'center' });
+    f.text(ctx, oyunEmri(state.mg), W / 2, 56, { color: '#c04a3a', scale: 2, align: 'center' });
 
     var c = Math.max(0, Math.ceil(state.timer));
     if (c > 0) {
@@ -1273,7 +1319,7 @@
     // sayim rakaminin, oraya serit koymak uzerine biniyordu.
     if (state.final) {
       var fp = Math.floor(time * 6) % 2 === 0;
-      var ft = 'FINAL TURU - PUANLAR X2';
+      var ft = t('mac.finalTuru');
       var fw = f.width(ft, 2) + 16;
       g.rect(ctx, Math.round((W - fw) / 2), 4, fw, 20, fp ? '#c04a3a' : '#7d2b20');
       g.rect(ctx, Math.round((W - fw) / 2), 4, fw, 1, fp ? '#e0705c' : '#c04a3a');
@@ -1281,7 +1327,7 @@
         color: fp ? '#fff45c' : P.yellow, scale: 2, align: 'center'
       });
     } else if (state.tur) {
-      f.text(ctx, 'TUR ' + state.tur, W / 2, 14, {
+      f.text(ctx, t('mac.tur', { n: state.tur }), W / 2, 14, {
         color: '#1a0c00', scale: 1, align: 'center', shadow: 'rgba(255,255,255,0.9)'
       });
     }
@@ -1312,9 +1358,9 @@
 
     var wins = (state.result && state.result.winners) || [];
     if (!wins.length) {
-      var bw = f.width('BERABERE!', 3) + 24;
+      var bw = f.width(t('mac.berabere'), 3) + 24;
       g.panel(ctx, Math.round((W - bw) / 2), 48, bw, 26);
-      f.text(ctx, 'BERABERE!', W / 2, 56, { color: '#43434f', scale: 3, align: 'center' });
+      f.text(ctx, t('mac.berabere'), W / 2, 56, { color: '#43434f', scale: 3, align: 'center' });
     } else {
       var names = [];
       for (var i = 0; i < wins.length; i++) {
@@ -1326,15 +1372,15 @@
       var bob = Math.round(Math.sin(time * 10) * 3);
       PP.chars.ciz(ctx, first ? first.char : 0, W / 2, 46 + bob, 54, 38);
       f.text(ctx, names.join(' + '), W / 2, 66, { color: col, scale: 2, align: 'center', shadow: P.black });
-      f.text(ctx, 'KAZANDI!', W / 2, 88, { color: P.white, scale: 2, align: 'center', shadow: P.black });
+      f.text(ctx, t('mac.kazandiEk'), W / 2, 88, { color: P.white, scale: 2, align: 'center', shadow: P.black });
     }
 
     if (state.result && state.result.text) {
-      f.text(ctx, state.result.text, W / 2, 112, { color: P.light, scale: 1, align: 'center' });
+      f.text(ctx, t(state.result.text), W / 2, 112, { color: P.light, scale: 1, align: 'center' });
     }
     // Puanlar neden iki kat arttiysa sebebi ekranda kalsin
     if (state.final) {
-      f.text(ctx, 'FINAL TURU - PUANLAR X2', W / 2, 122, {
+      f.text(ctx, t('mac.finalTuru'), W / 2, 122, {
         color: P.yellow, scale: 1, align: 'center', shadow: P.black
       });
     }
@@ -1365,7 +1411,7 @@
       g.rect(ctx, cxp, cyp, 3, 3, cc);
     }
 
-    f.text(ctx, 'SAMPIYON', W / 2, 10, {
+    f.text(ctx, t('mac.sampiyon'), W / 2, 10, {
       color: '#1a0c00', scale: 3, align: 'center', shadow: 'rgba(255,255,255,0.9)'
     });
 
@@ -1391,7 +1437,7 @@
     drawIstat();
 
     if (Math.floor(time * 2) % 2 === 0) {
-      f.text(ctx, 'TEKRAR OYNAMAK ICIN BAS', W / 2, 166, {
+      f.text(ctx, t('mac.tekrarBas'), W / 2, 166, {
         color: P.white, scale: 1, align: 'center', shadow: P.black
       });
     }
@@ -1412,9 +1458,16 @@
     // Koyu serit: konfetinin ustunde yazi okunakli kalsin
     g.rect(ctx, 0, y - 3, W, 20, 'rgba(10,24,38,0.92)');
 
-    f.text(ctx, it.ad, W / 2, y, { color: P.yellow, scale: 1, align: 'center' });
+    f.text(ctx, t(it.ad), W / 2, y, { color: P.yellow, scale: 1, align: 'center' });
 
-    var alt = it.deger ? it.kim + ' - ' + it.deger : it.kim;
+    // deger { k, p } olabilir; uzmanlik satirinda icinde oyun ID'si var,
+    // onu da kendi dilimizdeki oyun adiyla degistiriyoruz
+    var dgr = it.deger;
+    if (dgr && dgr.k === 'istat.uzmanlikDeger' && dgr.p) {
+      dgr = { k: dgr.k, p: { oyun: oyunAdi({ id: dgr.p.oyun }), n: dgr.p.n } };
+    }
+    var dgrYazi = dgr ? t(dgr) : '';
+    var alt = dgrYazi ? it.kim + ' - ' + dgrYazi : it.kim;
     f.text(ctx, f.sigdir(alt, W - 8, 1), W / 2, y + 9, {
       color: P.white, scale: 1, align: 'center'
     });
@@ -1432,7 +1485,7 @@
 
   function drawConnecting() {
     g.rect(ctx, 0, 0, W, H, P.bg);
-    f.text(ctx, 'BAGLANIYOR' + '.'.repeat(1 + Math.floor(time * 2) % 3), W / 2, H / 2 - 4, {
+    f.text(ctx, t('ag.baglaniyor') + '.'.repeat(1 + Math.floor(time * 2) % 3), W / 2, H / 2 - 4, {
       color: P.light, scale: 2, align: 'center'
     });
   }
@@ -1458,7 +1511,7 @@
   function render() {
     if (!state) {
       // Odadaysak ve baglanti koptuysa bos ekran yerine "geri donuyoruz" de
-      if (kopuk) { g.rect(ctx, 0, 0, W, H, P.bg); perdeCiz('BAGLANTI KOPTU', 'GERI BAGLANIYOR', P.red); return; }
+      if (kopuk) { g.rect(ctx, 0, 0, W, H, P.bg); perdeCiz(t('ag.koptu'), t('ag.geriBaglaniyor'), P.red); return; }
       return drawConnecting();
     }
     var sessiz = (performance.now() - sonSync) / 1000;
@@ -1473,7 +1526,7 @@
 
     // 1) Benim baglantim koptu
     if (kopuk) {
-      perdeCiz('BAGLANTI KOPTU', 'GERI BAGLANIYOR - YERIN TUTULUYOR', P.red);
+      perdeCiz(t('ag.koptu'), t('ag.yerTutuluyor'), P.red);
       return;
     }
     // 2) Baskasinin baglantisi koptu: mac duruyor, onu bekliyoruz
@@ -1482,14 +1535,15 @@
     // kendi kutusunda "KOPTU..." yazisiyla zaten gorunuyor.
     var macSuruyor = state.phase === 'intro' || state.phase === 'play' || state.phase === 'result';
     if (state.bekle && macSuruyor) {
-      perdeCiz(state.bekle.ad + ' KOPTU', 'MAC DURDU - ' + state.bekle.sn + ' SANIYE BEKLENIYOR', P.yellow);
+      perdeCiz(t('ag.kisiKoptu', { ad: state.bekle.ad }),
+        t('mac.durduSn', { n: state.bekle.sn }), P.yellow);
       return;
     }
 
     // Sunucudan uzun suredir haber yoksa ekran donmus gibi gorunur; bunu soyle
     if (sessiz > 3) {
       g.rect(ctx, 0, TOP, W, 12, P.black);
-      f.text(ctx, 'BAGLANTI YOK... ' + Math.floor(sessiz) + ' SN', W / 2, TOP + 3, {
+      f.text(ctx, t('ag.yok', { n: Math.floor(sessiz) }), W / 2, TOP + 3, {
         color: P.red, scale: 1, align: 'center'
       });
     }

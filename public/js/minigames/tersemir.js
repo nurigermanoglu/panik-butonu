@@ -9,6 +9,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   var TERSI = { left: 'right', right: 'left', up: 'down', down: 'up' };
 
@@ -56,13 +58,15 @@
         // "TERS" seridi - yazinin ustunde, hafifce titrer
         if (ters) {
           var kay = Math.round(Math.sin(v.time * 18) * 1);
-          f.text(ctx, 'TERS!', orta + kay, ty + 5, {
+          f.text(ctx, t('ic.tersemir.ters'), orta + kay, ty + 5, {
             color: P.red, scale: 1, align: 'center', shadow: P.black
           });
         }
 
         // Emrin kendisi
-        f.text(ctx, e.ad, orta, ty + (ters ? 16 : 18), {
+        // Emrin kendisi: sunucu yon KIMLIGINI (e.y) gonderiyor, kelimeyi
+        // istemci kendi dilinde yaziyor. (e.ad hala geliyor ama yalnizca yedek.)
+        f.text(ctx, t('yon.' + e.y), orta, ty + (ters ? 16 : 18), {
           color: ters ? '#ff6b6b' : P.white, scale: ters ? 2.6 : 3, align: 'center',
           shadow: P.black
         });
@@ -81,13 +85,13 @@
       } else {
         // Emirler arasi bosluk: "hazir ol"
         var yanip = Math.floor(v.time * 6) % 2 === 0;
-        f.text(ctx, 'HAZIR OL', Math.round(tx + tw / 2), ty + 22, {
+        f.text(ctx, t('ic.tersemir.hazirOl'), Math.round(tx + tw / 2), ty + 22, {
           color: yanip ? P.yellow : P.gray, scale: 2, align: 'center', shadow: P.black
         });
       }
 
       // ---- kural hatirlatmasi ----
-      f.text(ctx, 'KIRMIZI = TERSINE BAS', v.W / 2, v.H - 9, {
+      f.text(ctx, t('ic.tersemir.kural'), v.W / 2, v.H - 9, {
         color: ters ? P.red : P.gray, scale: 1, align: 'center', shadow: P.black
       });
 

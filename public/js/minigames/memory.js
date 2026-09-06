@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   PP.MG = PP.MG || {};
   PP.MG.memory = {
@@ -11,13 +13,13 @@
       var cx = v.W / 2;
 
       if (st.showing) {
-        f.text(ctx, 'EZBERLE', cx, v.top + 4, { color: P.yellow, scale: 2, align: 'center' });
+        f.text(ctx, t('ic.memory.ezberle'), cx, v.top + 4, { color: P.yellow, scale: 2, align: 'center' });
         if (st.cur) {
           var s = 6, size = g.arrowSize(s);
           g.arrow(ctx, st.cur, cx - size / 2, v.top + 30, s, P.white);
         }
       } else {
-        f.text(ctx, 'SIRA SENDE!', cx, v.top + 4, { color: P.green, scale: 2, align: 'center' });
+        f.text(ctx, t('ic.memory.siraSende'), cx, v.top + 4, { color: P.green, scale: 2, align: 'center' });
 
         var n = v.players.length;
         var colW = v.W / n;
@@ -44,11 +46,11 @@
           }
 
           if (out) {
-            f.text(ctx, 'YANLIS!', px, v.top + 76, { color: P.red, scale: 1, align: 'center' });
+            f.text(ctx, t('ic.memory.yanlis'), px, v.top + 76, { color: P.red, scale: 1, align: 'center' });
           }
         }
 
-        f.text(ctx, 'YON TUSLARI', cx, v.H - 10, { color: P.light, scale: 1, align: 'center' });
+        f.text(ctx, t('ic.memory.yonTuslari'), cx, v.H - 10, { color: P.light, scale: 1, align: 'center' });
       }
     }
   };

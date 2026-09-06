@@ -53,6 +53,32 @@ böylece oyun ekranı daha büyük olur.
 **Lobide yön tuşlarının / WASD'nin bir işlevi yoktur** — orada yapılacak tek şey hazır olmak,
 o da boşluk tuşu (veya ekrana dokunma) ile olur.
 
+### Dil (Türkçe / İngilizce)
+
+Üst çubuktaki **TR / EN** düğmesiyle değişir. Seçim tarayıcıda saklanır;
+ilk açılışta tarayıcının dili Türkçe değilse oyun İngilizce başlar.
+
+**Sunucu bitmiş metin değil ANAHTAR gönderir; çeviriyi istemci yapar.** Yani
+aynı odadaki iki kişi farklı dilde oynayabilir — biri Türkçe, diğeri İngilizce
+görür. Sunucu bitmiş metin gönderseydi odadaki herkes tek bir dile mahkûm
+olurdu; uzaktan oynama bu oyunun özelliği olduğu için doğru takas bu değildi.
+
+Tur sonu yazıları ve istatistikler `{ k: 'anahtar', p: { ...değerler } }`
+şeklinde gelir:
+
+```js
+// server/minigames/collect.js
+return { k: 'sonuc.collect.skorBomba', p: { n: 7, b: 2 } };
+// istemcide:  "7 YILDIZ! (2 BOMBA)"  /  "7 STARS! (2 BOMBS)"
+```
+
+Mini oyun adları ve emirleri de sunucudan gelmez: istemci `mg.id` üzerinden
+kendi dilindeki karşılığı bulur. Ters Emir'in yön kelimeleri de öyle — sunucu
+yön kimliğini (`left`/`right`/...) gönderir, kelimeyi istemci yazar.
+
+Bütün metinler [public/js/dil.js](public/js/dil.js) içinde tek tabloda.
+Yeni dil eklemek için oraya bir sözlük daha yazmak yetiyor.
+
 ### Telefonda oynamak
 
 **Telefonu yan çevir.** Oyun 16:9; telefonun yatay hâli de öyle. Ölçüldü
@@ -500,6 +526,7 @@ public/
   ikon-192.png    Ana ekran ikonları (aynı desen, büyük boy)
   ikon-512.png
   css/style.css
+  js/dil.js       Türkçe/İngilizce sözlük ve çeviri (t)
   js/font.js      Elle çizilmiş 5x7 pixel font (Türkçe harfler dahil)
   js/gfx.js       Palet ve sprite çizimi
   js/chars.js     Oyuncu karakterleri (karakterler.png'den kırpılır, seçilebilir)
@@ -544,7 +571,7 @@ npm test
 ```
 
 Harici test kütüphanesi yok — Node'un kendi `node:test` aracı kullanılıyor,
-yani yine `npm install` gerekmiyor. 284 test bir saniyede biter.
+yani yine `npm install` gerekmiyor. 302 test bir saniyede biter.
 
 | Dosya | Neyi sınar |
 |---|---|
@@ -560,6 +587,7 @@ yani yine `npm install` gerekmiyor. 284 test bir saniyede biter.
 | [test/puan.test.js](test/puan.test.js) | Derece puanı dağıtımı, hedef ölçeği, şampiyon seçimi, oyunların `derece()` sıralamasının tutarlılığı |
 | [test/yakala.test.js](test/yakala.test.js) | Düşenleri Yakala: düşme programının adaleti (bombadan kaçış hep var), yakalama kuralları, sonuç seçimi |
 | [test/tersemir.test.js](test/tersemir.test.js) | Ters Emir: emir listesinin adaleti (ilk emir hep düz, aynı yön üst üste gelmez, üçten fazla ters yığılmaz), puanlama, bir emre tek cevap, sıradaki emrin istemciye sızmaması, botun zorluk basamakları |
+| [test/dil.test.js](test/dil.test.js) | Dil desteği: iki sözlükte de aynı anahtarların olması, her mini oyunun adı/emri iki dilde tanımlı olması, sunucunun döndürdüğü her anahtarın karşılığının bulunması, yer tutucuların (`{n}`) iki dilde uyuşması |
 | [test/telefon.test.js](test/telefon.test.js) | Ana ekrana ekleme (manifest geçerli, yatay açılıyor, ikonlar gerçekten var) ve ölçekleme kuralının geri kaymaması |
 | [test/ses.test.js](test/ses.test.js) | Ses olaylarının snap ile sözleşmesi: ses kodunun okuduğu her alanın gerçekten `snap()`'te olması, hiçbir oyunun sessiz kalmaması, ses adlarının `sound.js`'de bulunması |
 | [test/zemin.test.js](test/zemin.test.js) | Zemin Çöküyor deseninin adaleti (kusursuz oyuncu 600 desende hiç ölmüyor), kuşatılma olmaması, hareket kuralları, ortak ızgara davranışı |

@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   // Toplanacak yildiz (7x7). Bomba icin oyunun kendi bomba resmi kullanilir.
   var YILDIZ = [
@@ -128,7 +130,7 @@
         });
       }
 
-      f.text(ctx, 'BOMBAYA DOKUNMA!', v.W / 2, v.H - 8, {
+      f.text(ctx, t('ic.collect.uyari'), v.W / 2, v.H - 8, {
         color: P.red, scale: 1, align: 'center', shadow: P.black
       });
     }

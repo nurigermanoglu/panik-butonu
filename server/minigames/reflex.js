@@ -91,10 +91,10 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (w.length) return this.reaction[w[0]] + ' MS';
-        if (this.ids.every((id) => this.fouled[id])) return 'HEPSI ERKEN BASTI!';
-        if (this.ids.every((id) => this.reaction[id] === null)) return 'KIMSE BASAMADI!';
-        return 'TAM AYNI ANDA!';
+        if (w.length) return { k: 'sonuc.reflex.ms', p: { n: this.reaction[w[0]] } };
+        if (this.ids.every((id) => this.fouled[id])) return { k: 'sonuc.reflex.hepsiErken' };
+        if (this.ids.every((id) => this.reaction[id] === null)) return { k: 'sonuc.reflex.kimseBasamadi' };
+        return { k: 'sonuc.reflex.ayniAnda' };
       },
 
       snap() {

@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   // Resimler ve icindeki elmanin kirpma kutusu (olculerek bulundu)
   var KAYNAK = [
@@ -70,7 +72,7 @@
       g.frame(ctx, st.gx - 3, st.gy - 3, gw + 6, gh + 6, '#1e1e24', P.gray);
 
       if (!kynk) {
-        f.text(ctx, 'RESIM YUKLENIYOR...', v.W / 2, st.gy + gh / 2, {
+        f.text(ctx, t('ic.puzzle.yukleniyor'), v.W / 2, st.gy + gh / 2, {
           color: P.light, scale: 1, align: 'center'
         });
         return;

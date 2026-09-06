@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   var BASLA_X = 16;      // baslangic cizgisi
   var BITIS_X = 292;     // bitis cizgisi
@@ -87,7 +89,7 @@
         // okunuyordu. Bitiren icin yuzde zaten %100; onun yerine
         // dogrudan BITTI yaziliyor.
         if (pct >= 1) {
-          f.text(ctx, 'BITTI!', BITIS_X - 4, ly + 2, {
+          f.text(ctx, t('ic.race.bitti'), BITIS_X - 4, ly + 2, {
             color: P.yellow, scale: 1, align: 'right', shadow: P.black
           });
         } else {
@@ -106,7 +108,7 @@
         }
       }
 
-      f.text(ctx, 'BAS BAS! KOS!', v.W / 2, v.top + 2, {
+      f.text(ctx, t('ic.race.ipucu'), v.W / 2, v.top + 2, {
         color: P.yellow, scale: 1, align: 'center', shadow: P.black
       });
     }

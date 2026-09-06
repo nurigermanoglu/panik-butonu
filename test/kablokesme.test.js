@@ -204,7 +204,7 @@ describe('Sonuc', () => {
     let kalan = inst.sure;
     while (kalan > 0) { inst.update(DT); kalan -= DT; }
     assert.deepStrictEqual(inst.winners(), []);
-    assert.strictEqual(inst.text(), 'KIMSE KESEMEDI!');
+    assert.strictEqual(inst.text().k, 'sonuc.wirecut.kimse');
   });
 
   test('esit kesenler berabere', () => {

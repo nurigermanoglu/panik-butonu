@@ -122,11 +122,12 @@ module.exports = {
       },
 
       text() {
-        if (this.winner) return 'HAFIZA CANAVARI!';
+        if (this.winner) return { k: 'sonuc.memory.canavar' };
         if (!this.winners().length) {
-          return this.ids.every((id) => this.out[id]) ? 'HEPSI SASIRDI!' : 'KIMSE BITIREMEDI!';
+          return { k: this.ids.every((id) => this.out[id])
+            ? 'sonuc.memory.hepsiSasirdi' : 'sonuc.memory.kimseBitiremedi' };
         }
-        return 'EN COK ILERLEYEN!';
+        return { k: 'sonuc.memory.enCok' };
       },
 
       // Gosterim sirasinda hangi sembolun ekranda oldugunu hesapla

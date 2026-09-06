@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   // kirp = resmin icindeki cizimin kutusu (olculdu), w/h = oyunda cizilecek boyut
   var KAYNAK = {
@@ -119,7 +121,7 @@
       if (kres) ctx.drawImage(kres, kx, ky, kk.w, kk.h);
       else g.frame(ctx, kx, ky, kk.w, kk.h, P.gray, P.black);
 
-      f.text(ctx, 'COP', tr.x + tr.w / 2, tr.y - 10, {
+      f.text(ctx, t('ic.filedelete.cop'), tr.x + tr.w / 2, tr.y - 10, {
         color: P.light, scale: 1, align: 'center', shadow: P.black
       });
 
@@ -153,7 +155,7 @@
           });
       }
 
-      f.text(ctx, 'SURUKLE VE COPE BIRAK', 21, v.H - 10, {
+      f.text(ctx, t('ic.filedelete.ipucu'), 21, v.H - 10, {
         color: '#20202c', scale: 1
       });
     }

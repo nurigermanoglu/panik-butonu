@@ -211,9 +211,11 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'TAM BERABERE!';
+        if (!w.length) return { k: 'sonuc.berabere' };
         const s = this.pl[w[0]].score;
-        return s >= MISSING ? 'PUZZLE TAMAM!' : s + ' / ' + MISSING + ' PARCA';
+        return s >= MISSING
+          ? { k: 'sonuc.puzzle.hepsi' }
+          : { k: 'sonuc.puzzle.kismi', p: { n: s, t: MISSING } };
       },
 
       snap() {

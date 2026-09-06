@@ -163,20 +163,20 @@ describe('Sonuc', () => {
     inst.pl.p1.score = 2;
     assert.deepStrictEqual(inst.winners(), ['p0']);
     assert.deepStrictEqual(inst.derece(), [['p0'], ['p1']]);
-    assert.strictEqual(inst.text(), '5 YILDIZ!');
+    assert.deepStrictEqual(inst.text(), { k: 'sonuc.collect.skor', p: { n: 5 } });
   });
 
   test('bomba sayisi sonuc yazisinda gorunur', () => {
     const inst = collect.create(['p0', 'p1'], 0);
     inst.pl.p0.score = 3; inst.pl.p0.yildiz = 5; inst.pl.p0.bomba = 1;
     inst.pl.p1.score = 1;
-    assert.strictEqual(inst.text(), '5 YILDIZ! (1 BOMBA)');
+    assert.deepStrictEqual(inst.text(), { k: 'sonuc.collect.skorBomba', p: { n: 5, b: 1 } });
   });
 
   test('kimse toplayamazsa berabere', () => {
     const inst = collect.create(['p0', 'p1'], 0);
     assert.deepStrictEqual(inst.winners(), []);
-    assert.strictEqual(inst.text(), 'KIMSE TOPLAYAMADI!');
+    assert.strictEqual(inst.text().k, 'sonuc.collect.kimse');
   });
 
   test('negatif skorlar da siralanir', () => {

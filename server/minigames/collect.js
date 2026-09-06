@@ -204,9 +204,11 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'KIMSE TOPLAYAMADI!';
+        if (!w.length) return { k: 'sonuc.collect.kimse' };
         const me = this.pl[w[0]];
-        return me.yildiz + ' YILDIZ!' + (me.bomba ? ' (' + me.bomba + ' BOMBA)' : '');
+        return me.bomba
+          ? { k: 'sonuc.collect.skorBomba', p: { n: me.yildiz, b: me.bomba } }
+          : { k: 'sonuc.collect.skor', p: { n: me.yildiz } };
       },
 
       snap() {

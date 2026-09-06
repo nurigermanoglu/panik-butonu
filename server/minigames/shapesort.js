@@ -180,9 +180,11 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'TAM BERABERE!';
+        if (!w.length) return { k: 'sonuc.berabere' };
         const s = this.pl[w[0]].score;
-        return s >= TIPLER.length ? 'HEPSINI TAKTI!' : s + ' / ' + TIPLER.length + ' SEKIL';
+        return s >= TIPLER.length
+          ? { k: 'sonuc.shapesort.hepsi' }
+          : { k: 'sonuc.shapesort.kismi', p: { n: s, t: TIPLER.length } };
       },
 
       snap() {

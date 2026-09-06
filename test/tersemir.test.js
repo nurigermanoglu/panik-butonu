@@ -216,7 +216,7 @@ describe('Sonuc', () => {
     const inst = tersemir.create(['p0', 'p1'], 0, {});
     while (!inst.done()) inst.update(DT);
     assert.deepStrictEqual(inst.winners(), []);
-    assert.strictEqual(inst.text(), 'KIMSE SASIRTAMADI!');
+    assert.strictEqual(inst.text().k, 'sonuc.tersemir.kimse');
   });
 });
 

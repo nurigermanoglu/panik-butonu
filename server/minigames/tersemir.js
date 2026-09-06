@@ -197,10 +197,12 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'KIMSE SASIRTAMADI!';
+        if (!w.length) return { k: 'sonuc.tersemir.kimse' };
         const me = this.pl[w[0]];
-        return me.dogru + '/' + this.emirler.length + ' DOGRU!' +
-          (me.yanlis ? ' (' + me.yanlis + ' YANLIS)' : '');
+        const p = { n: me.dogru, t: this.emirler.length, y: me.yanlis };
+        return me.yanlis
+          ? { k: 'sonuc.tersemir.skorYanlis', p: p }
+          : { k: 'sonuc.tersemir.skor', p: p };
       },
 
       snap() {

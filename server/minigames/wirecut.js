@@ -279,10 +279,12 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'KIMSE KESEMEDI!';
+        if (!w.length) return { k: 'sonuc.wirecut.kimse' };
         const me = this.pl[w[0]];
-        return me.kesti + ' / ' + this.kivilcimlar.length + ' KABLO' +
-          (me.bosa ? ' (' + me.bosa + ' SIKISMA)' : '');
+        const p = { n: me.kesti, t: this.kivilcimlar.length, s: me.bosa };
+        return me.bosa
+          ? { k: 'sonuc.wirecut.skorSikisma', p: p }
+          : { k: 'sonuc.wirecut.skor', p: p };
       },
 
       snap() {

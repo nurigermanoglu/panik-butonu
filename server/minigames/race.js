@@ -76,9 +76,11 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'FOTO BITIS! BERABERE';
-        if (this.bitis[w[0]] >= 0) return this.bitis[w[0]].toFixed(1) + ' SANIYE!';
-        return 'ONDE BITIRDI!';
+        if (!w.length) return { k: 'sonuc.race.foto' };
+        if (this.bitis[w[0]] >= 0) {
+          return { k: 'sonuc.race.sure', p: { n: this.bitis[w[0]].toFixed(1) } };
+        }
+        return { k: 'sonuc.race.onde' };
       },
 
       snap() {

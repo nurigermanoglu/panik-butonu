@@ -12,6 +12,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   // Bomba gorseli - Kostebek Avi / Sicak Patates / Dusenleri Yakala ile ayni
   var BOMBA = { src: 'img/bomba.png', kirp: { x: 62, y: 69, w: 483, h: 383 }, w: 30, h: 24 };
@@ -166,11 +168,11 @@
       // Uc yerin de kalabaliklasmamasi icin yazi kenara alindi.
       if (ben.pen > 0) {
         var yanip = Math.floor(v.time * 10) % 2 === 0;
-        f.text(ctx, 'MAKAS SIKISTI!', 4, v.H - 9, {
+        f.text(ctx, t('ic.wirecut.sikisti'), 4, v.H - 9, {
           color: yanip ? P.red : '#ff9a8f', scale: 1, align: 'left', shadow: P.black
         });
       } else {
-        f.text(ctx, bandda ? 'SIMDI KES!' : 'BANDDA KES', 4, v.H - 9, {
+        f.text(ctx, t(bandda ? 'ic.wirecut.simdiKes' : 'ic.wirecut.banttaKes'), 4, v.H - 9, {
           color: bandda ? P.yellow : P.gray, scale: 1, align: 'left', shadow: P.black
         });
       }

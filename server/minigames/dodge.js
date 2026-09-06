@@ -271,10 +271,10 @@ module.exports = {
       text() {
         const alive = this.ids.filter((id) => this.pl[id].alive);
         if (!this.winners().length) {
-          return alive.length ? 'HEPSI SAG KALDI!' : 'AYNI ANDA GITTILER!';
+          return { k: alive.length ? 'sonuc.dodge.hepsiSag' : 'sonuc.dodge.ayniAnda' };
         }
-        if (alive.length > 0) return 'TEK AYAKTA KALAN!';
-        return 'DAHA UZUN KOSTU!';
+        if (alive.length > 0) return { k: 'sonuc.dodge.tekAyakta' };
+        return { k: 'sonuc.dodge.uzunKostu' };
       },
 
       snap() {

@@ -30,27 +30,30 @@
   <!-- Ust cubuk her iki ekranin da ustunde durur: TAM EKRAN ve ses dugmesi
        menude de, oyunda da ayni yerde olsun. CIK ise sadece odadayken gorunur. -->
   <div id="topbar">
-    <button id="btnLeave" class="mini danger hidden">&#8592; ÇIK</button>
-    <button id="btnFull" class="mini">TAM EKRAN</button>
-    <button id="btnMute" class="mini simge" aria-label="Sesi kapat" title="Ses açık"></button>
+    <button id="btnLeave" class="mini danger hidden" data-dil="ust.cik">&#8592; ÇIK</button>
+    <!-- Dil dugmesi: TR ve EN arasinda gidip gelir. Secim localStorage'da
+         saklanir, sunucuya gonderilmez - herkes kendi dilini gorur. -->
+    <button id="btnLang" class="mini" aria-label="Dil / Language">TR</button>
+    <button id="btnFull" class="mini" data-dil="ust.tamEkran">TAM EKRAN</button>
+    <button id="btnMute" class="mini simge" data-dil-al="ust.sesKapat" aria-label="Sesi kapat" title="Ses açık"></button>
   </div>
 
   <div id="menu" class="screen">
     <h1>PARTİ<span>PANİK</span></h1>
     <p class="tag">2-4 kişilik mini oyun düellosu</p>
 
-    <input id="name" maxlength="10" placeholder="ADIN" autocomplete="off" spellcheck="false">
+    <input id="name" maxlength="10" placeholder="ADIN" data-dil-ph="menu.adin" autocomplete="off" spellcheck="false">
 
-    <button id="btnQuick" class="mbtn quick">HIZLI OYNA</button>
+    <button id="btnQuick" class="mbtn quick" data-dil="menu.hizli">HIZLI OYNA</button>
     <p class="quickhint">rastgele biriyle eşleş</p>
 
-    <div class="sep"><span>VEYA ARKADAŞINLA</span></div>
+    <div class="sep"><span data-dil="menu.veya">VEYA ARKADAŞINLA</span></div>
 
-    <button id="btnCreate" class="mbtn primary">ODA KUR</button>
+    <button id="btnCreate" class="mbtn primary" data-dil="menu.odaKur">ODA KUR</button>
 
     <div class="joinrow">
-      <input id="code" maxlength="4" placeholder="KOD" autocomplete="off" spellcheck="false">
-      <button id="btnJoin" class="mbtn">KATIL</button>
+      <input id="code" maxlength="4" placeholder="KOD" data-dil-ph="menu.kod" autocomplete="off" spellcheck="false">
+      <button id="btnJoin" class="mbtn" data-dil="menu.katil">KATIL</button>
     </div>
 
     <p id="menuErr"></p>
@@ -71,10 +74,10 @@
       </div>
 
       <aside id="chat" class="hidden">
-        <div id="chatLog" role="log" aria-live="polite" aria-label="Sohbet"></div>
+        <div id="chatLog" role="log" aria-live="polite" data-dil-al="sohbet.baslik" aria-label="Sohbet"></div>
         <form id="chatForm" autocomplete="off">
-          <input id="chatMsg" maxlength="120" placeholder="Mesaj yaz..." aria-label="Mesaj">
-          <button type="submit" class="mini">GÖNDER</button>
+          <input id="chatMsg" maxlength="120" placeholder="Mesaj yaz..." data-dil-ph="sohbet.yaz" data-dil-al="sohbet.mesaj" aria-label="Mesaj">
+          <button type="submit" class="mini" data-dil="sohbet.gonder">GÖNDER</button>
         </form>
       </aside>
     </div>
@@ -82,16 +85,16 @@
     <!-- Dikey telefonda tuval ekranin %24"unu, yatayda %69"unu kapliyor.
          Bu yuzden ipucu var; ama dikeyde de oynanabildigi icin
          ENGELLEMIYOR, sadece bir seritle haber veriyor. -->
-    <div id="cevir" aria-hidden="true">TELEFONU YAN ÇEVİR — OYUN 3 KAT BÜYÜR</div>
+    <div id="cevir" aria-hidden="true" data-dil="cevir.ipucu">TELEFONU YAN ÇEVİR — OYUN 3 KAT BÜYÜR</div>
 
     <div id="pad" data-scheme="none">
       <div class="grp" data-for="action">
-        <button class="pbtn big" data-k="action">BAS</button>
+        <button class="pbtn big" data-k="action" data-dil="pad.bas">BAS</button>
       </div>
 
       <div class="grp" data-for="lobby">
         <button class="pbtn" data-k="left">&#9664;</button>
-        <button class="pbtn big" data-k="action">BAS</button>
+        <button class="pbtn big" data-k="action" data-dil="pad.bas">BAS</button>
         <button class="pbtn" data-k="right">&#9654;</button>
       </div>
 
@@ -113,6 +116,7 @@
 
 </div>
 
+<script src="js/dil.js"></script>
 <script src="js/font.js"></script>
 <script src="js/gfx.js"></script>
 <script src="js/chars.js"></script>

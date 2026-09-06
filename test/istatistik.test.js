@@ -34,7 +34,8 @@ function satir(oda, ad) {
   oda.game.phase = 'gameover';
   oda.game.inst = null;
   const liste = oda.game.snapshot().istat || [];
-  return liste.find((x) => x.ad === ad) || null;
+  // Satir adlari artik ANAHTAR ({ k: 'istat.enCokTur' }); ceviri istemcide.
+  return liste.find((x) => x.ad && x.ad.k === ad) || null;
 }
 
 describe('Tur kazanma', () => {
@@ -43,24 +44,24 @@ describe('Tur kazanma', () => {
     tur(oda, [['p0'], ['p1'], ['p2']]);
     tur(oda, [['p0'], ['p2'], ['p1']]);
     tur(oda, [['p1'], ['p0'], ['p2']]);
-    const s = satir(oda, 'EN COK TUR KAZANAN');
+    const s = satir(oda, 'istat.enCokTur');
     assert.ok(s, 'satir yok');
     assert.strictEqual(s.kim, 'OYUNCU0');
-    assert.strictEqual(s.deger, '2 TUR');
+    assert.deepStrictEqual(s.deger, { k: 'istat.tur', p: { n: 2 } });
   });
 
   test('esitlik varsa satir gosterilmez', () => {
     const { oda } = macKur(2);
     tur(oda, [['p0'], ['p1']]);
     tur(oda, [['p1'], ['p0']]);
-    assert.strictEqual(satir(oda, 'EN COK TUR KAZANAN'), null,
+    assert.strictEqual(satir(oda, 'istat.enCokTur'), null,
       'ikisi de 1 tur kazandi, "en cok" anlamsiz');
   });
 
   test('berabere turlar kimseye kazanma yazmaz', () => {
     const { oda } = macKur(3);
     tur(oda, [['p0', 'p1', 'p2']]);      // tek grup = berabere
-    assert.strictEqual(satir(oda, 'EN COK TUR KAZANAN'), null);
+    assert.strictEqual(satir(oda, 'istat.enCokTur'), null);
   });
 });
 
@@ -71,10 +72,10 @@ describe('Seri', () => {
     tur(oda, [['p0'], ['p1']]);
     tur(oda, [['p0'], ['p1']]);
     tur(oda, [['p1'], ['p0']]);
-    const s = satir(oda, 'EN UZUN SERI');
+    const s = satir(oda, 'istat.enUzunSeri');
     assert.ok(s, 'satir yok');
     assert.strictEqual(s.kim, 'OYUNCU0');
-    assert.strictEqual(s.deger, '3 TUR UST USTE');
+    assert.deepStrictEqual(s.deger, { k: 'istat.seri', p: { n: 3 } });
   });
 
   test('seri arada bozulunca sifirlanir', () => {
@@ -82,7 +83,7 @@ describe('Seri', () => {
     tur(oda, [['p0'], ['p1']]);
     tur(oda, [['p1'], ['p0']]);          // seri bozuldu
     tur(oda, [['p0'], ['p1']]);
-    assert.strictEqual(satir(oda, 'EN UZUN SERI'), null,
+    assert.strictEqual(satir(oda, 'istat.enUzunSeri'), null,
       'en uzun seri 1, gosterilmemeli');
   });
 
@@ -90,7 +91,7 @@ describe('Seri', () => {
     const { oda } = macKur(3);
     tur(oda, [['p0'], ['p1'], ['p2']]);
     tur(oda, [['p1'], ['p0'], ['p2']]);
-    assert.strictEqual(satir(oda, 'EN UZUN SERI'), null);
+    assert.strictEqual(satir(oda, 'istat.enUzunSeri'), null);
   });
 });
 
@@ -100,18 +101,20 @@ describe('Uzmanlik alani', () => {
     tur(oda, [['p0'], ['p1'], ['p2']], 'mole');
     tur(oda, [['p1'], ['p0'], ['p2']], 'race');
     tur(oda, [['p0'], ['p2'], ['p1']], 'mole');
-    const s = satir(oda, 'UZMANLIK ALANI');
+    const s = satir(oda, 'istat.uzmanlik');
     assert.ok(s, 'satir yok');
     assert.strictEqual(s.kim, 'OYUNCU0');
-    assert.ok(s.deger.indexOf('KOSTEBEK AVI') >= 0, 'oyun adi yok: ' + s.deger);
-    assert.ok(s.deger.indexOf('x2') >= 0, 'sayi yok: ' + s.deger);
+    // Oyun ADI da istemcide cevriliyor: sunucu yalnizca id gonderir
+    assert.strictEqual(s.deger.k, 'istat.uzmanlikDeger');
+    assert.strictEqual(s.deger.p.oyun, 'mole');
+    assert.strictEqual(s.deger.p.n, 2);
   });
 
   test('her oyunu bir kez kazanmak uzmanlik degil', () => {
     const { oda } = macKur(2);
     tur(oda, [['p0'], ['p1']], 'mole');
     tur(oda, [['p0'], ['p1']], 'race');
-    assert.strictEqual(satir(oda, 'UZMANLIK ALANI'), null);
+    assert.strictEqual(satir(oda, 'istat.uzmanlik'), null);
   });
 });
 
@@ -120,7 +123,7 @@ describe('Hic kazanamayan', () => {
     const { oda } = macKur(3);
     tur(oda, [['p0'], ['p1'], ['p2']]);
     tur(oda, [['p1'], ['p0'], ['p2']]);
-    const s = satir(oda, 'HIC TUR KAZANAMADI');
+    const s = satir(oda, 'istat.hicKazanamadi');
     assert.ok(s, 'satir yok');
     assert.strictEqual(s.kim, 'OYUNCU2');
   });
@@ -129,7 +132,7 @@ describe('Hic kazanamayan', () => {
     const { oda } = macKur(2);
     tur(oda, [['p0'], ['p1']]);
     tur(oda, [['p1'], ['p0']]);
-    assert.strictEqual(satir(oda, 'HIC TUR KAZANAMADI'), null);
+    assert.strictEqual(satir(oda, 'istat.hicKazanamadi'), null);
   });
 
   test('kimse kazanamadiysa satir cikmaz', () => {
@@ -137,7 +140,7 @@ describe('Hic kazanamayan', () => {
     // olurdu - anlamsiz oldugu icin gosterilmemeli.
     const { oda } = macKur(3);
     tur(oda, [['p0', 'p1', 'p2']]);
-    assert.strictEqual(satir(oda, 'HIC TUR KAZANAMADI'), null);
+    assert.strictEqual(satir(oda, 'istat.hicKazanamadi'), null);
   });
 });
 
@@ -146,17 +149,17 @@ describe('Sonunculuk', () => {
     const { oda } = macKur(3);
     tur(oda, [['p0'], ['p1'], ['p2']]);
     tur(oda, [['p1'], ['p0'], ['p2']]);
-    const s = satir(oda, 'EN COK SONUNCU');
+    const s = satir(oda, 'istat.enCokSonuncu');
     assert.ok(s, 'satir yok');
     assert.strictEqual(s.kim, 'OYUNCU2');
-    assert.strictEqual(s.deger, '2 TUR');
+    assert.deepStrictEqual(s.deger, { k: 'istat.tur', p: { n: 2 } });
   });
 
   test('berabere turda kimse sonuncu sayilmaz', () => {
     const { oda } = macKur(3);
     tur(oda, [['p0', 'p1', 'p2']]);
     tur(oda, [['p0', 'p1', 'p2']]);
-    assert.strictEqual(satir(oda, 'EN COK SONUNCU'), null);
+    assert.strictEqual(satir(oda, 'istat.enCokSonuncu'), null);
   });
 });
 
@@ -193,10 +196,11 @@ describe('Yayinlama', () => {
     const liste = oda.game.snapshot().istat;
     assert.ok(Array.isArray(liste) && liste.length, 'liste bos');
     for (const s of liste) {
-      assert.strictEqual(typeof s.ad, 'string');
+      assert.strictEqual(typeof s.ad, 'object');
+      assert.strictEqual(typeof s.ad.k, 'string');
       assert.strictEqual(typeof s.kim, 'string');
-      assert.strictEqual(typeof s.deger, 'string');
-      assert.ok(s.ad.length > 0 && s.kim.length > 0);
+      assert.ok(typeof s.deger === 'object' || s.deger === '');
+      assert.ok(s.ad.k.length > 0 && s.kim.length > 0);
     }
   });
 });

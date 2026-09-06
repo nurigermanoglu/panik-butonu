@@ -2,6 +2,8 @@
 (function (PP) {
   'use strict';
   var g = PP.gfx, f = PP.font, P = g.PAL;
+  // Ekrandaki her yazi dil dosyasindan gelir (bkz. js/dil.js)
+  var t = function () { return PP.dil.t.apply(PP.dil, arguments); };
 
   // Bomba gorseli - Kostebek Avi'ndaki bombayla ayni resim
   var BOMBA = { src: 'img/bomba.png', kirp: { x: 62, y: 69, w: 483, h: 383 }, w: 34, h: 27 };
@@ -58,12 +60,12 @@
 
       // ---- ust mesaj ----
       if (st.boom) {
-        f.text(ctx, 'BUUM!', v.W / 2, v.top + 8, { color: P.red, scale: 5, align: 'center' });
+        f.text(ctx, t('ic.hotpotato.buum'), v.W / 2, v.top + 8, { color: P.red, scale: 5, align: 'center' });
       } else if (bendeMi) {
-        f.text(ctx, 'BOMBA SENDE!', v.W / 2, v.top + 4, {
+        f.text(ctx, t('ic.hotpotato.sende'), v.W / 2, v.top + 4, {
           color: P.yellow, scale: 3, align: 'center', shadow: P.black
         });
-        f.text(ctx, st.canPass ? 'BAS VE KURTUL!' : 'BEKLE...', v.W / 2, v.top + 30, {
+        f.text(ctx, t(st.canPass ? 'ic.hotpotato.basKurtul' : 'ic.hotpotato.bekle'), v.W / 2, v.top + 30, {
           color: st.canPass ? P.white : P.gray, scale: 2, align: 'center', shadow: P.black
         });
       } else {
@@ -75,7 +77,7 @@
             tutanRenk = g.colorForSlot(v.players[q].slot);
           }
         }
-        f.text(ctx, 'BOMBA:', v.W / 2, v.top + 4, {
+        f.text(ctx, t('ic.hotpotato.bomba'), v.W / 2, v.top + 4, {
           color: P.light, scale: 2, align: 'center', shadow: P.black
         });
         f.text(ctx, tutanAd, v.W / 2, v.top + 26, {
@@ -120,7 +122,7 @@
           color: yasiyor ? col : P.gray, scale: 1, align: 'center', shadow: P.black
         });
         if (!yasiyor) {
-          f.text(ctx, 'ELENDI', cx, v.H - 62, {
+          f.text(ctx, t('ic.hotpotato.elendi'), cx, v.H - 62, {
             color: P.red, scale: 1, align: 'center', shadow: P.black
           });
         }

@@ -163,8 +163,8 @@ module.exports = {
 
       text() {
         const w = this.winners();
-        if (!w.length) return 'TAM BERABERE!';
-        return this.pl[w[0]].score + ' KOSTEBEK!';
+        if (!w.length) return { k: 'sonuc.berabere' };
+        return { k: 'sonuc.mole.skor', p: { n: this.pl[w[0]].score } };
       },
 
       snap() {

@@ -470,14 +470,18 @@ class Game {
 
     const out = [];
 
+    // Satirlar METIN degil ANAHTAR tasir: ceviriyi istemci yapar, boylece
+    // ayni odadaki iki kisi farkli dilde gorebilir (bkz. public/js/dil.js).
     const enCok = tekLider((s) => s.kazanma);
     if (enCok) {
-      out.push({ ad: 'EN COK TUR KAZANAN', kim: adi(enCok.id), deger: enCok.deger + ' TUR' });
+      out.push({ ad: { k: 'istat.enCokTur' }, kim: adi(enCok.id),
+        deger: { k: 'istat.tur', p: { n: enCok.deger } } });
     }
 
     const seri = tekLider((s) => (s.enUzunSeri >= 2 ? s.enUzunSeri : 0));
     if (seri) {
-      out.push({ ad: 'EN UZUN SERI', kim: adi(seri.id), deger: seri.deger + ' TUR UST USTE' });
+      out.push({ ad: { k: 'istat.enUzunSeri' }, kim: adi(seri.id),
+        deger: { k: 'istat.seri', p: { n: seri.deger } } });
     }
 
     // Favori oyun: bir oyuncunun EN COK kazandigi mini oyun (en az 2 kez)
@@ -490,11 +494,12 @@ class Game {
       }
     }
     if (favId && !favEsit) {
-      const mg = MINIGAMES.find((m) => m.id === favOyun);
+      // Oyunun ADI da cevrilecegi icin burada yalnizca id gonderilir;
+      // istemci onu kendi dilindeki adla degistirir.
       out.push({
-        ad: 'UZMANLIK ALANI',
+        ad: { k: 'istat.uzmanlik' },
         kim: adi(favId),
-        deger: (mg ? mg.name : favOyun) + ' x' + favEn,
+        deger: { k: 'istat.uzmanlikDeger', p: { oyun: favOyun, n: favEn } },
       });
     }
 
@@ -502,7 +507,7 @@ class Game {
     const bosta = oyuncular.filter((p) => this.istatOku(p.id).kazanma === 0);
     if (bosta.length && bosta.length < oyuncular.length) {
       out.push({
-        ad: 'HIC TUR KAZANAMADI',
+        ad: { k: 'istat.hicKazanamadi' },
         kim: bosta.map((p) => p.name).join(', '),
         deger: '',
       });
@@ -510,7 +515,8 @@ class Game {
 
     const dip = tekLider((s) => (s.sonuncu >= 2 ? s.sonuncu : 0));
     if (dip) {
-      out.push({ ad: 'EN COK SONUNCU', kim: adi(dip.id), deger: dip.deger + ' TUR' });
+      out.push({ ad: { k: 'istat.enCokSonuncu' }, kim: adi(dip.id),
+        deger: { k: 'istat.tur', p: { n: dip.deger } } });
     }
 
     return out.length ? out : null;
