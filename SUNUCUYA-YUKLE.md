@@ -1,5 +1,11 @@
 # Oyunu 7/24 açık tutmak (bilgisayarın kapalıyken de çalışsın)
 
+> **Yayında:** https://panik-butonu.onrender.com
+> **Kaynak:** https://github.com/nurigermanoglu/panik-butonu
+>
+> Aşağıdaki adımlar bir kez uygulandı. Bundan sonra oyunu güncellemek için
+> tek komut yeter: 
+
 Şu an oyun **senin bilgisayarında** çalışıyor; sen kapatınca link ölüyor.
 Oyunu internetteki bir sunucuya yüklersen bilgisayarın kapalıyken de açık kalır
 ve link hep aynı olur.
