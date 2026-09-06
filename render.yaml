@@ -2,7 +2,7 @@
 # Render bu depoyu baglayinca asagidaki ayarlari kendiliginden kullanir.
 services:
   - type: web
-    name: parti-panik
+    name: panik-butonu
     runtime: node
     plan: free
     buildCommand: npm install

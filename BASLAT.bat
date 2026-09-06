@@ -1,5 +1,5 @@
 @echo off
-title PARTI PANIK - oyun sunucusu
+title PANIK BUTONU - oyun sunucusu
 cd /d "%~dp0"
 
 if exist "%ProgramFiles%\nodejs\node.exe" (

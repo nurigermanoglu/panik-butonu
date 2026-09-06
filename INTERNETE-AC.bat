@@ -1,5 +1,5 @@
 @echo off
-title PARTI PANIK - internete acik
+title PANIK BUTONU - internete acik
 cd /d "%~dp0"
 
 rem --- cloudflared'i bul ---
@@ -24,7 +24,7 @@ if exist "%ProgramFiles%\nodejs\node.exe" set "NODE=%ProgramFiles%\nodejs\node.e
 
 echo.
 echo  [1/2] Oyun sunucusu baslatiliyor...
-start "PARTI PANIK - sunucu" /min "%NODE%" server\index.js
+start "PANIK BUTONU - sunucu" /min "%NODE%" server\index.js
 timeout /t 3 >nul
 
 echo  [2/2] Internet adresi olusturuluyor...
